@@ -1,80 +1,161 @@
 # DE-SoE-Tools
 
-Ein modernes, modulares Toolset in **Rust** für **Secret of Evermore (Deutsche PAL ROM)**.
+[![Rust](https://img.shields.io/badge/rust-2021%20edition-orange.svg)](https://www.rust-lang.org)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-SNES%20PAL%20(Germany)-red.svg)](#)
 
-Dieses Projekt portiert und adaptiert drei Kern-Werkzeuge der SoE-Hacking-Community vollständig auf die deutsche PAL-Version (`Secret of Evermore (Germany).sfc`):
-1. **everscript** (SIGIL Script-Compiler / Assembler)
-2. **SoEScriptDumper** (Room-, Map- und Skript-Disassembler & Dialogue-Dumper)
-3. **SoETilesViewer** (Tile-, Sprite- und Paletten-Dekoder mit PNG-Export)
+Ein modernes, modulares All-in-One-Toolset in **Rust** für **Secret of Evermore (Deutsche PAL ROM)**.
 
-Die Kompatibilität zur US-Version wurde verworfen; sämtliche Algorithmen, Tabellen und Zeigerstrukturen sind exakt auf das deutsche ROM-Layout abgestimmt.
+Dieses Projekt portiert, vereinheitlicht und modernisiert drei essenzielle Werkzeuge der SoE-Hacking-Community von Grund auf in nativem Rust:
+
+1. **`everscript`** (SIGIL Script-Compiler & Bytecode-Assembler – ursprünglich von [r-bin](https://github.com/r-bin/everscript))
+2. **`soe-dumper`** (Map-, Script-, Trigger- und Dialogue-Dumper – ursprünglich *SoEScriptDumper* von [black-sliver](https://github.com/black-sliver/SoEScriptDumper))
+3. **`soe-tiles`** (Tile-, Sprite- und Paletten-Dekoder mit PNG-Export – ursprünglich *SoETilesViewer* von [black-sliver](https://github.com/black-sliver/SoETilesViewer))
+
+> [!IMPORTANT]
+> **Fokus auf die deutsche PAL-Version (`Secret of Evermore (Germany).sfc`):**  
+> Sämtliche Zeigertabellen, ROM-Offsets, Text-Dekomprimierungsroutinen und WRAM-Strukturen wurden direkt aus der deutschen PAL-ROM reverse-engineert. Die US-ROM-Kompatibilität wurde bewusst verworfen; veraltete Angaben aus US-zentrierten Wikis (z. B. DataCrystal) treffen hier nicht zu.
 
 ---
 
 ## Workspace-Architektur
 
-Das Projekt ist als Cargo-Workspace mit 5 Crates aufgebaut:
+Das Repository ist als Cargo-Workspace mit 5 sauber getrennten Crates organisiert:
+
+```
+DE-SoE-Tools/
+├── Cargo.toml                  # Workspace-Definition & gemeinsame Abhängigkeiten
+├── crates/
+│   ├── soe-core/               # Basis-ROM-Handling, HiROM-Mapping, Markov-Text & Grafik
+│   ├── soe-script/             # SIGIL AST, Disassembler, Bytecode-Assembler & Formatter
+│   ├── soe-dumper/             # CLI-Tool: Map-, Skript- und Dialog-Extraktion
+│   ├── everscript/             # CLI-Tool & Lib: SIGIL-Compiler, ROM-Patcher & IPS-Generator
+│   └── soe-tiles/              # CLI-Tool & Lib: Tile-, Sprite- & Paletten-Viewer (PNG-Export)
+```
 
 | Crate | Typ | Beschreibung |
 |---|---|---|
-| `soe-core` | Library | Basis-ROM-Handling, HiROM-Adresskonvertierung, deutsches Text-Dekomprimierungssystem (`$8CD147`, Markov-Tabellen), SNES BGR555 Paletten, SNES 4bpp Planar-Tile-Dekoder & Evermore RLE/Nibble-Dekomprimierung. |
-| `soe-script` | Library | SIGIL Skript-AST, Disassembler und Assembler / Bytecode-Emitter für die deutsche ROM. |
-| `soe-dumper` | Binary | CLI-Port von *SoEScriptDumper*. Dumped alle 127 Maps, Step-On-Triggers, B-Triggers (NPCs) und deutsche Dialoge. |
-| `everscript` | Binary + Lib | CLI-Port des *Everscript*-Compilers in Rust. Kompiliert `.evs` / `.ev` Quellcode in SIGIL-Bytecode, patchen in die deutsche ROM oder erzeugt IPS-Patches. |
-| `soe-tiles` | Binary + Lib | CLI-Port von *SoETilesViewer*. Extrahiert Map-Tiles (16x16), Sprite-Blocks (16x16 / 8x8) und Charakter-Stats und exportiert sie als PNG. |
+| **`soe-core`** | Library | Lädt die deutsche ROM, übernimmt HiROM-Adressberechnungen, dekomprimiert Dialogtexte nach dem originalen 65816-Algorithmus (`$8CD147`), parst SNES-BGR555-Farbpaletten und dekomprimiert 4bpp-Tiles sowie Sprite-Blöcke. |
+| **`soe-script`** | Library | Beinhaltet den SIGIL-Befehlssatz (Opcode-Tabellen der DE-ROM), den Disassembler (`disasm.rs`), AST-Strukturen und den Bytecode-Assembler (`asm.rs`). |
+| **`soe-dumper`** | Binary | Extrahiert Maps, B-Trigger (NPCs/Truhen), Step-On-Trigger, Raum-Skripte und alle deutschen Ingame-Dialoge in Text- oder JSON-Formate. |
+| **`everscript`** | Binary + Lib | Kompiliert menschenlesbare `.evs`-Skripte in SIGIL-Bytecode. Unterstützt direktes Patchen der deutschen ROM sowie das Erzeugen von standardkonformen `.ips`-Patches. |
+| **`soe-tiles`** | Binary + Lib | Liest Map-Tiles (16×16), Sprite-Blöcke (16×16 und 8×8) sowie Statuswerte von Charakteren/Gegnern aus und exportiert Grafiken als PNG. |
 
 ---
 
-## Wichtige Adressen der deutschen ROM (PAL)
+## Verifizierte Offsets der deutschen ROM (PAL)
 
-Im Gegensatz zur US-ROM (und veralteten DataCrystal-Angaben) gelten für die deutsche Version folgende Offsets:
+Im Gegensatz zur US-ROM gelten für `Secret of Evermore (Germany).sfc` (SHA-1 / No-Intro PAL-Muster) folgende exakte Adressen:
 
-- **Script Opcode Jump Table:** `$8C:ECBE` (`0x0CECBE`)
-- **Script Sub-Instruction Table:** `$8C:F442` (`0x0CF442`)
-- **Script Start-Adresse:** `$93:8000` (`0x138000`)
-- **Map-List Zeigertabelle:** `$A0:FDE5` (`0x20FDE5`) (127 Maps)
-- **Dialog-Text Zeigertabelle:** `$92:8000` (`0x128000`)
-- **Dialog-Text Markov-Dekodiermethode:** `$8C:D147` mit Tabelle bei `$92:A41E` (`0x12A41E`)
-- **Map-Tiles (16x16) Zeigertabelle:** `$EE:0000` (`0x2E0000`) (6.687 Tiles)
-- **Sprite-Blocks (16x16) Zeigertabelle:** `$EC:0000` (`0x2C0000`) (4.854 Blocks)
-- **Sprite-Blocks (8x8) Zeigertabelle:** `$D8:0000` (`0x180000`) (6.265 Blocks)
-- **Charakter- / Gegner-Daten:** `$8E:B678` (`0x0EB678`) (142 Einträge á 74 Bytes)
+| Bereich / Struktur | SNES-Adresse | Datei-Offset (PC) | Details |
+|---|---|---|---|
+| **Map-List Zeigertabelle** | `$A0:FDE5` | `0x20FDE5` | 127 Maps mit Tilemaps, Paletten & Skriptzeigern |
+| **Script Start-Bereich** | `$93:8000` | `0x138000` | Bytecode aller Raumevents und Trigger |
+| **Script Opcode Jump Table** | `$8C:ECBE` | `0x0CECBE` | Primäre Sprungtabelle für SIGIL-Befehle |
+| **Script Sub-Opcode Table** | `$8C:F442` | `0x0CF442` | Sekundäre Sprungtabelle für Trigger-Befehle |
+| **Text Pointer Table** | `$92:8000` | `0x128000` | 3 Bytes pro Eintrag: `(Offset & 0x7FFF)` + Bank |
+| **Markov Text Decompressor**| `$8C:D147` | `0x0CD147` | Hardwarenahe 65816-Huffman/Markov-Dekomprimierung |
+| **Markov Häufigkeitstabelle**| `$92:A41E` | `0x12A41E` | 14 Nachfolge-Zeichen pro Vorläuferzeichen |
+| **16×16 Map-Tiles Tabelle** | `$EE:0000` | `0x2E0000` | 6.687 komprimierte Hintergrund-Tiles |
+| **16×16 Sprite-Blocks** | `$EC:0000` | `0x2C0000` | 4.854 komprimierte Sprite-Blöcke |
+| **8×8 Sprite-Blocks** | `$D8:0000` | `0x180000` | 6.265 komprimierte 8×8 Tiles |
+| **Gegner- & Charakterdaten**| `$8E:B678` | `0x0EB678` | 142 Tabelleneinträge à 74 Bytes (HP, ATK, DEF etc.) |
 
 ---
 
-## CLI-Nutzung
+## WRAM-Referenz (Deutsche ROM)
 
-### 1. `soe-dumper` (Map- & Script-Dumper)
+Für Emulator-Skripte (z. B. Mesen2 / TAS) und Romhacks:
+
+### Währungen (24-Bit Little-Endian)
+- **Krallen (Prähistorie):** `$7E0AC6` – `$7E0AC8`
+- **Juwelen / Edelsteine (Antika):** `$7E0AC9` – `$7E0ACB`
+- **Goldmünzen (Gotika):** `$7E0ACC` – `$7E0ACE`
+- **Credits (Omnitopia):** `$7E0ACF` – `$7E0AD1`
+- **Aktiver Währungsindex:** `$7E2348` (`0x00`, `0x03`, `0x06`, `0x09`)
+
+### Waffenlevel & Erfahrung (16-Bit Word pro Waffe)
+Aufbau: **Low-Byte (`+0`)** = XP / Ladefortschritt (`0..255`, im Statusmenü angezeigt als `(XP × 100) / 256` = `0..99%`), **High-Byte (`+1`)** = Level (`1..3`).
+
+- **Fäuste:** `$7E0ADD`
+- **Schwerter:**
+  - Knochenknöppel: `$7E0ADF`
+  - Drachentöter: `$7E0AE1`
+  - Exkalibur: `$7E0AE3`
+  - Laserschwert: `$7E0AE5`
+- **Äxte:**
+  - Tarantelaxt: `$7E0AE7`
+  - Bronzeaxt: `$7E0AE9`
+  - Streitaxt: `$7E0AEB`
+  - Atomaxt: `$7E0AED`
+- **Lanzen / Speere:**
+  - Speer: `$7E0AEF`
+  - Bronzespeer: `$7E0AF1`
+  - Elfenbeinspeer: `$7E0AF3`
+  - Neutronenspeer: `$7E0AF5`
+- **Bazooka:** `$7E0AF7` (Verwendet Munition, kein Level)
+- **Hund (Biss / Angriff):** `$7E0B07` (XP) & `$7E0B08` (Level)
+
+---
+
+## Kompilierung & Installation
+
+Voraussetzung: Eine aktuelle Installation von **Rust** (mindestens Edition 2021).
 
 ```bash
-# Alle 127 Maps, Trigger, Enter-Skripte und deutschen Dialoge dumpen:
-soe-dumper dump-all --rom "rom/Secret of Evermore (Germany).sfc" --out-dir ./dump_de
+# Repository klonen
+git clone https://github.com/megalomon/DE-SoE-Tools.git
+cd DE-SoE-Tools
 
-# Einzelne Map disassemblieren (z.B. Nobilia Markt = 0x0A):
-soe-dumper map --id 0x0A
+# Alle Crates und CLI-Binaries im Release-Modus bauen
+cargo build --release
 
-# Deutsche Dialog-Texte anzeigen:
-soe-dumper text --limit 20
-soe-dumper text --id 5
-
-# Beliebiges Skript an einer SNES-Adresse disassemblieren:
-soe-dumper script --addr 0x978712
+# Workspace-Tests ausführen
+cargo test --workspace
 ```
 
-### 2. `everscript` (SIGIL Script-Compiler)
+Die kompilierten Werkzeuge befinden sich anschließend in `target/release/`:
+- `soe-dumper`
+- `soe-tiles`
+- `everscript`
+
+---
+
+## CLI-Handbuch
+
+### 1. `soe-dumper`
 
 ```bash
-# Kompiliert ein .evs Skript und patcht direkt eine Kopie der deutschen ROM:
-everscript compile script.evs --rom "rom/Secret of Evermore (Germany).sfc" --out-rom patched.sfc
+# Alle Maps, Trigger, Skripte und deutschen Dialogtexte in ein Verzeichnis dumpen:
+./target/release/soe-dumper dump-all --rom "Secret of Evermore (Germany).sfc" --out-dir ./dump_de
+
+# Details & Skripte einer einzelnen Map anzeigen (z. B. Map 10 = Nobilia Markt):
+./target/release/soe-dumper map --id 10
+
+# Deutsche Dialogtexte auslesen (Standard: ab ID 0, Limit 20):
+./target/release/soe-dumper text --limit 20
+
+# Einen bestimmten Dialog gezielt ausgeben (z. B. ID 1284 = Pot Trader Lügner-Text):
+./target/release/soe-dumper text --id 1284
+
+# Beliebiges SIGIL-Skript an einer SNES-Adresse disassemblieren:
+./target/release/soe-dumper script --addr 0x978712
+```
+
+### 2. `everscript`
+
+```bash
+# Kompiliert eine .evs Skriptdatei und patcht direkt eine Kopie der deutschen ROM:
+./target/release/everscript compile script.evs --rom "Secret of Evermore (Germany).sfc" --out-rom patched.sfc
 
 # Erzeugt einen IPS-Patch:
-everscript compile script.evs --ips patch.ips
+./target/release/everscript compile script.evs --ips patch.ips
 
-# Gibt rohen SIGIL-Bytecode aus:
-everscript compile script.evs --bin script.bin
+# Gibt reinen Bytecode (.bin) zur Analyse oder Injektion aus:
+./target/release/everscript compile script.evs --bin script.bin
 ```
 
-Beispiel für Everscript-Syntax:
+#### Beispiel für Everscript-Quellcode (`test.evs`):
 ```c
 enum FLAGS {
     CHOCOBO_EGG = 0x004E,
@@ -85,7 +166,7 @@ fun pot_trader() = 0x978712 {
     if (!FLAG[FLAGS.MAGIC_GOURD]) {
         text(0x0F15);
         FLAG[FLAGS.CHOCOBO_EGG] = 1;
-        give_jewels(50);
+        give_jewels(100);
         text_end(0x0F27);
     } else {
         text(0x0F2A);
@@ -94,28 +175,36 @@ fun pot_trader() = 0x978712 {
 }
 ```
 
-### 3. `soe-tiles` (Grafik- & Tile-Exporter)
+### 3. `soe-tiles`
 
 ```bash
 # Einzelnes 16x16 Map-Tile als PNG exportieren:
-soe-tiles tile --id 10 --out tile_10.png --palette "Podunk 1"
+./target/release/soe-tiles tile --id 10 --out tile_10.png --palette "Podunk 1"
 
-# Sprite-Block (16x16 oder 8x8) als PNG exportieren:
-soe-tiles sprite-block --id 0 --out boy_sprite_0.png --palette "Boy"
-soe-tiles sprite-block --id 0 --small --out boy_sprite_8x8.png --palette "Boy"
+# 64 Map-Tiles als übersichtliches Grid/Sheet exportieren:
+./target/release/soe-tiles sheet --start 0 --count 64 --columns 8 --out sheet_0_63.png
 
-# 64 Map-Tiles als Grid/Sheet exportieren:
-soe-tiles sheet --start 0 --count 64 --columns 8 --out tilesheet.png
+# 16x16 Sprite-Block als PNG exportieren:
+./target/release/soe-tiles sprite-block --id 0 --out sprite_0.png --palette "Boy"
 
-# Charakter- und Gegnerstatistiken anzeigen:
-soe-tiles characters --limit 25
+# 8x8 Sprite-Block als PNG exportieren:
+./target/release/soe-tiles sprite-block --id 0 --small --out sprite_8x8.png --palette "Boy"
+
+# Statuswerte aller 142 Charaktere und Monster aus der deutschen ROM anzeigen:
+./target/release/soe-tiles characters --limit 30
 ```
 
 ---
 
-## Build & Tests
+## Danksagung & Credits
 
-```bash
-cargo build --workspace --release
-cargo test --workspace
-```
+- **r-bin** für die bahnbrechende Arbeit an [everscript](https://github.com/r-bin/everscript).
+- **black-sliver** für [SoEScriptDumper](https://github.com/black-sliver/SoEScriptDumper) und [SoETilesViewer](https://github.com/black-sliver/SoETilesViewer).
+- **Nintendo of Europe & Square** für *Secret of Evermore* (PAL-Lokalisierung 1995/1996).
+
+---
+
+## Maintainer & Lizenz
+
+- **Maintainer:** [megalomon](https://github.com/megalomon) (`megalomon@hotmail.de`)
+- **Lizenz:** Dual-lizenziert unter [MIT](LICENSE-MIT) oder [Apache 2.0](LICENSE-APACHE).
