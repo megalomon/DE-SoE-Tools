@@ -73,6 +73,7 @@ pub const MAPS: &[MapInfo] = &[
     MapInfo { id: 0x2A, name: "Antiqua - Halls Boss Room" },
     MapInfo { id: 0x4B, name: "Antiqua - Oglin cave" },
     MapInfo { id: 0x6D, name: "Antique - Aquagoth Room" },
+    MapInfo { id: 0x15, name: "Unused / Dummy Map" },
     MapInfo { id: 0x35, name: "Act1 Quicksand, Bugmuck and Volcano caves + Act2 West Alchemy Cave" },
     MapInfo { id: 0x12, name: "Gothica - Ebon Keep sewers" },
     MapInfo { id: 0x13, name: "Gothica - Between Ebon Keep sewers, Dark Forest and Swamp" },

@@ -48,6 +48,17 @@ DE-SoE-Tools/
 
 ---
 
+## Dokumentation (`docs/`)
+
+Ausführliche, deutschsprachige Dokumente nach Vorbild von DataCrystal (speziell für die deutsche PAL-ROM):
+
+- [**`docs/speicheradressen.md`**](docs/speicheradressen.md) – Alle WRAM-Adressen, Währungen, Waffenlevel, Alchemie & Mesen2-Cheats.
+- [**`docs/maps.md`**](docs/maps.md) – Komplette Tabelle aller 127 Maps mit SNES-Headern, Enter-Skripten und Triggern.
+- [**`docs/sigil_skripte.md`**](docs/sigil_skripte.md) – SIGIL Script-Engine, Opcode-Referenz und Kontrollfluss.
+- [**`docs/text_dekomprimierung.md`**](docs/text_dekomprimierung.md) – 65816-Markov-Huffman-Dekomprimierer und Text-Steuerzeichen.
+
+---
+
 ## Verifizierte Offsets der deutschen ROM (PAL)
 
 Im Gegensatz zur US-ROM gelten für `Secret of Evermore (Germany).sfc` (SHA-1 / No-Intro PAL-Muster) folgende exakte Adressen:
