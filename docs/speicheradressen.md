@@ -70,7 +70,7 @@ Jede normale Waffe und auch der Hund belegen **2 Bytes (16-Bit Word)** im WRAM a
 | Waffe (DE-ROM Name) | Kategorie | Low-Byte (XP) | High-Byte (Level) | Max-Wert (Lvl 3) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Faustkampf** (Fäuste) | Nahkampf | `$7E0ADD` | `$7E0ADE` | `00 03` |
-| **Knochenknöppel** | Schwert 1 | `$7E0ADF` | `$7E0AE0` | `00 03` |
+| **Knochenknüppel** | Schwert 1 | `$7E0ADF` | `$7E0AE0` | `00 03` |
 | **Drachentöter** | Schwert 2 | `$7E0AE1` | `$7E0AE2` | `00 03` |
 | **Exkalibur** | Schwert 3 | `$7E0AE3` | `$7E0AE4` | `00 03` |
 | **Laserschwert** | Schwert 4 | `$7E0AE5` | `$7E0AE6` | `00 03` |
@@ -82,17 +82,17 @@ Jede normale Waffe und auch der Hund belegen **2 Bytes (16-Bit Word)** im WRAM a
 | **Bronzespeer** | Lanze 2 | `$7E0AF1` | `$7E0AF2` | `00 03` |
 | **Elfenbeinspeer** | Lanze 3 | `$7E0AF3` | `$7E0AF4` | `00 03` |
 | **Neutronenspeer** | Lanze 4 | `$7E0AF5` | `$7E0AF6` | `00 03` |
-| **Donnerbüchse (Bazooka)** | Fernkampf | `$7E0AF7` | `$7E0AF8` | *Kein Level* |
+| **Bazooka** | Fernkampf | `$7E0AF7` | `$7E0AF8` | *Kein Level* |
 | **Hund (Angriff / Biss)** | Hund | `$7E0B07` | `$7E0B08` | `00 03` |
 
-- **Aktueller Waffenindex (Junge):** `$7E0ABA` (Offset in 2er-Schritten: `0x00` = Faust, `0x02` = Knochenknöppel, etc.).
+- **Aktueller Waffenindex (Junge):** `$7E0ABA` (Offset in 2er-Schritten: `0x00` = Faust, `0x02` = Knochenknüppel, etc.).
 - **Ausgerüsteter Waffenslot:** `$7E235F` / `$7E2360`.
 
 ---
 
 ## 3. WRAM: Bazooka-Munition
 
-Die Donnerbüchse steigt nicht im Level auf, sondern verwendet drei verschiedene Munitionsarten:
+Die Bazooka steigt nicht im Level auf, sondern verwendet drei verschiedene Munitionsarten:
 
 | Munitionsart (DE-ROM Name) | WRAM-Adresse | Wertebereich | Max |
 | :--- | :--- | :--- | :---: |
@@ -120,30 +120,30 @@ Die Donnerbüchse steigt nicht im Level auf, sondern verwendet drei verschiedene
 
 Die Anzahlen aller 22 Zutaten werden ab Basisadresse `$7E2370` im 2-Byte-Abstand gespeichert (jeweils 1 Byte Zähler, `0` bis `99` / `0x63`):
 
-| Zutat (DE-ROM Name) | WRAM-Adresse | Wertebereich |
-| :--- | :--- | :--- |
-| **Asche** (Ash) | `$7E2370` | `0` – `99` |
-| **Knochen** (Bone) | `$7E2372` | `0` – `99` |
-| **Schwefel** (Brimstone) | `$7E2374` | `0` – `99` |
-| **Ton** (Clay) | `$7E2376` | `0` – `99` |
-| **Kristall** (Crystal) | `$7E2378` | `0` – `99` |
-| **Trockeneis** (Dry Ice) | `$7E237A` | `0` – `99` |
-| **Äthanol** (Ethanol) | `$7E237C` | `0` – `99` |
-| **Feder** (Feather) | `$7E237E` | `0` – `99` |
-| **Fett** (Grease) | `$7E2380` | `0` – `99` |
-| **Schießpulver** (Gunpowder) | `$7E2382` | `0` – `99` |
-| **Atlas-Medaillon** | `$7E2384` | `0` – `99` |
-| **Eisen** (Iron) | `$7E2386` | `0` – `99` |
-| **Kalkstein** (Limestone) | `$7E2388` | `0` – `99` |
-| **Meteorit** (Meteorite) | `$7E238A` | `0` – `99` |
-| **Schlammpfeffer** (Mud Pepper) | `$7E238C` | `0` – `99` |
-| **Pilz** (Mushroom) | `$7E238E` | `0` – `99` |
-| **Öl** (Oil) | `$7E2390` | `0` – `99` |
-| **Wurzel** (Root) | `$7E2392` | `0` – `99` |
-| **Essig** (Vinegar) | `$7E2394` | `0` – `99` |
-| **Wasser** (Water) | `$7E2396` | `0` – `99` |
-| **Wachs** (Wax) | `$7E2398` | `0` – `99` |
-| **Eichel** (Acorn) | `$7E239A` | `0` – `99` |
+| Zutat (DE-ROM Name) | WRAM-Adresse | Wertebereich | US-Entsprechung |
+| :--- | :--- | :--- | :--- |
+| **Asche** | `$7E2370` | `0` – `99` | Ash |
+| **Knochenteil** | `$7E2372` | `0` – `99` | Bone |
+| **Schwefel** | `$7E2374` | `0` – `99` | Brimstone |
+| **Lehm** | `$7E2376` | `0` – `99` | Clay |
+| **Kristall** | `$7E2378` | `0` – `99` | Crystal |
+| **Trockeneis** | `$7E237A` | `0` – `99` | Dry Ice |
+| **Äthanol** | `$7E237C` | `0` – `99` | Ethanol |
+| **Feder** | `$7E237E` | `0` – `99` | Feather |
+| **Schmierfett** | `$7E2380` | `0` – `99` | Grease |
+| **Dynamit** | `$7E2382` | `0` – `99` | Gunpowder |
+| **Arnitamin** | `$7E2384` | `0` – `99` | Atlas Medallion |
+| **Eisenerz** | `$7E2386` | `0` – `99` | Iron |
+| **Kalkstein** | `$7E2388` | `0` – `99` | Limestone |
+| **Mondstein** | `$7E238A` | `0` – `99` | Meteorite |
+| **Pfeffer** | `$7E238C` | `0` – `99` | Mud Pepper |
+| **Pilz** | `$7E238E` | `0` – `99` | Mushroom |
+| **Öl** | `$7E2390` | `0` – `99` | Oil |
+| **Wurzel** | `$7E2392` | `0` – `99` | Root |
+| **Essig** | `$7E2394` | `0` – `99` | Vinegar |
+| **Wasser** | `$7E2396` | `0` – `99` | Water |
+| **Wachs** | `$7E2398` | `0` – `99` | Wax |
+| **Eichel** | `$7E239A` | `0` – `99` | Acorn |
 
 ---
 
@@ -188,12 +188,23 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 
 ## 8. WRAM: Ausrüstung & Verbrauchs-Items
 
-### Heil- & Unterstützungsitems (Zähler 0–99)
-- **Blütenblätter:** `$7E2364`
-- **Nektartropfen:** `$7E2366`
-- **Honigtropfen:** `$7E2368`
-- **Hundekuchen:** `$7E236A`
-- **Elixier:** `$7E236C`
+> [!TIP]
+> Die vollständige Dokumentation aller **Waffen, Rüstungen, Helme, Armbänder, Hundehalsbänder, Verbrauchsgegenstände und Tauschwaren** mit ihren exakten deutschen Ingame-Namen und ROM-Offsets befindet sich im separaten Dokument:  
+> 👉 [**`docs/ausruestung_items.md`**](ausruestung_items.md)
+
+### Heil- & Unterstützungsitems (Zähler 0–99 im WRAM)
+- **Blätter:** `$7E2364` (Zähler 0–99)
+- **Nektar:** `$7E2366` (Zähler 0–99)
+- **Honig:** `$7E2368` (Zähler 0–99)
+- **Hundekuchen:** `$7E236A` (Zähler 0–99)
+- **Flügel:** `$7E236C` (Zähler 0–99)
+- **Elixier:** `$7E236E` (Zähler 0–99)
+
+### Ausgerüstete Gegenstände (WRAM-Slots)
+- **Rüstung Junge:** `$7E0A52`
+- **Helm Junge:** `$7E0A54`
+- **Armband Junge:** `$7E0A56`
+- **Halsband Hund:** `$7E0A9C`
 
 ---
 

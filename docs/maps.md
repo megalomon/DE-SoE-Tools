@@ -61,134 +61,133 @@ An Adresse `$\$93:8294 + \text{Script\_ID}` liegt die absolute 24-Bit-Zieladress
 
 | ID (Hex) | ID (Dez) | Name / Bereich | Header-Adresse (SNES) | Enter-Skript (SNES) | Step-Triggers | B-Triggers |
 | :---: | :---: | :--- | :---: | :---: | :---: | :---: |
-| `0x00` |   0 | Omnitopia - Alarm room | `$ACF501` | `$978FB2` |  8 |  1 |
-| `0x01` |   1 | Prehistoria - Exterior of Blimp's Hut | `$AAE403` | `$958E3C` |  4 |  0 |
-| `0x02` |   2 | Intro - Mansion Exterior 1965 | `$ADC127` | `$936962` |  0 |  0 |
-| `0x03` |   3 | Intro - Mansion Exterior 1995 | `$ABEAB8` | `$93824B` |  0 |  0 |
-| `0x04` |   4 | Antiqua - Crustacia fire pit | `$ADD766` | `$95C171` |  2 |  0 |
-| `0x05` |   5 | Antiqua - Between 'mids and halls | `$A5B938` | `$954401` | 20 | 20 |
-| `0x06` |   6 | Antiqua - Outside of 'mids | `$9D8000` | `$954F20` | 27 | 20 |
-| `0x07` |   7 | Antiqua - West of Crustacia | `$A893E9` | `$953CDE` | 10 | 13 |
-| `0x08` |   8 | Antiqua - Nobilia, Square | `$A6B42F` | `$94E4DD` |  5 |  5 |
-| `0x09` |   9 | Antiqua - Nobilia, Square during Aegis fight | `$AABCD2` | `$95BF0D` |  3 |  0 |
-| `0x0A` |  10 | Antiqua - Nobilia, Market | `$A0AAEA` | `$953636` | 11 | 58 |
-| `0x0B` |  11 | Antiqua - Nobilia, Palace grounds | `$A7964A` | `$9555F9` | 10 | 12 |
-| `0x0C` |  12 | Antiqua - Nobilia, Inn | `$AEA5D4` | `$94ED67` |  4 |  2 |
-| `0x0D` |  13 | Gothica - Ebon Keep Hall (Stairs, behind Verm) | `$AAD716` | `$966839` |  8 |  0 |
-| `0x0E` |  14 | Gothica - Ebon Keep Dining Room | `$ADD013` | `$9668CE` |  2 |  1 |
-| `0x0F` |  15 | Gothica - Ebon Keep West Room (Naris) | `$ABC913` | `$973C62` |  2 |  2 |
-| `0x10` |  16 | Gothica - Ebon Keep Stained Glass Hallway | `$AEC5C6` | `$968321` |  2 |  0 |
-| `0x11` |  17 | Gothica - Ebon Keep Queen's Room | `$ACBD8F` | `$966FB2` |  2 |  0 |
-| `0x12` |  18 | Gothica - Ebon Keep sewers | `$A68000` | `$96903D` |  2 | 13 |
-| `0x13` |  19 | Gothica - Between Ebon Keep sewers, Dark Forest and Swamp | `$ADB18A` | `$96921B` |  4 |  1 |
-| `0x14` |  20 | Gothica - Ebon Keep Tinker's Room | `$ACD085` | `$968C6C` |  2 |  3 |
-| `0x15` |  21 | Unbenutzt / Dummy-Map | `$A1FF54` | `$930000` |  0 |  0 |
-| `0x16` |  22 | Prehistoria - BBM | `$A48000` | `$93C661` | 42 | 24 |
-| `0x17` |  23 | Prehistoria - Bug room 2 | `$AD9952` | `$93C97F` |  8 | 12 |
-| `0x18` |  24 | Prehistoria - Thraxx' room | `$AC8AD3` | `$93D5A0` |  3 |  2 |
-| `0x19` |  25 | Gothica - Chessboard | `$A58000` | `$96D8BE` |  5 | 19 |
-| `0x1A` |  26 | Gothica - Below chessboard | `$A9E53F` | `$96DB94` |  4 |  1 |
-| `0x1B` |  27 | Antiqua - Desert of Doom | `$A78000` | `$9585CC` | 19 |  0 |
-| `0x1C` |  28 | Antiqua - Nobilia, North of Market | `$A8E154` | `$94CEC0` |  6 | 20 |
-| `0x1D` |  29 | Antiqua - Nobilia, Arena (Vigor Fight) | `$A8F396` | `$96ED20` |  0 |  0 |
-| `0x1E` |  30 | Antiqua - Nobilia, Arena Holding Room | `$ADDEB3` | `$94D3F7` |  1 |  9 |
-| `0x1F` |  31 | Gothica - Doubles room in forest | `$A9D4CC` | `$96CCEB` |  2 |  0 |
-| `0x20` |  32 | Gothica - Timberdrake room in forest | `$ADE5C9` | `$96CDEC` |  2 |  0 |
-| `0x21` |  33 | Gothica - Dark forest entrance (save point) | `$ADF3B6` | `$96A809` |  2 |  0 |
-| `0x22` |  34 | Gothica - Dark Forest | `$A2C651` | `$96C2DA` | 17 |  9 |
-| `0x23` |  35 | Antiqua - Halls SW | `$ADB965` | `$95906C` |  6 |  3 |
-| `0x24` |  36 | Antiqua - Halls NW | `$A4BC85` | `$959ACA` | 29 |  7 |
-| `0x25` |  37 | Prehistoria - Fire Eyes' Village | `$A5D3C9` | `$945119` | 13 | 20 |
-| `0x26` |  38 | Prehistoria - West area with Defend | `$AECF58` | `$9468D3` |  1 |  3 |
-| `0x27` |  39 | Prehistoria - Mammoth Graveyard | `$A7D679` | `$93E3B6` |  3 | 30 |
-| `0x28` |  40 | Antiqua - Halls Collapsing Bridge | `$A2A390` | `$95AF25` | 32 |  2 |
-| `0x29` |  41 | Antiqua - Halls main room | `$A8BB54` | `$9594F1` | 32 |  2 |
-| `0x2A` |  42 | Antiqua - Halls Boss Room | `$AB98B7` | `$95A84A` |  1 |  0 |
-| `0x2B` |  43 | Antiqua - Outside of halls | `$A8CE92` | `$94E953` |  2 | 17 |
-| `0x2C` |  44 | Antiqua - Halls SE | `$AD911C` | `$959D2B` |  2 |  0 |
-| `0x2D` |  45 | Antiqua - Halls NE | `$A38000` | `$95A30A` | 18 |  5 |
-| `0x2E` |  46 | Antiqua - Blimp's Cave | `$AEC92D` | `$94B775` |  1 |  2 |
-| `0x2F` |  47 | Antiqua - Horace's camp | `$A1CD25` | `$955F96` |  6 | 20 |
-| `0x30` |  48 | Antiqua - Crustacia inside pirate ship | `$ABA4F7` | `$94C5C0` |  8 |  7 |
-| `0x31` |  49 | Intro - Podunk 1965 | `$ADC8B2` | `$9367F2` |  0 |  0 |
-| `0x32` |  50 | Intro - Podunk 1995 | `$AE8CBB` | `$93808F` |  0 |  0 |
-| `0x33` |  51 | Prehistoria - Strong Heart's Exterior | `$AEB57D` | `$946951` |  2 |  0 |
-| `0x34` |  52 | Prehistoria - Strong Heart's Hut | `$AEBDEA` | `$946AEB` |  1 |  3 |
-| `0x35` |  53 | Act1 Quicksand, Bugmuck and Volcano caves + Act2 West Alchemy Cave | `$ABD4A9` | `$942AC0` |  5 | 10 |
-| `0x36` |  54 | Prehistoria - Both fire pits (one room) | `$A4F775` | `$95CBC8` |  2 |  4 |
-| `0x37` |  55 | Gothica - Gomi's Tower | `$9EBCF5` | `$96A6D4` | 12 | 22 |
-| `0x38` |  56 | Prehistoria - South jungle / Start | `$9F8000` | `$938878` |  2 | 31 |
-| `0x39` |  57 | Gothica - Ebon Keep Fire pit | `$ADA982` | `$974F9E` |  2 |  0 |
-| `0x3A` |  58 | Antiqua - Nobilia, Fire pit | `$AEABD6` | `$95C5A8` |  2 |  0 |
-| `0x3B` |  59 | Prehistoria - Volcano Room 2 | `$A3C0A8` | `$941CB4` |  4 | 34 |
-| `0x3C` |  60 | Prehistoria - Volcano Room 1 | `$A3A162` | `$9422BF` | 21 | 25 |
-| `0x3D` |  61 | Prehistoria - Pipe maze | `$A49EC8` | `$943003` | 39 |  0 |
-| `0x3E` |  62 | Prehistoria - Side rooms of pipe maze | `$AA8000` | `$9434C6` | 12 | 14 |
-| `0x3F` |  63 | Prehistoria - Volcano Boss Room | `$ABBD2D` | `$94409A` |  1 |  0 |
-| `0x40` |  64 | Gothica - Swamp south of Gomi's Tower | `$AC8000` | `$969383` |  2 |  0 |
-| `0x41` |  65 | Prehistoria - North jungle | `$A6E6BF` | `$9398DE` |  4 | 23 |
-| `0x42` |  66 | Omnitopia - Reactor room and Reactor control | `$AAF0BC` | `$97BA1E` | 28 |  2 |
-| `0x43` |  67 | Omnitopia - Control room | `$ACB3C7` | `$978000` |  1 |  6 |
-| `0x44` |  68 | Omnitopia - Greenhouse (dark or both?) | `$ABF590` | `$9785C1` |  2 |  1 |
-| `0x45` |  69 | Omnitopia - Secret boss room | `$ACEC05` | `$9788DB` |  2 |  0 |
-| `0x46` |  70 | Omnitopia - Professor's lab and ship area, (also?) Intro | `$A7EB32` | `$97DC37` |  5 |  3 |
-| `0x47` |  71 | Omnitopia - Storage room | `$AB8C6E` | `$978CE6` |  1 |  7 |
-| `0x48` |  72 | Omnitopia - Metroplex tunnels (rimsalas, spheres) | `$A0D4E2` | `$9753E4` | 56 | 53 |
-| `0x49` |  73 | Omnitopia - Junkyard (Landing spot) | `$A5EE50` | `$97E278` | 13 |  0 |
-| `0x4A` |  74 | Omnitopia - Final Boss Room | `$A4DA2D` | `$97B942` |  2 |  8 |
-| `0x4B` |  75 | Antiqua - Oglin cave | `$A1A80C` | `$95D88D` | 50 | 32 |
-| `0x4C` |  76 | Antiqua - Nobilia, Fountain and snake statues | `$AC958E` | `$94DB49` |  2 | 10 |
-| `0x4D` |  77 | Antiqua - Nobilia, Inside palace (Horace cutscene) | `$AE8669` | `$94D86F` |  0 |  0 |
-| `0x4E` |  78 | Gothica - Ivor Tower, west alley (market) | `$ABB125` | `$9722BC` |  2 |  0 |
-| `0x4F` |  79 | Antiqua - East of Crustacia | `$A1F132` | `$94BF0B` |  6 | 16 |
-| `0x50` |  80 | Prehistoria - Sky above Volcano | `$A6FD61` | `$9409BF` |  0 |  0 |
-| `0x51` |  81 | Prehistoria - Village Huts and Blimp's Hut | `$9DF0C3` | `$946544` |  9 | 25 |
-| `0x52` |  82 | Prehistoria - Top of Volcano | `$ADFA67` | `$940773` |  1 |  0 |
-| `0x53` |  83 | Antiqua - Act2 Start Cutscene | `$ACE308` | `$946E6B` |  0 |  0 |
-| `0x54` |  84 | Omnitopia - Shops | `$AB8000` | `$979F2F` |  7 |  3 |
-| `0x55` |  85 | Antiqua - 'mids bottom level (Dog start) | `$9FD770` | `$94976D` | 47 | 24 |
-| `0x56` |  86 | Antiqua - 'mids top level (Boy start) | `$A7C154` | `$949E36` |  6 | 24 |
-| `0x57` |  87 | Antiqua - 'mids basement level (Tiny) | `$A8A7A2` | `$94ACF2` | 21 | 11 |
-| `0x58` |  88 | Antiqua - 'mids boss room (Rimsala) | `$AE930D` | `$94B43F` |  5 |  0 |
-| `0x59` |  89 | Prehistoria - Quick sand desert | `$A18000` | `$93B056` | 65 | 28 |
-| `0x5A` |  90 | Prehistoria - Acid rain guy | `$AE995A` | `$93B2A5` |  1 |  2 |
-| `0x5B` |  91 | Prehistoria - East jungle | `$A88000` | `$93B54B` |  5 | 17 |
-| `0x5C` |  92 | Prehistoria - Raptors | `$A9F593` | `$9394CB` |  3 |  4 |
-| `0x5D` |  93 | Gothica - Ebon Keep Courtyard (South of Verm) | `$ACD9DC` | `$96EE2E` |  7 |  0 |
-| `0x5E` |  94 | Gothica - Ebon Keep Front Room (Verm) | `$ADECCD` | `$9701A0` | 10 |  0 |
-| `0x5F` |  95 | Gothica - Ebon Keep Verm side rooms | `$AEB9D2` | `$970286` |  4 |  0 |
-| `0x60` |  96 | Gothica - Ebon Keep Storage Room | `$AECC7E` | `$9703D9` |  1 |  3 |
-| `0x61` |  97 | Opening - Scrolling over Machine | `$A9B3AA` | `$93646C` |  0 |  0 |
-| `0x62` |  98 | Gothica - Ivor Tower, west square (trailers) | `$AAAED0` | `$972AE8` |  9 |  0 |
-| `0x63` |  99 | Gothica - Ivor Tower, inside trailers | `$AE8000` | `$97334A` |  2 |  0 |
-| `0x64` | 100 | Antiqua - Cave entrance under 'mids | `$AEB119` | `$95DEAF` |  2 |  0 |
-| `0x65` | 101 | Prehistoria - Swamp (main area) | `$9E8000` | `$941308` | 29 | 34 |
-| `0x66` | 102 | Prehistoria - West of swamp | `$A9C450` | `$940BC5` |  7 | 19 |
-| `0x67` | 103 | Prehistoria - Bugmuck exterior | `$9FABDE` | `$93BB69` | 13 | 42 |
-| `0x68` | 104 | Antiqua - Crustacia exterior | `$A7ABE2` | `$9487E7` | 13 |  0 |
-| `0x69` | 105 | Prehistoria - Volcano path | `$A28000` | `$940000` | 31 | 33 |
-| `0x6A` | 106 | Antiqua - Act2 Start Cutscene - waterfall | `$AD88E1` | `$946BFC` |  0 |  0 |
-| `0x6B` | 107 | Antiqua - Waterfall | `$AA9046` | `$95DDC5` |  7 |  0 |
-| `0x6C` | 108 | Gothica - SE of Ivor Tower (Well) | `$ACC714` | `$973ABD` |  1 |  1 |
-| `0x6D` | 109 | Antique - Aquagoth Room | `$ACA9F8` | `$95E89B` |  0 |  0 |
-| `0x6E` | 110 | Gothica - Ivor Tower Hall | `$A9A2F5` | `$962359` |  9 |  0 |
-| `0x6F` | 111 | Gothica - Ivor Tower Dining Room | `$ABDFDE` | `$974384` |  2 |  2 |
-| `0x70` | 112 | Gothica - Ivor Tower Exterior Bridges and Balconies | `$AAC9FE` | `$975366` | 10 |  0 |
-| `0x71` | 113 | Gothica - Ivor Tower East Room + Kitchen | `$A08000` | `$96091C` | 57 | 32 |
-| `0x72` | 114 | Gothica - Ivor Tower East Upper Floor | `$A98000` | `$961061` | 19 | 18 |
-| `0x73` | 115 | Gothica - Ivor Tower Dog Maze Underground | `$AA9F92` | `$96150F` | 28 |  0 |
-| `0x74` | 116 | Gothica - Ebon Keep and Ivory Tower dungeon + pipe room | `$A59D44` | `$963011` | 33 |  1 |
-| `0x75` | 117 | Gothica - Ivor Tower Stariwell to dungeon | `$AE9F98` | `$963199` |  2 |  0 |
-| `0x76` | 118 | Gothica - South of Ivor Tower (Gate) | `$9EEA50` | `$963B7B` |  2 | 20 |
-| `0x77` | 119 | Gothica - Ivor Tower Puppet Show / Mungola | `$ACA00C` | `$970BFF` |  3 |  0 |
-| `0x78` | 120 | Gothica - Ivor Tower Queen's Room | `$ADA175` | `$961CA6` |  4 |  0 |
-| `0x79` | 121 | Gothica - Ivor Tower Sewers | `$A6CDDA` | `$963359` |  4 |  8 |
-| `0x7A` | 122 | Gothica - Ivor Tower Sewers Exterior (landing spot) | `$AEC1EF` | `$96384B` |  2 |  0 |
-| `0x7B` | 123 | Gothica - Ebon Keep and Ivor Tower Exterior Bottom Half | `$A69A21` | `$96442D` |  8 |  7 |
-| `0x7C` | 124 | Gothica - Ebon Keep and Ivor Tower Exterior Top Half | `$A3DFCC` | `$9649CB` | 11 |  0 |
-| `0x7D` | 125 | Gothica - Ebon Keep and Ivor Tower Interior | `$A2E7E4` | `$965E9A` | 12 | 21 |
-| `0x7E` | 126 | Omnitopia - Jail | `$A99236` | `$9792DD` |  1 | 17 |
-
+| `0x00` |   0 | Assitopia - Alarmraum | `$ACF501` | `$9C8FB2` |  8 |  1 |
+| `0x01` |   1 | Prähistorie - Davids Sumpfhütte Außenbereich | `$AAE403` | `$988E3C` |  4 |  0 |
+| `0x02` |   2 | Intro - Großostheim 1965 Villa Außenbereich | `$ADC127` | `$93E962` |  0 |  0 |
+| `0x03` |   3 | Intro - Großostheim 1995 Villa Außenbereich | `$ABEAB8` | `$94824B` |  0 |  0 |
+| `0x04` |   4 | Antika - Krozkrübel Feuerstelle | `$ADD766` | `$98C171` |  2 |  0 |
+| `0x05` |   5 | Antika - Weg zwischen Pyramide und Collosia | `$A5B938` | `$97C401` | 20 | 20 |
+| `0x06` |   6 | Antika - Pyramide Außenbereich | `$9D8000` | `$97CF20` | 27 | 20 |
+| `0x07` |   7 | Antika - Westlich von Krozkrübel | `$A893E9` | `$97BCDE` | 10 | 13 |
+| `0x08` |   8 | Antika - Allelachema Marktplatz (Zentrum) | `$A6B42F` | `$96E4DD` |  5 |  5 |
+| `0x09` |   9 | Antika - Allelachema Marktplatz (Aegis-Kampf) | `$AABCD2` | `$98BF0D` |  3 |  0 |
+| `0x0A` |  10 | Antika - Allelachema Markt (Basar) | `$A0AAEA` | `$97B636` | 11 | 58 |
+| `0x0B` |  11 | Antika - Allelachema Palasthof | `$A7964A` | `$97D5F9` | 10 | 12 |
+| `0x0C` |  12 | Antika - Allelachema Hotel | `$AEA5D4` | `$96ED67` |  4 |  2 |
+| `0x0D` |  13 | Gotika - Chaosturm Große Halle | `$AAD716` | `$99E839` |  8 |  0 |
+| `0x0E` |  14 | Gotika - Chaosturm Speisesaal | `$ADD013` | `$99E8CE` |  2 |  1 |
+| `0x0F` |  15 | Gotika - Chaosturm Westflügel | `$ABC913` | `$9BBC62` |  2 |  2 |
+| `0x10` |  16 | Gotika - Chaosturm Buntglas-Galerie | `$AEC5C6` | `$9A8321` |  2 |  0 |
+| `0x11` |  17 | Gotika - Chaosturm Gemach der Königin | `$ACBD8F` | `$99EFB2` |  2 |  0 |
+| `0x12` |  18 | Gotika - Chaosturm Kanalisation | `$A68000` | `$9A903D` |  2 | 13 |
+| `0x13` |  19 | Gotika - Zwischen Kanalisation, Schattenwald und Sumpf | `$ADB18A` | `$9A921B` |  4 |  1 |
+| `0x14` |  20 | Gotika - Gallensteins Labor (Chaosturm) | `$ACD085` | `$9A8C6C` |  2 |  3 |
+| `0x15` |  21 | Unbenutzt / Dummy-Map | `$A1FF54` | `$938000` |  0 |  0 |
+| `0x16` |  22 | Prähistorie - Käfersteppe Eingang | `$A48000` | `$94C661` | 42 | 24 |
+| `0x17` |  23 | Prähistorie - Käfersteppe Raum 2 | `$AD9952` | `$94C97F` |  8 | 12 |
+| `0x18` |  24 | Prähistorie - Vulgors Herzkammer (Thraxx) | `$AC8AD3` | `$94D5A0` |  3 |  2 |
+| `0x19` |  25 | Gotika - Schachbrett | `$A58000` | `$9AD8BE` |  5 | 19 |
+| `0x1A` |  26 | Gotika - Schachbrett-Verlies (Fratzenwand) | `$A9E53F` | `$9ADB94` |  4 |  1 |
+| `0x1B` |  27 | Antika - Schädelwüste | `$A78000` | `$9885CC` | 19 |  0 |
+| `0x1C` |  28 | Antika - Nördlich von Allelachema | `$A8E154` | `$96CEC0` |  6 | 20 |
+| `0x1D` |  29 | Antika - Allelachema Arena (Kampf gegen Vigor) | `$A8F396` | `$9AED20` |  0 |  0 |
+| `0x1E` |  30 | Antika - Allelachema Arena Warteraum | `$ADDEB3` | `$96D3F7` |  1 |  9 |
+| `0x1F` |  31 | Gotika - Schattenwald Doppelgänger-Lichtung | `$A9D4CC` | `$9ACCEB` |  2 |  0 |
+| `0x20` |  32 | Gotika - Schattenwald Lichtung des Baumdrachen | `$ADE5C9` | `$9ACDEC` |  2 |  0 |
+| `0x21` |  33 | Gotika - Schattenwald Eingang (Speicherpunkt) | `$ADF3B6` | `$9AA809` |  2 |  0 |
+| `0x22` |  34 | Gotika - Schattenwald (Labyrinth) | `$A2C651` | `$9AC2DA` | 17 |  9 |
+| `0x23` |  35 | Antika - Collosia Tempel Südwest | `$ADB965` | `$98906C` |  6 |  3 |
+| `0x24` |  36 | Antika - Collosia Tempel Nordwest | `$A4BC85` | `$989ACA` | 29 |  7 |
+| `0x25` |  37 | Prähistorie - Zora Zottelzopfs Dschungeldorf | `$A5D3C9` | `$95D119` | 13 | 20 |
+| `0x26` |  38 | Prähistorie - West-Dschungel (Energieschild) | `$AECF58` | `$95E8D3` |  1 |  3 |
+| `0x27` |  39 | Prähistorie - Mammut-Friedhof | `$A7D679` | `$94E3B6` |  3 | 30 |
+| `0x28` |  40 | Antika - Collosia Einstürzende Brücke | `$A2A390` | `$98AF25` | 32 |  2 |
+| `0x29` |  41 | Antika - Collosia Tempel Haupthalle | `$A8BB54` | `$9894F1` | 32 |  2 |
+| `0x2A` |  42 | Antika - Collosia Panzerminos-Raum (Megataur) | `$AB98B7` | `$98A84A` |  1 |  0 |
+| `0x2B` |  43 | Antika - Collosia Tempel Außenbereich | `$A8CE92` | `$96E953` |  2 | 17 |
+| `0x2C` |  44 | Antika - Collosia Tempel Südost | `$AD911C` | `$989D2B` |  2 |  0 |
+| `0x2D` |  45 | Antika - Collosia Tempel Nordost | `$A38000` | `$98A30A` | 18 |  5 |
+| `0x2E` |  46 | Antika - Davids Höhle | `$AEC92D` | `$96B775` |  1 |  2 |
+| `0x2F` |  47 | Antika - Hektors Camp (Oase) | `$A1CD25` | `$97DF96` |  6 | 20 |
+| `0x30` |  48 | Antika - Krozkrübel Piratenschiff Innenraum | `$ABA4F7` | `$96C5C0` |  8 |  7 |
+| `0x31` |  49 | Intro - Großostheim 1965 | `$ADC8B2` | `$93E7F2` |  0 |  0 |
+| `0x32` |  50 | Intro - Großostheim 1995 (Kino) | `$AE8CBB` | `$94808F` |  0 |  0 |
+| `0x33` |  51 | Prähistorie - Schlauer Bärs Hütte Außenbereich | `$AEB57D` | `$95E951` |  2 |  0 |
+| `0x34` |  52 | Prähistorie - Schlauer Bärs Hütte Innenraum | `$AEBDEA` | `$95EAEB` |  1 |  3 |
+| `0x35` |  53 | Höhlensystem (Käfersteppe, Vulkan & West-Höhle) | `$ABD4A9` | `$95AAC0` |  5 | 10 |
+| `0x36` |  54 | Prähistorie - Beide Feuerstellen | `$A4F775` | `$98CBC8` |  2 |  4 |
+| `0x37` |  55 | Gotika - Erwins Turm | `$9EBCF5` | `$9AA6D4` | 12 | 22 |
+| `0x38` |  56 | Prähistorie - Süd-Dschungel (Startgebiet) | `$9F8000` | `$948878` |  2 | 31 |
+| `0x39` |  57 | Gotika - Chaosturm Feuerstelle | `$ADA982` | `$9BCF9E` |  2 |  0 |
+| `0x3A` |  58 | Antika - Allelachema Feuerstelle | `$AEABD6` | `$98C5A8` |  2 |  0 |
+| `0x3B` |  59 | Prähistorie - Vulkan Raum 2 | `$A3C0A8` | `$959CB4` |  4 | 34 |
+| `0x3C` |  60 | Prähistorie - Vulkan Raum 1 | `$A3A162` | `$95A2BF` | 21 | 25 |
+| `0x3D` |  61 | Prähistorie - Vulkan-Röhrenlabyrinth | `$A49EC8` | `$95B003` | 39 |  0 |
+| `0x3E` |  62 | Prähistorie - Vulkan Röhren-Nebenräume | `$AA8000` | `$95B4C6` | 12 | 14 |
+| `0x3F` |  63 | Prähistorie - Gorvuls Herzkammer (Coleoptera) | `$ABBD2D` | `$95C09A` |  1 |  0 |
+| `0x40` |  64 | Gotika - Sumpf südlich von Erwins Turm | `$AC8000` | `$9A9383` |  2 |  0 |
+| `0x41` |  65 | Prähistorie - Nord-Dschungel | `$A6E6BF` | `$9498DE` |  4 | 23 |
+| `0x42` |  66 | Assitopia - Reaktorraum & Reaktorkontrolle | `$AAF0BC` | `$9CBA1E` | 28 |  2 |
+| `0x43` |  67 | Assitopia - Kontrollraum | `$ACB3C7` | `$9C8000` |  1 |  6 |
+| `0x44` |  68 | Assitopia - Gewächshäuser | `$ABF590` | `$9C85C1` |  2 |  1 |
+| `0x45` |  69 | Assitopia - Geheimer Bossraum | `$ACEC05` | `$9C88DB` |  2 |  0 |
+| `0x46` |  70 | Assitopia - Prof. Seltsams Labor & Shuttle-Bucht | `$A7EB32` | `$9CDC37` |  5 |  3 |
+| `0x47` |  71 | Assitopia - Lagerhalle | `$AB8C6E` | `$9C8CE6` |  1 |  7 |
+| `0x48` |  72 | Assitopia - Metroplex-Tunnel | `$A0D4E2` | `$9BD3E4` | 56 | 53 |
+| `0x49` |  73 | Assitopia - Schrottplatz (Landestelle) | `$A5EE50` | `$9CE278` | 13 |  0 |
+| `0x4A` |  74 | Assitopia - Finaler Thronsaal (Edgars Roboter) | `$A4DA2D` | `$9CB942` |  2 |  8 |
+| `0x4B` |  75 | Antika - Oglin-Höhle | `$A1A80C` | `$98D88D` | 50 | 32 |
+| `0x4C` |  76 | Antika - Allelachema Brunnenplatz & Schlangenstatuen | `$AC958E` | `$96DB49` |  2 | 10 |
+| `0x4D` |  77 | Antika - Allelachema Palast Innenbereich | `$AE8669` | `$96D86F` |  0 |  0 |
+| `0x4E` |  78 | Gotika - Terrorfels West-Gasse (Markt) | `$ABB125` | `$9BA2BC` |  2 |  0 |
+| `0x4F` |  79 | Antika - Östlich von Krozkrübel | `$A1F132` | `$96BF0B` |  6 | 16 |
+| `0x50` |  80 | Prähistorie - Himmel über dem Vulkankrater | `$A6FD61` | `$9589BF` |  0 |  0 |
+| `0x51` |  81 | Prähistorie - Dschungeldorf Hütten & Davids Hütte | `$9DF0C3` | `$95E544` |  9 | 25 |
+| `0x52` |  82 | Prähistorie - Vulkangipfel (Vulkankrater) | `$ADFA67` | `$958773` |  1 |  0 |
+| `0x53` |  83 | Antika - Ankunft Cutscene | `$ACE308` | `$95EE6B` |  0 |  0 |
+| `0x54` |  84 | Assitopia - Einkaufszentrum / Shops | `$AB8000` | `$9C9F2F` |  7 |  3 |
+| `0x55` |  85 | Antika - Pyramide Unterste Ebene (Start des Hundes) | `$9FD770` | `$96976D` | 47 | 24 |
+| `0x56` |  86 | Antika - Pyramide Oberste Ebene (Start des Helden) | `$A7C154` | `$969E36` |  6 | 24 |
+| `0x57` |  87 | Antika - Pyramide Untergeschoss (Minitaurus) | `$A8A7A2` | `$96ACF2` | 21 | 11 |
+| `0x58` |  88 | Antika - Pyramide Spitze (Bastet / Rimsala) | `$AE930D` | `$96B43F` |  5 |  0 |
+| `0x59` |  89 | Prähistorie - Treibsandwüste | `$A18000` | `$94B056` | 65 | 28 |
+| `0x5A` |  90 | Prähistorie - Säuresturm-Alchemist | `$AE995A` | `$94B2A5` |  1 |  2 |
+| `0x5B` |  91 | Prähistorie - Ost-Dschungel | `$A88000` | `$94B54B` |  5 | 17 |
+| `0x5C` |  92 | Prähistorie - Raptor-Kluft | `$A9F593` | `$9494CB` |  3 |  4 |
+| `0x5D` |  93 | Gotika - Chaosturm Schlosshof | `$ACD9DC` | `$9AEE2E` |  7 |  0 |
+| `0x5E` |  94 | Gotika - Chaosturm Thronsaal (Rattus) | `$ADECCD` | `$9B81A0` | 10 |  0 |
+| `0x5F` |  95 | Gotika - Chaosturm Seitenräume | `$AEB9D2` | `$9B8286` |  4 |  0 |
+| `0x60` |  96 | Gotika - Chaosturm Vorratskammer | `$AECC7E` | `$9B83D9` |  1 |  3 |
+| `0x61` |  97 | Intro - Flug über die Traummaschine | `$A9B3AA` | `$93E46C` |  0 |  0 |
+| `0x62` |  98 | Gotika - Terrorfels Westplatz (Planwagen) | `$AAAED0` | `$9BAAE8` |  9 |  0 |
+| `0x63` |  99 | Gotika - Terrorfels Planwagen Innenraum | `$AE8000` | `$9BB34A` |  2 |  0 |
+| `0x64` | 100 | Antika - Höhleneingang unter der Pyramide | `$AEB119` | `$98DEAF` |  2 |  0 |
+| `0x65` | 101 | Prähistorie - Sumpf (Hauptbereich) | `$9E8000` | `$959308` | 29 | 34 |
+| `0x66` | 102 | Prähistorie - Westlich des Sumpfes | `$A9C450` | `$958BC5` |  7 | 19 |
+| `0x67` | 103 | Prähistorie - Käfersteppe Außenbereich | `$9FABDE` | `$94BB69` | 13 | 42 |
+| `0x68` | 104 | Antika - Krozkrübel Außenbereich | `$A7ABE2` | `$9687E7` | 13 |  0 |
+| `0x69` | 105 | Prähistorie - Vulkanpfad | `$A28000` | `$958000` | 31 | 33 |
+| `0x6A` | 106 | Antika - Ankunft Wasserfall Cutscene | `$AD88E1` | `$95EBFC` |  0 |  0 |
+| `0x6B` | 107 | Antika - Wasserfall | `$AA9046` | `$98DDC5` |  7 |  0 |
+| `0x6C` | 108 | Gotika - Südöstlich von Terrorfels (Brunnen) | `$ACC714` | `$9BBABD` |  1 |  1 |
+| `0x6D` | 109 | Antika - Aquagoth-Schiffswrack | `$ACA9F8` | `$98E89B` |  0 |  0 |
+| `0x6E` | 110 | Gotika - Terrorfels Große Halle | `$A9A2F5` | `$99A359` |  9 |  0 |
+| `0x6F` | 111 | Gotika - Terrorfels Speisesaal | `$ABDFDE` | `$9BC384` |  2 |  2 |
+| `0x70` | 112 | Gotika - Terrorfels Brücken und Balkone | `$AAC9FE` | `$9BD366` | 10 |  0 |
+| `0x71` | 113 | Gotika - Terrorfels Ostflügel & Schlossküche | `$A08000` | `$99891C` | 57 | 32 |
+| `0x72` | 114 | Gotika - Terrorfels Obergeschoss | `$A98000` | `$999061` | 19 | 18 |
+| `0x73` | 115 | Gotika - Terrorfels Hundelabyrinth | `$AA9F92` | `$99950F` | 28 |  0 |
+| `0x74` | 116 | Gotika - Kerker & Verlies (Chaosturm & Terrorfels) | `$A59D44` | `$99B011` | 33 |  1 |
+| `0x75` | 117 | Gotika - Terrorfels Treppenhaus zum Verlies | `$AE9F98` | `$99B199` |  2 |  0 |
+| `0x76` | 118 | Gotika - Südlich von Terrorfels (Burgtor) | `$9EEA50` | `$99BB7B` |  2 | 20 |
+| `0x77` | 119 | Gotika - Terrorfels Puppentheater (Mungola) | `$ACA00C` | `$9B8BFF` |  3 |  0 |
+| `0x78` | 120 | Gotika - Terrorfels Gemach von Königin Gunilla | `$ADA175` | `$999CA6` |  4 |  0 |
+| `0x79` | 121 | Gotika - Terrorfels Kanalisation | `$A6CDDA` | `$99B359` |  4 |  8 |
+| `0x7A` | 122 | Gotika - Terrorfels Kanalisation Ausgang | `$AEC1EF` | `$99B84B` |  2 |  0 |
+| `0x7B` | 123 | Gotika - Chaosturm & Terrorfels Außenansicht Unten | `$A69A21` | `$99C42D` |  8 |  7 |
+| `0x7C` | 124 | Gotika - Chaosturm & Terrorfels Außenansicht Oben | `$A3DFCC` | `$99C9CB` | 11 |  0 |
+| `0x7D` | 125 | Gotika - Chaosturm & Terrorfels Innenräume | `$A2E7E4` | `$99DE9A` | 12 | 21 |
+| `0x7E` | 126 | Assitopia - Gefängnis & Arrestzellen | `$A99236` | `$9C92DD` |  1 | 17 |
 
 ---
 
@@ -197,7 +196,7 @@ An Adresse `$\$93:8294 + \text{Script\_ID}` liegt die absolute 24-Bit-Zieladress
 Alle Maps und ihre Skripte können mit dem im Repository enthaltenen Tool [`soe-dumper`](../crates/soe-dumper) analysiert und disassembliert werden:
 
 ```bash
-# Details, Trigger und Skripte einer einzelnen Map anzeigen (z. B. Map 0x0A = Nobilia Markt):
+# Details, Trigger und Skripte einer einzelnen Map anzeigen (z. B. Map 0x0A = Allelachema Markt):
 soe-dumper map --id 10
 
 # Alle 127 Maps vollständig in ein Verzeichnis extrahieren:

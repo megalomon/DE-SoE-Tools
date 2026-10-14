@@ -53,9 +53,10 @@ DE-SoE-Tools/
 Ausführliche, deutschsprachige Dokumente nach Vorbild von DataCrystal (speziell für die deutsche PAL-ROM):
 
 - [**`docs/alchemie.md`**](docs/alchemie.md) – Alle 35 Zauberformeln mit echten deutschen Ingame-Namen, Rezepten, XP/Level-Adressen & Zutaten.
-- [**`docs/event_flags.md`**](docs/event_flags.md) – Story- & Event-Flags, alle 24 Bosse, Nobilia-Markt-Tauschflags & Sniff-Spots.
+- [**`docs/ausruestung_items.md`**](docs/ausruestung_items.md) – Alle Waffen, Rüstungen, Helme, Armbänder, Hundehalsbänder, Verbrauchsitems, Allelachema-Tauschwaren & Relikte.
+- [**`docs/event_flags.md`**](docs/event_flags.md) – Story- & Event-Flags, alle 24 Bosse (*Vulgor*, *Gorvul*, *Moorhexe*, etc.), Allelachema-Markt-Tauschflags & Sniff-Spots.
 - [**`docs/speicheradressen.md`**](docs/speicheradressen.md) – WRAM-Systemübersicht: Währungen, Waffenlevel (16-Bit Word), Items & Mesen2-Cheats.
-- [**`docs/maps.md`**](docs/maps.md) – Komplette Tabelle aller 127 Maps mit SNES-Headern, Enter-Skripten und Triggern.
+- [**`docs/maps.md`**](docs/maps.md) – Komplette Tabelle aller 127 Maps mit echten deutschen Ortsnamen (*Allelachema*, *Krozkrübel*, *Terrorfels*, *Chaosturm*, *Assitopia*), SNES-Headern, Enter-Skripten und Triggern.
 - [**`docs/sigil_skripte.md`**](docs/sigil_skripte.md) – SIGIL Script-Engine, Opcode-Referenz und Kontrollfluss.
 - [**`docs/text_dekomprimierung.md`**](docs/text_dekomprimierung.md) – 65816-Markov-Huffman-Dekomprimierer und Text-Steuerzeichen.
 

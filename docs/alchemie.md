@@ -28,37 +28,37 @@ Die folgende Tabelle enthält die **exakten deutschen Ingame-Namen**, die US-Bez
 
 | ID | Deutscher Name (ROM) | US-Originalname | XP-Adresse | Level-Adresse | Benötigte Zutaten (Rezept) |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| **0** | **Säuresturm** | Acid Rain | `$7E2F52` | `$7E2F98` | 1× Atlas-Medaillon, 3× Wasser |
-| **1** | **Kraftmeierei** | Atlas | `$7E2F54` | `$7E2F9A` | 1× Atlas-Medaillon, 1× Asche |
-| **2** | **Zauberwand** | Barrier | `$7E2F56` | `$7E2F9C` | 1× Kalkstein, 2× Knochen |
-| **3** | **Lehmgranaten** | Call Up | `$7E2F58` | `$7E2F9E` | 1× Meteorit, 1× Trockeneis |
+| **0** | **Säuresturm** | Acid Rain | `$7E2F52` | `$7E2F98` | 1× Arnitamin, 3× Wasser |
+| **1** | **Kraftmeierei** | Atlas | `$7E2F54` | `$7E2F9A` | 1× Arnitamin, 1× Asche |
+| **2** | **Zauberwand** | Barrier | `$7E2F56` | `$7E2F9C` | 1× Kalkstein, 2× Knochenteil |
+| **3** | **Lehmgranaten** | Call Up | `$7E2F58` | `$7E2F9E` | 1× Mondstein, 1× Trockeneis |
 | **4** | **Verätzung** | Corrosion | `$7E2F5A` | `$7E2FA0` | 1× Pilz, 3× Wasser |
 | **5** | **Höllenfaust** | Crush | `$7E2F5C` | `$7E2FA2` | 1× Kalkstein, 1× Wachs |
 | **6** | **Heilaura** | Cure | `$7E2F5E` | `$7E2FA4` | 2× Wurzel, 1× Öl |
-| **7** | **Energieschild** | Defend | `$7E2F60` | `$7E2FA6` | 1× Ton, 1× Atlas-Medaillon |
+| **7** | **Energieschild** | Defend | `$7E2F60` | `$7E2FA6` | 1× Lehm, 1× Arnitamin |
 | **8** | **Supersog** | Double Drain | `$7E2F62` | `$7E2FA8` | 2× Äthanol, 2× Essig |
 | **9** | **Energiesog** | Drain | `$7E2F64` | `$7E2FAA` | 1× Äthanol, 2× Wurzel |
-| **10** | **Kosmokraft** | Energize | `$7E2F66` | `$7E2FAC` | 1× Kristall, 1× Eisen |
+| **10** | **Kosmokraft** | Energize | `$7E2F66` | `$7E2FAC` | 1× Kristall, 1× Eisenerz |
 | **11** | **Flucht** | Escape | `$7E2F68` | `$7E2FAE` | 1× Wachs, 1× Essig |
-| **12** | **Explosion** | Explosion | `$7E2F6A` | `$7E2FB0` | 2× Äthanol, 1× Atlas-Medaillon |
-| **13** | **Feuerball** | Fireball | `$7E2F6C` | `$7E2FB2` | 1× Schwefel, 2× Atlas-Medaillon |
+| **12** | **Explosion** | Explosion | `$7E2F6A` | `$7E2FB0` | 2× Äthanol, 1× Arnitamin |
+| **13** | **Feuerball** | Fireball | `$7E2F6C` | `$7E2FB2` | 1× Schwefel, 2× Arnitamin |
 | **14** | **Hadesgranaten** | Fire Power | `$7E2F6E` | `$7E2FB4` | 1× Feder, 1× Schwefel |
 | **15** | **Hitzeblitz** | Flash | `$7E2F70` | `$7E2FB6` | 1× Wachs, 2× Öl |
-| **16** | **Kraftfeld** | Force Field | `$7E2F72` | `$7E2FB8` | 1× Fett, 1× Eisen |
-| **17** | **Schlammbombe** | Hard Ball | `$7E2F74` | `$7E2FBA` | 1× Kristall, 1× Ton |
+| **16** | **Kraftfeld** | Force Field | `$7E2F72` | `$7E2FB8` | 1× Schmierfett, 1× Eisenerz |
+| **17** | **Schlammbombe** | Hard Ball | `$7E2F74` | `$7E2FBA` | 1× Kristall, 1× Lehm |
 | **18** | **Krafthauch** | Heal | `$7E2F76` | `$7E2FBC` | 1× Wurzel, 1× Wasser |
-| **19** | **Lanzenattacke** | Lance | `$7E2F78` | `$7E2FBE` | 1× Eisen, 1× Eichel |
+| **19** | **Lanzenattacke** | Lance | `$7E2F78` | `$7E2FBE` | 1× Eisenerz, 1× Eichel |
 | **20** | **Laserinferno** | Laser | `$7E2F7A` | `$7E2FC0` | 1× Kristall, 1× Schwefel |
-| **21** | **Telekinese** | Levitate | `$7E2F7C` | `$7E2FC2` | 1× Wasser, 1× Schlammpfeffer |
-| **22** | **Hagelsturm** | Lightning Storm | `$7E2F7E` | `$7E2FC4` | 1× Eisen, 2× Atlas-Medaillon |
+| **21** | **Telekinese** | Levitate | `$7E2F7C` | `$7E2FC2` | 1× Wasser, 1× Pfeffer |
+| **22** | **Hagelsturm** | Lightning Storm | `$7E2F7E` | `$7E2FC4` | 1× Eisenerz, 2× Arnitamin |
 | **23** | **Heilkraft** | Miracle Cure | `$7E2F80` | `$7E2FC6` | 2× Wurzel, 1× Essig |
-| **24** | **Nitro** | Nitro | `$7E2F82` | `$7E2FC8` | 1× Schießpulver, 2× Fett |
+| **24** | **Nitro** | Nitro | `$7E2F82` | `$7E2FC8` | 1× Dynamit, 2× Schmierfett |
 | **25** | **Frischzellen** | One Up | `$7E2F84` | `$7E2FCA` | 1× Feder, 1× Wurzel |
-| **26** | **Zauberspiegel** | Reflect | `$7E2F86` | `$7E2FCC` | 2× Fett, 1× Eisen |
+| **26** | **Zauberspiegel** | Reflect | `$7E2F86` | `$7E2FCC` | 2× Schmierfett, 1× Eisenerz |
 | **27** | **Etappenkraft** | Regrowth | `$7E2F88` | `$7E2FCE` | 1× Eichel, 2× Wasser |
-| **28** | **Zauberbrücke** | Revealer | `$7E2F8A` | `$7E2FD0` | 2× Atlas-Medaillon, 1× Wachs |
-| **29** | **Hundeleben** | Revive | `$7E2F8C` | `$7E2FD2` | 3× Wurzel, 1× Knochen |
-| **30** | **Fegefeuer** | Slow Burn | `$7E2F8E` | `$7E2FD4` | 1× Eisen, 1× Schwefel |
+| **28** | **Zauberbrücke** | Revealer | `$7E2F8A` | `$7E2FD0` | 2× Arnitamin, 1× Wachs |
+| **29** | **Hundeleben** | Revive | `$7E2F8C` | `$7E2FD2` | 3× Wurzel, 1× Knochenteil |
+| **30** | **Fegefeuer** | Slow Burn | `$7E2F8E` | `$7E2FD4` | 1× Eisenerz, 1× Schwefel |
 | **31** | **Turboantrieb** | Speed | `$7E2F90` | `$7E2FD6` | 1× Wachs, 2× Wasser |
 | **32** | **Splitter** | Sting | `$7E2F92` | `$7E2FD8` | 2× Wasser, 1× Essig |
 | **33** | **Unterbrechung** | Stop | `$7E2F94` | `$7E2FDA` | 2× Wachs, 1× Kristall |
@@ -70,30 +70,30 @@ Die folgende Tabelle enthält die **exakten deutschen Ingame-Namen**, die US-Bez
 
 Die Anzahlen aller Zutaten liegen als 1-Byte-Werte (`0` bis `99` / `0x63`) ab WRAM-Adresse `$7E2370`:
 
-| Zutat (DE-ROM Name) | Interner Index | WRAM-Adresse | Max-Menge |
-| :--- | :---: | :--- | :---: |
-| **Wachs** (Wax) | `0x00` | `$7E2398` | 99 |
-| **Wasser** (Water) | `0x01` | `$7E2396` | 99 |
-| **Essig** (Vinegar) | `0x02` | `$7E2394` | 99 |
-| **Wurzel** (Root) | `0x03` | `$7E2392` | 99 |
-| **Öl** (Oil) | `0x04` | `$7E2390` | 99 |
-| **Pilz** (Mushroom) | `0x05` | `$7E238E` | 99 |
-| **Schlammpfeffer** (Mud Pepper) | `0x06` | `$7E238C` | 99 |
-| **Meteorit** (Meteorite) | `0x07` | `$7E238A` | 99 |
-| **Kalkstein** (Limestone) | `0x08` | `$7E2388` | 99 |
-| **Eisen** (Iron) | `0x09` | `$7E2386` | 99 |
-| **Schießpulver** (Gunpowder) | `0x0A` | `$7E2382` | 99 |
-| **Fett** (Grease) | `0x0B` | `$7E2380` | 99 |
-| **Feder** (Feather) | `0x0C` | `$7E237E` | 99 |
-| **Äthanol** (Ethanol) | `0x0D` | `$7E237C` | 99 |
-| **Trockeneis** (Dry Ice) | `0x0E` | `$7E237A` | 99 |
-| **Kristall** (Crystal) | `0x0F` | `$7E2378` | 99 |
-| **Ton** (Clay) | `0x10` | `$7E2376` | 99 |
-| **Schwefel** (Brimstone) | `0x11` | `$7E2374` | 99 |
-| **Knochen** (Bone) | `0x12` | `$7E2372` | 99 |
-| **Asche** (Ash) | `0x13` | `$7E2370` | 99 |
-| **Atlas-Medaillon** (Atlas Medallion) | `0x14` | `$7E2384` | 99 |
-| **Eichel** (Acorn) | `0x15` | `$7E239A` | 99 |
+| Zutat (DE-ROM Name) | Interner Index | WRAM-Adresse | Max-Menge | US-Entsprechung |
+| :--- | :---: | :--- | :---: | :--- |
+| **Wachs** | `0x00` | `$7E2398` | 99 | Wax |
+| **Wasser** | `0x01` | `$7E2396` | 99 | Water |
+| **Essig** | `0x02` | `$7E2394` | 99 | Vinegar |
+| **Wurzel** | `0x03` | `$7E2392` | 99 | Root |
+| **Öl** | `0x04` | `$7E2390` | 99 | Oil |
+| **Pilz** | `0x05` | `$7E238E` | 99 | Mushroom |
+| **Pfeffer** | `0x06` | `$7E238C` | 99 | Mud Pepper |
+| **Mondstein** | `0x07` | `$7E238A` | 99 | Meteorite |
+| **Kalkstein** | `0x08` | `$7E2388` | 99 | Limestone |
+| **Eisenerz** | `0x09` | `$7E2386` | 99 | Iron |
+| **Dynamit** | `0x0A` | `$7E2382` | 99 | Gunpowder |
+| **Schmierfett** | `0x0B` | `$7E2380` | 99 | Grease |
+| **Feder** | `0x0C` | `$7E237E` | 99 | Feather |
+| **Äthanol** | `0x0D` | `$7E237C` | 99 | Ethanol |
+| **Trockeneis** | `0x0E` | `$7E237A` | 99 | Dry Ice |
+| **Kristall** | `0x0F` | `$7E2378` | 99 | Crystal |
+| **Lehm** | `0x10` | `$7E2376` | 99 | Clay |
+| **Schwefel** | `0x11` | `$7E2374` | 99 | Brimstone |
+| **Knochenteil** | `0x12` | `$7E2372` | 99 | Bone |
+| **Asche** | `0x13` | `$7E2370` | 99 | Ash |
+| **Arnitamin** | `0x14` | `$7E2384` | 99 | Atlas Medallion |
+| **Eichel** | `0x15` | `$7E239A` | 99 | Acorn |
 
 ---
 
