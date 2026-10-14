@@ -70,6 +70,9 @@ Im Gegensatz zur US-ROM gelten für `Secret of Evermore (Germany).sfc` (SHA-1 / 
 
 ## WRAM-Referenz (Deutsche ROM)
 
+> [!TIP]
+> Die vollständige, detaillierte Dokumentation aller Speicheradressen (inklusive aller 35 Zauberformeln, aller 22 Zutaten, Verbrauchsitems, Story-Flags und Mesen2-Cheats) befindet sich in [**`docs/speicheradressen.md`**](docs/speicheradressen.md).
+
 Für Emulator-Skripte (z. B. Mesen2 / TAS) und Romhacks:
 
 ### Währungen (24-Bit Little-Endian)
