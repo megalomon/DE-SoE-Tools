@@ -102,43 +102,17 @@ Die Donnerbüchse steigt nicht im Level auf, sondern verwendet drei verschiedene
 
 ---
 
-## 4. WRAM: Alchemie-Zauber & Level
+## 4. WRAM: Alchemie-Zauber & Zutaten
 
-Es gibt insgesamt 35 Zauberformeln. Jede Zauberformel besitzt getrennte Speicherplätze für ihren Fortschritt:
-- **Low-Byte:** XP / Fortschritt (`$7E2F52` bis `$7E2F96`)
-- **High-Byte:** Level (`$7E2F98` bis `$7E2FDC`)
+> [!TIP]
+> Die vollständige, detaillierte Aufstellung aller **35 Zauberformeln mit ihren exakten deutschen Ingame-Namen**, benötigten Zutatenmengen, Fundorten und Level-Berechnungen befindet sich im separaten Dokument:  
+> 👉 [**`docs/alchemie.md`**](alchemie.md)
 
-### Ausgewählte Zauber im Ringmenü (Aktive Slots)
-Die 9 aktuell ausgerüsteten Zauberformeln im Ringmenü werden an folgenden Byte-Adressen gespeichert:
-- Slot 0: `$7E0ADA`
-- Slot 1: `$7E0AD9`
-- Slot 2: `$7E0AD8`
-- Slot 3: `$7E0AD7`
-- Slot 4: `$7E0AD6`
-- Slot 5: `$7E0AD5`
-- Slot 6: `$7E0AD4`
-- Slot 7: `$7E0AD3`
-- Slot 8: `$7E0AD2`
-
-### Formel-Level-Adressen (Auswahl der wichtigsten Zauber)
-
-| Zauber (Originalname) | XP-Adresse | Level-Adresse | Max-Level |
-| :--- | :--- | :--- | :---: |
-| **Säuresturm** (Acid Rain) | `$7E2F52` | `$7E2F98` | 9 |
-| **Kraftfeld** (Atlas) | `$7E2F54` | `$7E2F9A` | 9 |
-| **Barriere** (Barrier) | `$7E2F56` | `$7E2F9C` | 9 |
-| **Höllenhund** (Call Up) | `$7E2F58` | `$7E2F9E` | 9 |
-| **Verätzung** (Corrosion) | `$7E2F5A` | `$7E2FA0` | 9 |
-| **Felssturz** (Crush) | `$7E2F5C` | `$7E2FA2` | 9 |
-| **Heilung** (Cure) | `$7E2F5E` | `$7E2FA4` | 9 |
-| **Schutzschild** (Defend) | `$7E2F60` | `$7E2FA6` | 9 |
-| **Doppel-Drain** (Double Drain) | `$7E2F62` | `$7E2FA8` | 9 |
-| **Energie-Drain** (Drain) | `$7E2F64` | `$7E2FAA` | 9 |
-| **Aufladung** (Energize) | `$7E2F66` | `$7E2FAC` | 9 |
-| **Flucht** (Escape) | `$7E2F68` | `$7E2FAE` | 9 |
-| **Explosion** (Explosion) | `$7E2F6A` | `$7E2FB0` | 9 |
-| **Feuerball** (Fireball) | `$7E2F6C` | `$7E2FB2` | 9 |
-| **Super-Heilung** (Super Heal) | `$7E2F96` | `$7E2FDC` | 9 |
+### Kurzüberblick Alchemie-Speicher:
+- **XP-Bereich (Low-Byte):** `$7E2F52` bis `$7E2F96` (Schritte von 2 Bytes)
+- **Level-Bereich (High-Byte):** `$7E2F98` bis `$7E2FDC` (Schritte von 2 Bytes, Stufen `0` bis `9`)
+- **Aktive Ringmenü-Slots (9 Zauber):** `$7E0ADA` (Slot 0) bis `$7E0AD2` (Slot 8)
+- **Alle 22 Zutaten (Zähler 0–99):** `$7E2370` bis `$7E239A` (z. B. Asche `$7E2370`, Wachs `$7E2398`, Wasser `$7E2396`, Essig `$7E2394`, Wurzel `$7E2392`)
 
 ---
 
@@ -185,6 +159,10 @@ Die Anzahlen aller 22 Zutaten werden ab Basisadresse `$7E2370` im 2-Byte-Abstand
 ---
 
 ## 7. WRAM: Story- & Event-Flags (Bitfield)
+
+> [!TIP]
+> Die vollständige Aufstellung aller **Event-Flags** (inklusive aller 24 Bosse, Nobilia-Marktplatz-Tauschflags, Quest-Fortschritte und Hund-Schnüffelstellen) befindet sich im separaten Dokument:  
+> 👉 [**`docs/event_flags.md`**](event_flags.md)
 
 Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfield ab Basisadresse **`$7E2258`** gespeichert:
 
