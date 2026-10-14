@@ -1,0 +1,15 @@
+[package]
+name = "soe-tiles"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+soe-core.workspace = true
+clap.workspace = true
+image.workspace = true
+thiserror.workspace = true
+byteorder.workspace = true
+serde.workspace = true
+serde_json.workspace = true

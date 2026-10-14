@@ -1,0 +1,15 @@
+[package]
+name = "soe-dumper"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+soe-core.workspace = true
+soe-script.workspace = true
+clap.workspace = true
+thiserror.workspace = true
+byteorder.workspace = true
+serde.workspace = true
+serde_json.workspace = true
