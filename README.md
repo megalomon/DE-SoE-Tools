@@ -3,6 +3,7 @@
 [![Rust](https://img.shields.io/badge/rust-2021%20edition-orange.svg)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-SNES%20PAL%20(Germany)-red.svg)](#)
+[![Vibe-Coded with Antigravity](https://img.shields.io/badge/vibe--coded%20with-Antigravity-8A2BE2.svg)](#)
 
 Ein modernes, modulares All-in-One-Toolset in **Rust** für **Secret of Evermore (Deutsche PAL ROM)**.
 
@@ -15,6 +16,10 @@ Dieses Projekt portiert, vereinheitlicht und modernisiert drei essenzielle Werkz
 > [!IMPORTANT]
 > **Fokus auf die deutsche PAL-Version (`Secret of Evermore (Germany).sfc`):**  
 > Sämtliche Zeigertabellen, ROM-Offsets, Text-Dekomprimierungsroutinen und WRAM-Strukturen wurden direkt aus der deutschen PAL-ROM reverse-engineert. Die US-ROM-Kompatibilität wurde bewusst verworfen; veraltete Angaben aus US-zentrierten Wikis (z. B. DataCrystal) treffen hier nicht zu.
+
+> [!WARNING]
+> **Vibe-Coded mit Antigravity:**  
+> Diese Codebase wurde maßgeblich mithilfe des KI-Assistenten **Antigravity** (Google DeepMind) erstellt und portiert („vibe-coded“). Obwohl sämtliche Dekompilierungs- und Assemblierungs-Routinen direkt gegen das 65816-Originalbinary der deutschen PAL-ROM geprüft und per Unit-Tests verifiziert wurden, können unerwartete Edge Cases oder Bugs auftreten. Nutzung auf eigene Gefahr – vor dem Patchen stets Backups der Original-ROM anlegen!
 
 ---
 
