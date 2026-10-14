@@ -49,7 +49,7 @@ impl<'a> TextDecoder<'a> {
 
     /// Führt die exakte 65816-Dekomprimierung ($8CD147) der deutschen ROM aus.
     fn decompress(&self, start_offset: usize) -> Result<String, RomError> {
-        let mut pos = start_offset + 1; // 8CD168: INC $22 vor erstem Lesevorgang!
+        let mut pos = start_offset; // BRA $D174 springt direkt zu LDA [$22] ohne vorheriges INC $22
         let mut state_02 = 1; // 1 = low nibble, 0 = high nibble
         let mut cur_byte = self.rom.read_u8_at(pos)?;
 
