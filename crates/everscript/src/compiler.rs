@@ -99,7 +99,7 @@ impl Compiler {
                     out.push(0x00);
                 }
                 EvsStmt::Return => {
-                    out.push(0x01);
+                    out.push(0x00);
                 }
                 EvsStmt::Call(expr) => {
                     let addr = self.eval_expr_const(expr)? as u32;
@@ -120,14 +120,19 @@ impl Compiler {
                     out.push(0x55);
                 }
                 EvsStmt::GiveJewels(expr) => {
-                    let amount = self.eval_expr_const(expr)? as u16;
+                    let amount = self.eval_expr_const(expr)? as u32;
                     let instr = sigil::Instruction::GiveJewels(amount);
                     Assembler::assemble_instruction(&instr, &mut out);
                 }
                 EvsStmt::Sleep(expr) => {
-                    let frames = self.eval_expr_const(expr)? as u16;
-                    let instr = sigil::Instruction::Sleep(frames);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    let frames = self.eval_expr_const(expr)? as u32;
+                    if frames <= 255 {
+                        let instr = sigil::Instruction::Sleep(frames as u8);
+                        Assembler::assemble_instruction(&instr, &mut out);
+                    } else {
+                        let instr = sigil::Instruction::SleepWord(frames as u16);
+                        Assembler::assemble_instruction(&instr, &mut out);
+                    }
                 }
                 EvsStmt::Raw { opcode, payload } => {
                     let instr = sigil::Instruction::Raw { opcode: *opcode, payload: payload.clone() };

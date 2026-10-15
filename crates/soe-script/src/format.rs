@@ -48,6 +48,15 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
             format!("SKIP {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::Call(rom_addr) => format!("CALL ${:06X}", rom_addr),
+        Instruction::Fork(rom_addr) => format!("FORK ${:06X}", rom_addr),
+        Instruction::CallRelative(jmp) => {
+            let target = (offset as isize + *jmp as isize + 3) as usize;
+            format!("CALL_REL {:+} -> [{:04X}]", jmp, target)
+        }
+        Instruction::CallRelativeByte(jmp) => {
+            let target = (offset as isize + *jmp as isize + 2) as usize;
+            format!("CALL_REL {:+} -> [{:04X}]", jmp, target)
+        }
         Instruction::If { cond, target_offset } => {
             let target = (offset as isize + *target_offset as isize) as usize;
             format!("IF {} SKIP {:+} -> [{:04X}]", format_expr(cond), target_offset, target)
@@ -57,10 +66,10 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
             format!("IF NOT ({}) SKIP {:+} -> [{:04X}]", format_expr(cond), target_offset, target)
         }
         Instruction::IfMoneyGe { currency, amount, target_offset } => {
-            format!("IF MONEY[{}] >= {} SKIP {:+}", currency, amount, target_offset)
+            format!("IF MONEY[{}] >= {} SKIP {:+}", format_expr(currency), amount, target_offset)
         }
         Instruction::IfMoneyLt { currency, amount, target_offset } => {
-            format!("IF MONEY[{}] < {} SKIP {:+}", currency, amount, target_offset)
+            format!("IF MONEY[{}] < {} SKIP {:+}", format_expr(currency), amount, target_offset)
         }
         Instruction::SetFlag { base, bit_index, val } => {
             let base_str = match base {
@@ -87,8 +96,15 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::ShowText(id) => format!("SHOW_TEXT 0x{:04X}", id),
         Instruction::ShowTextEnd(id) => format!("SHOW_TEXT_END 0x{:04X}", id),
         Instruction::HideText => "HIDE_TEXT".to_string(),
+        Instruction::GiveMoney { currency, amount } => {
+            format!("GIVE_MONEY ({}) amt: {}", format_expr(currency), amount)
+        }
+        Instruction::TakeMoney { currency, amount } => {
+            format!("TAKE_MONEY ({}) amt: {}", format_expr(currency), amount)
+        }
         Instruction::GiveJewels(amount) => format!("GIVE_JEWELS {}", amount),
         Instruction::Sleep(frames) => format!("SLEEP {} frames", frames),
+        Instruction::SleepWord(frames) => format!("SLEEP_ALIGNED {} frames", frames),
         Instruction::Raw { opcode, payload } => {
             let p_hex = payload.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ");
             format!("RAW 0x{:02X} [{}]", opcode, p_hex)
@@ -103,13 +119,16 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::Skip(jmp) => format!("// branch {:+}", jmp),
         Instruction::SkipNeg(jmp) => format!("// branch neg {:+}", jmp),
         Instruction::Call(rom_addr) => format!("call(0x{:06X});", rom_addr),
+        Instruction::Fork(rom_addr) => format!("fork(0x{:06X});", rom_addr),
+        Instruction::CallRelative(jmp) => format!("call_rel({:+});", jmp),
+        Instruction::CallRelativeByte(jmp) => format!("call_rel({:+});", jmp),
         Instruction::If { cond, .. } => format!("if ({}) {{", format_expr(cond)),
         Instruction::IfNot { cond, .. } => format!("if (!({})) {{", format_expr(cond)),
         Instruction::IfMoneyGe { currency, amount, .. } => {
-            format!("if (money({}) >= {}) {{", currency, amount)
+            format!("if (money({}) >= {}) {{", format_expr(currency), amount)
         }
         Instruction::IfMoneyLt { currency, amount, .. } => {
-            format!("if (money({}) < {}) {{", currency, amount)
+            format!("if (money({}) < {}) {{", format_expr(currency), amount)
         }
         Instruction::SetFlag { base, bit_index, val } => {
             let prefix = match base {
@@ -136,8 +155,15 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::ShowText(id) => format!("text(0x{:04X});", id),
         Instruction::ShowTextEnd(id) => format!("text_end(0x{:04X});", id),
         Instruction::HideText => "text_hide();".to_string(),
+        Instruction::GiveMoney { currency, amount } => {
+            format!("give_money({}, {});", format_expr(currency), amount)
+        }
+        Instruction::TakeMoney { currency, amount } => {
+            format!("take_money({}, {});", format_expr(currency), amount)
+        }
         Instruction::GiveJewels(amount) => format!("give_jewels({});", amount),
         Instruction::Sleep(frames) => format!("sleep({});", frames),
+        Instruction::SleepWord(frames) => format!("sleep_aligned({});", frames),
         Instruction::Raw { opcode, payload } => {
             let p_hex = payload.iter().map(|b| format!("0x{:02X}", b)).collect::<Vec<_>>().join(", ");
             format!("raw(0x{:02X}, [{}]);", opcode, p_hex)

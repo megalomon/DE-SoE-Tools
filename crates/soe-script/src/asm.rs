@@ -15,8 +15,7 @@ impl Assembler {
 
     pub fn assemble_instruction(instr: &Instruction, out: &mut Vec<u8>) {
         match instr {
-            Instruction::End => out.push(0x00),
-            Instruction::Return => out.push(0x01),
+            Instruction::End | Instruction::Return => out.push(0x00),
             Instruction::Skip(jmp) => {
                 out.push(0x04);
                 out.extend_from_slice(&jmp.to_le_bytes());
@@ -25,13 +24,29 @@ impl Assembler {
                 out.push(0x05);
                 out.push(*jmp as u8);
             }
-            Instruction::Call(rom_addr) => {
+            Instruction::Fork(rom_addr) => {
                 out.push(0x07);
                 let script_addr = Rom::rom_to_script_addr(*rom_addr);
                 let b0 = (script_addr & 0xFF) as u8;
                 let b1 = ((script_addr >> 8) & 0xFF) as u8;
                 let b2 = ((script_addr >> 16) & 0xFF) as u8;
                 out.extend_from_slice(&[b0, b1, b2]);
+            }
+            Instruction::Call(rom_addr) => {
+                out.push(0x29);
+                let script_addr = Rom::rom_to_script_addr(*rom_addr);
+                let b0 = (script_addr & 0xFF) as u8;
+                let b1 = ((script_addr >> 8) & 0xFF) as u8;
+                let b2 = ((script_addr >> 16) & 0xFF) as u8;
+                out.extend_from_slice(&[b0, b1, b2]);
+            }
+            Instruction::CallRelative(jmp) => {
+                out.push(0xA6);
+                out.extend_from_slice(&jmp.to_le_bytes());
+            }
+            Instruction::CallRelativeByte(jmp) => {
+                out.push(0xA5);
+                out.push(*jmp as u8);
             }
             Instruction::If { cond, target_offset } => {
                 out.push(0x08);
@@ -45,7 +60,7 @@ impl Assembler {
             }
             Instruction::IfMoneyGe { currency, amount, target_offset } => {
                 out.push(0x0A);
-                out.push(*currency);
+                Self::assemble_expr(currency, out);
                 let b0 = (amount & 0xFF) as u8;
                 let b1 = ((amount >> 8) & 0xFF) as u8;
                 let b2 = ((amount >> 16) & 0xFF) as u8;
@@ -54,7 +69,7 @@ impl Assembler {
             }
             Instruction::IfMoneyLt { currency, amount, target_offset } => {
                 out.push(0x0B);
-                out.push(*currency);
+                Self::assemble_expr(currency, out);
                 let b0 = (amount & 0xFF) as u8;
                 let b1 = ((amount >> 8) & 0xFF) as u8;
                 let b2 = ((amount >> 16) & 0xFF) as u8;
@@ -104,12 +119,36 @@ impl Assembler {
                 out.extend_from_slice(&text_id.to_le_bytes());
             }
             Instruction::HideText => out.push(0x55),
+            Instruction::GiveMoney { currency, amount } => {
+                out.push(0x7C);
+                Self::assemble_expr(currency, out);
+                let b0 = (*amount & 0xFF) as u8;
+                let b1 = ((*amount >> 8) & 0xFF) as u8;
+                let b2 = ((*amount >> 16) & 0xFF) as u8;
+                out.extend_from_slice(&[b0, b1, b2]);
+            }
+            Instruction::TakeMoney { currency, amount } => {
+                out.push(0x7D);
+                Self::assemble_expr(currency, out);
+                let b0 = (*amount & 0xFF) as u8;
+                let b1 = ((*amount >> 8) & 0xFF) as u8;
+                let b2 = ((*amount >> 16) & 0xFF) as u8;
+                out.extend_from_slice(&[b0, b1, b2]);
+            }
             Instruction::GiveJewels(amount) => {
                 out.push(0x7C);
-                out.extend_from_slice(&amount.to_le_bytes());
+                Self::assemble_expr(&Expr::Const(3), out);
+                let b0 = (*amount & 0xFF) as u8;
+                let b1 = ((*amount >> 8) & 0xFF) as u8;
+                let b2 = ((*amount >> 16) & 0xFF) as u8;
+                out.extend_from_slice(&[b0, b1, b2]);
             }
             Instruction::Sleep(frames) => {
                 out.push(0xA7);
+                out.push(*frames);
+            }
+            Instruction::SleepWord(frames) => {
+                out.push(0xA8);
                 out.extend_from_slice(&frames.to_le_bytes());
             }
             Instruction::Raw { opcode, payload } => {

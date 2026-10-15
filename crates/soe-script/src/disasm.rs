@@ -90,7 +90,9 @@ impl<'a> Disassembler<'a> {
     ) -> (Instruction, bool) {
         match opcode {
             0x00 => (Instruction::End, true),
-            0x01 => (Instruction::Return, true),
+            0x01..=0x03 | 0x06 | 0x0F | 0x13 | 0x1F | 0x24 | 0x25 | 0x28 | 0x2F
+            | 0x34..=0x37 | 0x3E | 0x40 | 0x41 | 0x4F | 0x53 | 0x56 | 0x57 | 0x67 | 0x6B
+            | 0x72 | 0x8B | 0xB8 => (Instruction::Raw { opcode, payload: Vec::new() }, false),
             0x04 => {
                 let jmp = self.read_i16(cur_file_off);
                 (Instruction::Skip(jmp), true)
@@ -102,7 +104,7 @@ impl<'a> Disassembler<'a> {
             0x07 => {
                 let script_addr = self.read_u24(cur_file_off);
                 let rom_addr = Rom::script_to_rom_addr(script_addr);
-                (Instruction::Call(rom_addr), true)
+                (Instruction::Fork(rom_addr), true)
             }
             0x08 => {
                 let cond = self.parse_sub(cur_file_off);
@@ -115,14 +117,18 @@ impl<'a> Disassembler<'a> {
                 (Instruction::IfNot { cond, target_offset }, true)
             }
             0x0A => {
-                let currency = self.read_u8(cur_file_off);
-                let amount = self.read_u24(cur_file_off);
+                let currency = self.parse_sub(cur_file_off);
+                let amount_low = self.read_u16(cur_file_off);
+                let amount_high = self.read_u8(cur_file_off);
+                let amount = (amount_low as u32) | ((amount_high as u32) << 16);
                 let target_offset = self.read_i16(cur_file_off);
                 (Instruction::IfMoneyGe { currency, amount, target_offset }, true)
             }
             0x0B => {
-                let currency = self.read_u8(cur_file_off);
-                let amount = self.read_u24(cur_file_off);
+                let currency = self.parse_sub(cur_file_off);
+                let amount_low = self.read_u16(cur_file_off);
+                let amount_high = self.read_u8(cur_file_off);
+                let amount = (amount_low as u32) | ((amount_high as u32) << 16);
                 let target_offset = self.read_i16(cur_file_off);
                 (Instruction::IfMoneyLt { currency, amount, target_offset }, true)
             }
@@ -171,7 +177,7 @@ impl<'a> Disassembler<'a> {
                 let expr = self.parse_sub(cur_file_off);
                 (Instruction::WriteScriptArg { arg, expr }, true)
             }
-            0x27 => (Instruction::Raw { opcode: 0x27, payload: Vec::new() }, true),
+            0x26 | 0x27 => (Instruction::Raw { opcode, payload: Vec::new() }, true),
             0x29 => {
                 let script_addr = self.read_u24(cur_file_off);
                 let rom_addr = Rom::script_to_rom_addr(script_addr);
@@ -191,12 +197,52 @@ impl<'a> Disassembler<'a> {
             }
             0x55 => (Instruction::HideText, true),
             0x7C => {
-                let amount = self.read_u16(cur_file_off);
-                (Instruction::GiveJewels(amount), true)
+                let currency = self.parse_sub(cur_file_off);
+                let amount_low = self.read_u16(cur_file_off);
+                let amount_high = self.read_u8(cur_file_off);
+                let amount = (amount_low as u32) | ((amount_high as u32) << 16);
+                (Instruction::GiveMoney { currency, amount }, true)
+            }
+            0x7D => {
+                let currency = self.parse_sub(cur_file_off);
+                let amount_low = self.read_u16(cur_file_off);
+                let amount_high = self.read_u8(cur_file_off);
+                let amount = (amount_low as u32) | ((amount_high as u32) << 16);
+                (Instruction::TakeMoney { currency, amount }, true)
+            }
+            0xA5 => {
+                let off = self.read_i8(cur_file_off);
+                (Instruction::CallRelativeByte(off), true)
+            }
+            0xA6 => {
+                let off = self.read_i16(cur_file_off);
+                (Instruction::CallRelative(off), true)
             }
             0xA7 => {
-                let frames = self.read_u16(cur_file_off);
+                let frames = self.read_u8(cur_file_off);
                 (Instruction::Sleep(frames), true)
+            }
+            0xA8 => {
+                let frames = self.read_u16(cur_file_off);
+                (Instruction::SleepWord(frames), true)
+            }
+            // Opcodes with 1 expression operand
+            0x2E | 0x39 | 0x3B | 0x60 | 0x61 | 0x64 | 0x68 | 0x84 | 0x85 | 0x86 | 0x87 | 0x89 | 0x8A | 0x90 | 0x98 | 0x9A | 0xB7 => {
+                let _expr = self.parse_sub(cur_file_off);
+                (Instruction::Raw { opcode, payload: Vec::new() }, true)
+            }
+            // Opcodes with 1 byte entity + 1 expression operand
+            0x92 | 0x93 | 0x94 | 0x95 | 0xA9 | 0xBB => {
+                let ent = self.read_u8(cur_file_off);
+                let _expr = self.parse_sub(cur_file_off);
+                (Instruction::Raw { opcode, payload: vec![ent] }, true)
+            }
+            // Opcodes with 1 byte entity + 2 expression operands
+            0x9E | 0xAC => {
+                let ent = self.read_u8(cur_file_off);
+                let _e1 = self.parse_sub(cur_file_off);
+                let _e2 = self.parse_sub(cur_file_off);
+                (Instruction::Raw { opcode, payload: vec![ent] }, true)
             }
             _ => {
                 // Fallback für sonstige Opcodes
@@ -212,14 +258,32 @@ impl<'a> Disassembler<'a> {
 
     fn get_known_payload_len(opcode: u8) -> usize {
         match opcode {
-            0x02 | 0x03 => 0,
-            0x06 => 1,
-            0x10 | 0x11 | 0x12 | 0x13 | 0x14 | 0x15 | 0x16 => 2,
-            0x19 | 0x1A | 0x1B | 0x1C => 2,
-            0x20..=0x2E => 2,
-            0x30..=0x4F => 2,
-            0x50 => 1,
-            0x53 | 0x54 => 0,
+            // 0 operand bytes
+            0x00..=0x03 | 0x06 | 0x0F | 0x13 | 0x1F | 0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x2F
+            | 0x34..=0x38 | 0x3A | 0x3E | 0x40 | 0x41 | 0x48..=0x4B | 0x4D | 0x4F | 0x53
+            | 0x55 | 0x56 | 0x57 | 0x5A | 0x5B | 0x63 | 0x65 | 0x66 | 0x67 | 0x69 | 0x6A | 0x6B
+            | 0x72 | 0x7E..=0x83 | 0x88 | 0x8B | 0x8C | 0x99 | 0x9F..=0xA1 | 0xAB | 0xB8 => 0,
+
+            // 1 byte
+            0x05 | 0x21 | 0x2A | 0x2B | 0x2C | 0x2D | 0x30..=0x33 | 0x4C | 0x4E | 0x54
+            | 0x58 | 0x59 | 0x6D | 0x6F | 0x74..=0x77 | 0x8D | 0x91 | 0x9B | 0x9C | 0xA3
+            | 0xA5 | 0xA7 | 0xAA | 0xBC..=0xC1 => 1,
+
+            // 2 bytes
+            0x04 | 0x20 | 0x23 | 0x44..=0x47 | 0x51 | 0x52 | 0x70 | 0x71 | 0xA4 | 0xA6 | 0xA8 => 2,
+
+            // 3 bytes
+            0x07 | 0x22 | 0x29 | 0x42 | 0x50 | 0x6C | 0x6E | 0x73 | 0x78 | 0x79 | 0xAE | 0xBA | 0xC2 => 3,
+
+            // 4 bytes
+            0x17 | 0x1B | 0x3D | 0x3F => 4,
+
+            // 5 bytes
+            0x62 => 5,
+
+            // 6 bytes
+            0x3C | 0xAD => 6,
+
             _ => 0,
         }
     }
@@ -249,10 +313,15 @@ impl<'a> Disassembler<'a> {
                     let val = if sub == 0x01 { b as i8 as i16 } else { b as i16 };
                     current_expr = Some(Expr::Const(val));
                 }
-                0x03 | 0x04 => {
+                0x03 => {
                     let w = self.read_u16(cur_file_off);
-                    let val = if sub == 0x03 { w as i16 } else { w as i16 };
+                    // Token 03 sets high-word unconditionally to 0xFFFF (not sign-extended)
+                    let val = (w as u32 | 0xFFFF0000) as i32 as i16;
                     current_expr = Some(Expr::Const(val));
+                }
+                0x04 => {
+                    let w = self.read_u16(cur_file_off);
+                    current_expr = Some(Expr::Const(w as i16));
                 }
                 0x05 => {
                     let bit_index = self.read_u16(cur_file_off);
