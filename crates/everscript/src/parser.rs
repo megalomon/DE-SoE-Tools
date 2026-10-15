@@ -183,13 +183,17 @@ impl Parser {
         }
 
         if self.match_token(&Token::Return) {
+            if self.match_token(&Token::OpenParen) {
+                self.consume(&Token::CloseParen, "Erwarte ')' nach return")?;
+            }
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::Return);
         }
 
         if self.match_token(&Token::End) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach end")?;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach end")?;
+            if self.match_token(&Token::OpenParen) {
+                self.consume(&Token::CloseParen, "Erwarte ')' nach end")?;
+            }
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::End);
         }
@@ -219,8 +223,9 @@ impl Parser {
         }
 
         if self.match_token(&Token::TextHide) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach text_hide")?;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach text_hide")?;
+            if self.match_token(&Token::OpenParen) {
+                self.consume(&Token::CloseParen, "Erwarte ')' nach text_hide")?;
+            }
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::TextHide);
         }
@@ -239,6 +244,30 @@ impl Parser {
             self.consume(&Token::CloseParen, "Erwarte ')' nach sleep")?;
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::Sleep(expr));
+        }
+
+        if self.match_token(&Token::LockPlayer) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach lock_player")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach lock_player-Argument")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::LockPlayer(expr));
+        }
+
+        if self.match_token(&Token::UnlockPlayer) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach unlock_player")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach unlock_player-Argument")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::UnlockPlayer(expr));
+        }
+
+        if self.match_token(&Token::Skip) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach skip")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach skip-Argument")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::Skip(expr));
         }
 
         if self.match_token(&Token::Raw) {
@@ -263,6 +292,24 @@ impl Parser {
             let val = self.parse_expr()?;
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::Assign { target: expr, value: val });
+        }
+
+        // Auch Funktionsaufruf-Statements wie lock_player(x) oder call(x) unterstützen
+        if let EvsExpr::Call { name, mut args } = expr {
+            self.match_token(&Token::Semicolon);
+            match name.as_str() {
+                "lock_player" if args.len() == 1 => return Ok(EvsStmt::LockPlayer(args.remove(0))),
+                "unlock_player" if args.len() == 1 => return Ok(EvsStmt::UnlockPlayer(args.remove(0))),
+                "skip" if args.len() == 1 => return Ok(EvsStmt::Skip(args.remove(0))),
+                "end" if args.is_empty() => return Ok(EvsStmt::End),
+                "return" if args.is_empty() => return Ok(EvsStmt::Return),
+                "text" if args.len() == 1 => return Ok(EvsStmt::Text(args.remove(0))),
+                "text_end" if args.len() == 1 => return Ok(EvsStmt::TextEnd(args.remove(0))),
+                "text_hide" if args.is_empty() => return Ok(EvsStmt::TextHide),
+                "give_jewels" if args.len() == 1 => return Ok(EvsStmt::GiveJewels(args.remove(0))),
+                "sleep" if args.len() == 1 => return Ok(EvsStmt::Sleep(args.remove(0))),
+                _ => return Ok(EvsStmt::Call(EvsExpr::Call { name, args })),
+            }
         }
 
         self.match_token(&Token::Semicolon);
@@ -414,6 +461,20 @@ impl Parser {
             return Ok(EvsExpr::Memory { base: addr_val, offset: Box::new(offset) });
         }
 
+        if self.match_token(&Token::Temp) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP-Offset")?;
+            return Ok(EvsExpr::Memory { base: 0x2834, offset: Box::new(offset) });
+        }
+
+        if self.match_token(&Token::Ram) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM-Offset")?;
+            return Ok(EvsExpr::Memory { base: 0x2258, offset: Box::new(offset) });
+        }
+
         if self.match_token(&Token::Arg) {
             self.consume(&Token::OpenParen, "Erwarte '(' nach arg")?;
             let num = self.parse_number_const()? as u8;
@@ -451,6 +512,20 @@ impl Parser {
                 let bit = self.parse_expr()?;
                 self.consume(&Token::CloseBracket, "Erwarte ']' nach FLAG-Index")?;
                 return Ok(EvsExpr::Flag { base, bit: Box::new(bit) });
+            }
+
+            if name == "TEMP" || name == "TEMP_WORD" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP-Offset")?;
+                return Ok(EvsExpr::Memory { base: 0x2834, offset: Box::new(offset) });
+            }
+
+            if name == "RAM" || name == "RAM_WORD" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM-Offset")?;
+                return Ok(EvsExpr::Memory { base: 0x2258, offset: Box::new(offset) });
             }
 
             if name == "rnd" {

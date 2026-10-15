@@ -71,10 +71,8 @@ impl<'a> Disassembler<'a> {
                 break;
             }
 
-            // Wenn End oder Return erreicht und kein weiterer Sprung darüber hinaus zeigt: Abbruch
-            if (matches!(instruction, Instruction::End | Instruction::Return))
-                && cur_file_off >= max_jump_target
-            {
+            // Wenn Terminal-Befehl erreicht und kein weiterer Sprung darüber hinaus zeigt: Abbruch
+            if instruction.is_terminal() && cur_file_off >= max_jump_target {
                 break;
             }
         }
@@ -190,19 +188,20 @@ impl<'a> Disassembler<'a> {
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
             0x20 => {
-                let _w = self.read_u16(cur_file_off);
+                let _x = self.read_u8(cur_file_off);
+                let _y = self.read_u8(cur_file_off);
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
             0x21 => {
-                let _x = self.read_u8(cur_file_off);
-                let _y = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let x = self.read_u8(cur_file_off);
+                let y = self.read_u8(cur_file_off);
+                (Instruction::CameraFollow { x, y }, true)
             }
             0x22 => {
-                let _x = self.read_u8(cur_file_off);
-                let _y = self.read_u8(cur_file_off);
-                let _map = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let x = self.read_u8(cur_file_off);
+                let y = self.read_u8(cur_file_off);
+                let map = self.read_u16(cur_file_off);
+                (Instruction::ChangeMap { x, y, map }, true)
             }
             0x23 => {
                 let _scroll = self.read_u16(cur_file_off);
@@ -214,9 +213,13 @@ impl<'a> Disassembler<'a> {
                 let rom_addr = Rom::script_to_rom_addr(script_addr);
                 (Instruction::Call(rom_addr), true)
             }
-            0x2C | 0x2D => {
-                let _arg = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x2C => {
+                let arg = self.read_u8(cur_file_off);
+                (Instruction::LockPlayer(arg), true)
+            }
+            0x2D => {
+                let arg = self.read_u8(cur_file_off);
+                (Instruction::UnlockPlayer(arg), true)
             }
             0x30..=0x33 => {
                 let _b = self.read_u8(cur_file_off);
@@ -390,16 +393,19 @@ impl<'a> Disassembler<'a> {
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
             0x9E | 0xAC => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _spell = self.parse_sub(cur_file_off);
-                let _lvl = self.parse_sub(cur_file_off);
+                let target = self.parse_sub(cur_file_off);
+                let spell = self.parse_sub(cur_file_off);
+                let level = self.parse_sub(cur_file_off);
+                let mut extra = Vec::new();
                 loop {
                     let expr = self.parse_sub(cur_file_off);
-                    if matches!(expr, Expr::Const { val: 0, .. }) {
+                    let is_zero = matches!(expr, Expr::Const { val: 0, .. });
+                    extra.push(expr);
+                    if is_zero {
                         break;
                     }
                 }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                (Instruction::CastAlchemy { opcode, target, spell, level, extra }, true)
             }
             0x9F..=0xA1 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
             0xA2 => {
@@ -433,7 +439,8 @@ impl<'a> Disassembler<'a> {
                 let frames = self.read_u16(cur_file_off);
                 (Instruction::SleepWord(frames), true)
             }
-            0xAA | 0xAB => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0xAA => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0xAB => (Instruction::ResetGame, true),
             0xAD => {
                 for _ in 0..6 { self.read_u8(cur_file_off); }
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
@@ -491,14 +498,121 @@ impl<'a> Disassembler<'a> {
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
             0xBC..=0xC1 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
-            // Opcodes mit 1 Ausdrucks-Operanden (inkl. Entity-Ausdrücken)
-            0x2A | 0x2B | 0x2E | 0x39 | 0x3B | 0x4E | 0x5F | 0x60 | 0x61 | 0x64 | 0x68 | 0x74..=0x77 | 0x84 | 0x85 | 0x86 | 0x87 | 0x89 | 0x8A | 0x90 | 0x91 | 0x98 | 0x9A | 0x9B | 0x9C | 0xB7 => {
-                let _expr = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            // Strukturierte Expression-Opcodes
+            0x2E => {
+                let cond = self.parse_sub(cur_file_off);
+                (Instruction::WaitUntil(cond), true)
             }
-            // Opcodes mit 2 Ausdrucks-Operanden
-            0x92..=0x95 | 0xA9 | 0xBB => {
-                let _ent = self.parse_sub(cur_file_off);
+            0x39 => {
+                let frames = self.parse_sub(cur_file_off);
+                (Instruction::WaitFrame(frames), true)
+            }
+            0x3B => {
+                let anim = self.parse_sub(cur_file_off);
+                (Instruction::WaitAnim(anim), true)
+            }
+            0x5F => {
+                let expr = self.parse_sub(cur_file_off);
+                let word = self.read_u16(cur_file_off);
+                (Instruction::TileState { expr, word }, true)
+            }
+            0x60 => {
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::BgScrollX(val), true)
+            }
+            0x61 => {
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::BgScrollY(val), true)
+            }
+            0x64 => {
+                let speed = self.parse_sub(cur_file_off);
+                (Instruction::BgScrollSpeed(speed), true)
+            }
+            0x68 => {
+                let speed = self.parse_sub(cur_file_off);
+                (Instruction::Bg2ScrollSpeed(speed), true)
+            }
+            0x84 => {
+                let currency = self.parse_sub(cur_file_off);
+                let amount = self.parse_sub(cur_file_off);
+                (Instruction::GiveMoneyExpr { currency, amount }, true)
+            }
+            0x85 => {
+                let currency = self.parse_sub(cur_file_off);
+                let amount = self.parse_sub(cur_file_off);
+                (Instruction::TakeMoneyExpr { currency, amount }, true)
+            }
+            0x86 => {
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::SoundCmd28(val), true)
+            }
+            0x87 => {
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::SoundCmd2A(val), true)
+            }
+            0x89 => {
+                let item = self.parse_sub(cur_file_off);
+                let count = self.parse_sub(cur_file_off);
+                (Instruction::AddShopItem { item, count }, true)
+            }
+            0x8A => {
+                let shop_id = self.parse_sub(cur_file_off);
+                (Instruction::OpenShopMenu(shop_id), true)
+            }
+            0x90 => {
+                let level = self.parse_sub(cur_file_off);
+                (Instruction::SetBrightness(level), true)
+            }
+            0x92 => {
+                let target = self.parse_sub(cur_file_off);
+                let palette = self.parse_sub(cur_file_off);
+                (Instruction::SetEntityPalette { target, palette }, true)
+            }
+            0x93 => {
+                let target = self.parse_sub(cur_file_off);
+                let amount = self.parse_sub(cur_file_off);
+                (Instruction::DamageEntity { target, amount }, true)
+            }
+            0x94 => {
+                let target = self.parse_sub(cur_file_off);
+                let amount = self.parse_sub(cur_file_off);
+                (Instruction::HealEntity { target, amount }, true)
+            }
+            0x95 => {
+                let target = self.parse_sub(cur_file_off);
+                let hp = self.parse_sub(cur_file_off);
+                (Instruction::SetEntityHp { target, hp }, true)
+            }
+            0x98 => {
+                let weather = self.parse_sub(cur_file_off);
+                (Instruction::SetWeather(weather), true)
+            }
+            0x9A => {
+                let target = self.parse_sub(cur_file_off);
+                (Instruction::AttachCamera(target), true)
+            }
+            0xA9 => {
+                let target = self.parse_sub(cur_file_off);
+                let action = self.parse_sub(cur_file_off);
+                (Instruction::TriggerEntityAction { target, action }, true)
+            }
+            0xB7 => {
+                let color = self.parse_sub(cur_file_off);
+                (Instruction::FlashScreen(color), true)
+            }
+            0xB9 => {
+                let target = self.parse_sub(cur_file_off);
+                let dx = self.parse_sub(cur_file_off);
+                let dy = self.parse_sub(cur_file_off);
+                (Instruction::SetEntityPosRel { target, dx, dy }, true)
+            }
+            0xBB => {
+                let target = self.parse_sub(cur_file_off);
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::DamageEntity2 { target, val }, true)
+            }
+            // Weitere Opcodes mit 1 Ausdrucks-Operanden (Raw)
+            0x2A | 0x2B | 0x4E | 0x74..=0x77 | 0x91 | 0x9B | 0x9C => {
                 let _expr = self.parse_sub(cur_file_off);
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
@@ -556,31 +670,36 @@ impl<'a> Disassembler<'a> {
             match sub {
                 // Konstante Werte direkt im Byte kodiert
                 0x30..=0x3F => {
-                    let val = (sub - 0x30) as i16;
+                    let val = (sub - 0x30) as i32;
                     current_expr = Some(Expr::Const { opcode: Some(sub), val });
                 }
                 0x40..=0x4F => {
-                    let val = (sub as i8 - 0x50) as i16;
+                    let val = (sub as i8 - 0x50) as i32;
                     current_expr = Some(Expr::Const { opcode: Some(sub), val });
                 }
                 0x60..=0x6F => {
-                    let val = (sub - 0x60 + 16) as i16;
+                    let val = (sub - 0x60 + 16) as i32;
                     current_expr = Some(Expr::Const { opcode: Some(sub), val });
                 }
-                0x01 | 0x02 => {
+                0x01 => {
                     let b = self.read_u8(cur_file_off);
-                    let val = if sub == 0x01 { (0xFF00u16 | (b as u16)) as i16 } else { b as i16 };
-                    current_expr = Some(Expr::Const { opcode: Some(sub), val });
+                    let val = -256 + (b as i32);
+                    current_expr = Some(Expr::Const { opcode: Some(0x01), val });
+                }
+                0x02 => {
+                    let b = self.read_u8(cur_file_off);
+                    let val = b as i32;
+                    current_expr = Some(Expr::Const { opcode: Some(0x02), val });
                 }
                 0x03 => {
                     let w = self.read_u16(cur_file_off);
                     // Token 03 sets high-word unconditionally to 0xFFFF (not sign-extended)
-                    let val = (w as u32 | 0xFFFF0000) as i32 as i16;
+                    let val = (w as u32 | 0xFFFF0000) as i32;
                     current_expr = Some(Expr::Const { opcode: Some(0x03), val });
                 }
                 0x04 => {
                     let w = self.read_u16(cur_file_off);
-                    current_expr = Some(Expr::Const { opcode: Some(0x04), val: w as i16 });
+                    current_expr = Some(Expr::Const { opcode: Some(0x04), val: w as i32 });
                 }
                 0x05 => {
                     let bit_index = self.read_u16(cur_file_off);

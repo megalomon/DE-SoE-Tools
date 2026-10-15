@@ -25,6 +25,11 @@ pub enum Token {
     Patch,
     True,
     False,
+    LockPlayer,
+    UnlockPlayer,
+    Skip,
+    Temp,
+    Ram,
 
     // Literals
     Ident(String),
@@ -137,8 +142,29 @@ impl<'a> Lexer<'a> {
                 continue;
             }
 
+            // Dollar symbol and hex numbers
+            if c == '$' {
+                self.chars.next(); // consume '$'
+                tokens.push(Token::Dollar);
+                if self.chars.peek().map(|&ch| ch.is_ascii_hexdigit()).unwrap_or(false) {
+                    let mut s = String::new();
+                    while let Some(&ch) = self.chars.peek() {
+                        if ch.is_ascii_hexdigit() {
+                            s.push(ch);
+                            self.chars.next();
+                        } else {
+                            break;
+                        }
+                    }
+                    let val = i64::from_str_radix(&s, 16)
+                        .map_err(|e| format!("Ungültiges Hex-Literal '${}': {}", s, e))?;
+                    tokens.push(Token::Number(val));
+                }
+                continue;
+            }
+
             // Numbers
-            if c.is_ascii_digit() || (c == '$' && self.peek_is_hex_digit()) {
+            if c.is_ascii_digit() {
                 tokens.push(self.read_number()?);
                 continue;
             }
@@ -254,16 +280,6 @@ impl<'a> Lexer<'a> {
         Ok(tokens)
     }
 
-    fn peek_is_hex_digit(&mut self) -> bool {
-        let mut clone = self.chars.clone();
-        clone.next(); // skip '$'
-        if let Some(c) = clone.peek() {
-            c.is_ascii_hexdigit()
-        } else {
-            false
-        }
-    }
-
     fn read_number(&mut self) -> Result<Token, String> {
         let mut s = String::new();
         if self.chars.peek() == Some(&'$') {
@@ -341,6 +357,11 @@ impl<'a> Lexer<'a> {
             "patch" => Token::Patch,
             "True" | "true" => Token::True,
             "False" | "false" => Token::False,
+            "lock_player" => Token::LockPlayer,
+            "unlock_player" => Token::UnlockPlayer,
+            "skip" => Token::Skip,
+            "TEMP" => Token::Temp,
+            "RAM" => Token::Ram,
             _ => Token::Ident(s),
         }
     }

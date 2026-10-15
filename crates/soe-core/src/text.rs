@@ -162,12 +162,25 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 result.push_str("[Dog]");
                 i += 1;
             }
+            0x80 => {
+                i += 1;
+                if i + 1 < bytes.len() {
+                    let lo = bytes[i] as u16;
+                    let hi = bytes[i + 1] as u16;
+                    let frames = lo | (hi << 8);
+                    result.push_str(&format!("[Pause:{}]", frames));
+                    i += 2;
+                } else {
+                    result.push_str("[Pause]");
+                    i = bytes.len();
+                }
+            }
             0x86 => {
-                result.push_str("[Delay]");
+                result.push_str("[Wait]");
                 i += 1;
             }
             0x87 => {
-                result.push_str("[Choice]");
+                result.push_str("[Clear]");
                 i += 1;
             }
             0x8B => {
@@ -179,33 +192,20 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 i += 1;
             }
             0x93 => {
-                result.push_str("[Speaker]");
+                result.push_str("[Left]");
                 i += 1;
             }
             0x96 => {
-                result.push_str("[Box]");
+                result.push_str("[TypewriterOn]");
                 i += 1;
             }
             0x97 => {
-                result.push_str("[Page]");
+                result.push_str("[TypewriterOff]");
                 i += 1;
             }
             0xA1..=0xA8 => {
                 result.push_str(&format!("[Val{}]", b - 0xA0));
                 i += 1;
-            }
-            0x80 => {
-                // Spezieller Steuerblock <S ...>
-                result.push_str("<S");
-                i += 1;
-                while i < bytes.len() && bytes[i] != 0x80 {
-                    result.push_str(&format!(" {:02X}", bytes[i]));
-                    i += 1;
-                }
-                result.push('>');
-                if i < bytes.len() {
-                    i += 1; // abschließendes 0x80
-                }
             }
             // Deutsche Zeichensatz-Umlaute der PAL-Version
             0xE3 => {

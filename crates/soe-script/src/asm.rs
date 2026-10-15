@@ -151,6 +151,149 @@ impl Assembler {
                 out.push(0xA8);
                 out.extend_from_slice(&frames.to_le_bytes());
             }
+            Instruction::LockPlayer(arg) => {
+                out.push(0x2C);
+                out.push(*arg);
+            }
+            Instruction::UnlockPlayer(arg) => {
+                out.push(0x2D);
+                out.push(*arg);
+            }
+            Instruction::CameraFollow { x, y } => {
+                out.push(0x21);
+                out.push(*x);
+                out.push(*y);
+            }
+            Instruction::ChangeMap { x, y, map } => {
+                out.push(0x22);
+                out.push(*x);
+                out.push(*y);
+                out.extend_from_slice(&map.to_le_bytes());
+            }
+            Instruction::ResetGame => {
+                out.push(0xAB);
+            }
+            Instruction::WaitUntil(expr) => {
+                out.push(0x2E);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::WaitFrame(expr) => {
+                out.push(0x39);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::WaitAnim(expr) => {
+                out.push(0x3B);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::TileState { expr, word } => {
+                out.push(0x5F);
+                Self::assemble_expr(expr, out);
+                out.extend_from_slice(&word.to_le_bytes());
+            }
+            Instruction::BgScrollX(expr) => {
+                out.push(0x60);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::BgScrollY(expr) => {
+                out.push(0x61);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::BgScrollSpeed(expr) => {
+                out.push(0x64);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::Bg2ScrollSpeed(expr) => {
+                out.push(0x68);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::GiveMoneyExpr { currency, amount } => {
+                out.push(0x84);
+                Self::assemble_expr(currency, out);
+                Self::assemble_expr(amount, out);
+            }
+            Instruction::TakeMoneyExpr { currency, amount } => {
+                out.push(0x85);
+                Self::assemble_expr(currency, out);
+                Self::assemble_expr(amount, out);
+            }
+            Instruction::SoundCmd28(expr) => {
+                out.push(0x86);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SoundCmd2A(expr) => {
+                out.push(0x87);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::AddShopItem { item, count } => {
+                out.push(0x89);
+                Self::assemble_expr(item, out);
+                Self::assemble_expr(count, out);
+            }
+            Instruction::OpenShopMenu(expr) => {
+                out.push(0x8A);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SetBrightness(expr) => {
+                out.push(0x90);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SetEntityPalette { target, palette } => {
+                out.push(0x92);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(palette, out);
+            }
+            Instruction::DamageEntity { target, amount } => {
+                out.push(0x93);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(amount, out);
+            }
+            Instruction::HealEntity { target, amount } => {
+                out.push(0x94);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(amount, out);
+            }
+            Instruction::SetEntityHp { target, hp } => {
+                out.push(0x95);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(hp, out);
+            }
+            Instruction::SetWeather(expr) => {
+                out.push(0x98);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::AttachCamera(expr) => {
+                out.push(0x9A);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
+                out.push(*opcode);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(spell, out);
+                Self::assemble_expr(level, out);
+                for e in extra {
+                    Self::assemble_expr(e, out);
+                }
+            }
+            Instruction::TriggerEntityAction { target, action } => {
+                out.push(0xA9);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(action, out);
+            }
+            Instruction::FlashScreen(expr) => {
+                out.push(0xB7);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SetEntityPosRel { target, dx, dy } => {
+                out.push(0xB9);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(dx, out);
+                Self::assemble_expr(dy, out);
+            }
+            Instruction::DamageEntity2 { target, val } => {
+                out.push(0xBB);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(val, out);
+            }
             Instruction::Raw { opcode, payload } => {
                 out.push(*opcode);
                 out.extend_from_slice(payload);
@@ -176,7 +319,7 @@ impl Assembler {
                 match opcode {
                     Some(0x01) => {
                         bytes.push(0x01);
-                        bytes.push(*val as u8);
+                        bytes.push((*val + 256) as u8);
                     }
                     Some(0x02) => {
                         bytes.push(0x02);
@@ -184,11 +327,13 @@ impl Assembler {
                     }
                     Some(0x03) => {
                         bytes.push(0x03);
-                        bytes.extend_from_slice(&val.to_le_bytes());
+                        let w = (*val as u32 & 0xFFFF) as u16;
+                        bytes.extend_from_slice(&w.to_le_bytes());
                     }
                     Some(0x04) => {
                         bytes.push(0x04);
-                        bytes.extend_from_slice(&val.to_le_bytes());
+                        let w = (*val as u32 & 0xFFFF) as u16;
+                        bytes.extend_from_slice(&w.to_le_bytes());
                     }
                     Some(tok @ 0x30..=0x3F) | Some(tok @ 0x40..=0x4F) | Some(tok @ 0x60..=0x6F) => {
                         bytes.push(*tok);
@@ -202,16 +347,18 @@ impl Assembler {
                             bytes.push(0x60 + ((*val - 16) as u8));
                         } else if (-256..=-1).contains(val) {
                             bytes.push(0x01);
-                            bytes.push(*val as u8);
+                            bytes.push((*val + 256) as u8);
                         } else if (0..=255).contains(val) {
                             bytes.push(0x02);
                             bytes.push(*val as u8);
                         } else if *val < 0 {
                             bytes.push(0x03);
-                            bytes.extend_from_slice(&val.to_le_bytes());
+                            let w = (*val as u32 & 0xFFFF) as u16;
+                            bytes.extend_from_slice(&w.to_le_bytes());
                         } else {
                             bytes.push(0x04);
-                            bytes.extend_from_slice(&val.to_le_bytes());
+                            let w = (*val as u32 & 0xFFFF) as u16;
+                            bytes.extend_from_slice(&w.to_le_bytes());
                         }
                     }
                 }

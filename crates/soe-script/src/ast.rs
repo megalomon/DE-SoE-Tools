@@ -74,7 +74,7 @@ pub enum BinaryOp {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expr {
-    Const { opcode: Option<u8>, val: i16 },
+    Const { opcode: Option<u8>, val: i32 },
     Flag { base: FlagBase, bit_index: u16 },
     RamByte { opcode: u8, addr: u16 },
     RamWord { opcode: u8, addr: u16 },
@@ -95,7 +95,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn const_val(val: i16) -> Self {
+    pub fn const_val(val: i32) -> Self {
         Self::Const { opcode: None, val }
     }
     pub fn ram_byte(addr: u16) -> Self {
@@ -146,7 +146,52 @@ pub enum Instruction {
     GiveJewels(u32),
     Sleep(u8),
     SleepWord(u16),
+    LockPlayer(u8),
+    UnlockPlayer(u8),
+    CameraFollow { x: u8, y: u8 },
+    ChangeMap { x: u8, y: u8, map: u16 },
+    ResetGame,
+    WaitUntil(Expr),
+    WaitFrame(Expr),
+    WaitAnim(Expr),
+    TileState { expr: Expr, word: u16 },
+    BgScrollX(Expr),
+    BgScrollY(Expr),
+    BgScrollSpeed(Expr),
+    Bg2ScrollSpeed(Expr),
+    GiveMoneyExpr { currency: Expr, amount: Expr },
+    TakeMoneyExpr { currency: Expr, amount: Expr },
+    SoundCmd28(Expr),
+    SoundCmd2A(Expr),
+    AddShopItem { item: Expr, count: Expr },
+    OpenShopMenu(Expr),
+    SetBrightness(Expr),
+    SetEntityPalette { target: Expr, palette: Expr },
+    DamageEntity { target: Expr, amount: Expr },
+    HealEntity { target: Expr, amount: Expr },
+    SetEntityHp { target: Expr, hp: Expr },
+    SetWeather(Expr),
+    AttachCamera(Expr),
+    CastAlchemy { opcode: u8, target: Expr, spell: Expr, level: Expr, extra: Vec<Expr> },
+    TriggerEntityAction { target: Expr, action: Expr },
+    FlashScreen(Expr),
+    SetEntityPosRel { target: Expr, dx: Expr, dy: Expr },
+    DamageEntity2 { target: Expr, val: Expr },
     Raw { opcode: u8, payload: Vec<u8> },
+}
+
+impl Instruction {
+    pub fn is_terminal(&self) -> bool {
+        matches!(
+            self,
+            Instruction::End
+                | Instruction::Return
+                | Instruction::SkipNeg(_)
+                | Instruction::CameraFollow { .. }
+                | Instruction::ChangeMap { .. }
+                | Instruction::ResetGame
+        )
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

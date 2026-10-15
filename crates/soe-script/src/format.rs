@@ -105,6 +105,40 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::GiveJewels(amount) => format!("GIVE_JEWELS {}", amount),
         Instruction::Sleep(frames) => format!("SLEEP {} frames", frames),
         Instruction::SleepWord(frames) => format!("SLEEP_ALIGNED {} frames", frames),
+        Instruction::LockPlayer(arg) => format!("LOCK_PLAYER 0x{:02X}", arg),
+        Instruction::UnlockPlayer(arg) => format!("UNLOCK_PLAYER 0x{:02X}", arg),
+        Instruction::CameraFollow { x, y } => format!("CAMERA_FOLLOW {}, {}", x, y),
+        Instruction::ChangeMap { x, y, map } => format!("CHANGE_MAP map: 0x{:04X}, pos: ({}, {})", map, x, y),
+        Instruction::ResetGame => "RESET_GAME".to_string(),
+        Instruction::WaitUntil(expr) => format!("WAIT_UNTIL ({})", format_expr(expr)),
+        Instruction::WaitFrame(expr) => format!("WAIT_FRAME ({})", format_expr(expr)),
+        Instruction::WaitAnim(expr) => format!("WAIT_ANIM ({})", format_expr(expr)),
+        Instruction::TileState { expr, word } => format!("TILE_STATE ({}) 0x{:04X}", format_expr(expr), word),
+        Instruction::BgScrollX(expr) => format!("BG_SCROLL_X ({})", format_expr(expr)),
+        Instruction::BgScrollY(expr) => format!("BG_SCROLL_Y ({})", format_expr(expr)),
+        Instruction::BgScrollSpeed(expr) => format!("BG_SCROLL_SPEED ({})", format_expr(expr)),
+        Instruction::Bg2ScrollSpeed(expr) => format!("BG2_SCROLL_SPEED ({})", format_expr(expr)),
+        Instruction::GiveMoneyExpr { currency, amount } => format!("GIVE_MONEY_EXPR cur: ({}) amt: ({})", format_expr(currency), format_expr(amount)),
+        Instruction::TakeMoneyExpr { currency, amount } => format!("TAKE_MONEY_EXPR cur: ({}) amt: ({})", format_expr(currency), format_expr(amount)),
+        Instruction::SoundCmd28(expr) => format!("SOUND_CMD_28 ({})", format_expr(expr)),
+        Instruction::SoundCmd2A(expr) => format!("SOUND_CMD_2A ({})", format_expr(expr)),
+        Instruction::AddShopItem { item, count } => format!("ADD_SHOP_ITEM item: ({}) count: ({})", format_expr(item), format_expr(count)),
+        Instruction::OpenShopMenu(expr) => format!("OPEN_SHOP_MENU ({})", format_expr(expr)),
+        Instruction::SetBrightness(expr) => format!("SET_BRIGHTNESS ({})", format_expr(expr)),
+        Instruction::SetEntityPalette { target, palette } => format!("SET_ENTITY_PALETTE target: ({}) palette: ({})", format_expr(target), format_expr(palette)),
+        Instruction::DamageEntity { target, amount } => format!("DAMAGE_ENTITY target: ({}) amt: ({})", format_expr(target), format_expr(amount)),
+        Instruction::HealEntity { target, amount } => format!("HEAL_ENTITY target: ({}) amt: ({})", format_expr(target), format_expr(amount)),
+        Instruction::SetEntityHp { target, hp } => format!("SET_ENTITY_HP target: ({}) hp: ({})", format_expr(target), format_expr(hp)),
+        Instruction::SetWeather(expr) => format!("SET_WEATHER ({})", format_expr(expr)),
+        Instruction::AttachCamera(expr) => format!("ATTACH_CAMERA ({})", format_expr(expr)),
+        Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
+            let extra_str = extra.iter().map(|e| format_expr(e)).collect::<Vec<_>>().join(", ");
+            format!("CAST_ALCHEMY_0x{:02X} target: ({}) spell: ({}) lvl: ({}) extra: [{}]", opcode, format_expr(target), format_expr(spell), format_expr(level), extra_str)
+        }
+        Instruction::TriggerEntityAction { target, action } => format!("TRIGGER_ENTITY_ACTION target: ({}) act: ({})", format_expr(target), format_expr(action)),
+        Instruction::FlashScreen(expr) => format!("FLASH_SCREEN ({})", format_expr(expr)),
+        Instruction::SetEntityPosRel { target, dx, dy } => format!("SET_ENTITY_POS_REL target: ({}) dx: ({}) dy: ({})", format_expr(target), format_expr(dx), format_expr(dy)),
+        Instruction::DamageEntity2 { target, val } => format!("DAMAGE_ENTITY_2 target: ({}) val: ({})", format_expr(target), format_expr(val)),
         Instruction::Raw { opcode, payload } => {
             let p_hex = payload.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ");
             format!("RAW 0x{:02X} [{}]", opcode, p_hex)
@@ -164,6 +198,40 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::GiveJewels(amount) => format!("give_jewels({});", amount),
         Instruction::Sleep(frames) => format!("sleep({});", frames),
         Instruction::SleepWord(frames) => format!("sleep_aligned({});", frames),
+        Instruction::LockPlayer(arg) => format!("lock_player(0x{:02X});", arg),
+        Instruction::UnlockPlayer(arg) => format!("unlock_player(0x{:02X});", arg),
+        Instruction::CameraFollow { x, y } => format!("camera_follow({}, {});", x, y),
+        Instruction::ChangeMap { x, y, map } => format!("change_map(0x{:04X}, {}, {});", map, x, y),
+        Instruction::ResetGame => "reset_game();".to_string(),
+        Instruction::WaitUntil(expr) => format!("wait_until({});", format_expr(expr)),
+        Instruction::WaitFrame(expr) => format!("wait_frame({});", format_expr(expr)),
+        Instruction::WaitAnim(expr) => format!("wait_anim({});", format_expr(expr)),
+        Instruction::TileState { expr, word } => format!("tile_state({}, 0x{:04X});", format_expr(expr), word),
+        Instruction::BgScrollX(expr) => format!("bg_scroll_x({});", format_expr(expr)),
+        Instruction::BgScrollY(expr) => format!("bg_scroll_y({});", format_expr(expr)),
+        Instruction::BgScrollSpeed(expr) => format!("bg_scroll_speed({});", format_expr(expr)),
+        Instruction::Bg2ScrollSpeed(expr) => format!("bg2_scroll_speed({});", format_expr(expr)),
+        Instruction::GiveMoneyExpr { currency, amount } => format!("give_money_expr({}, {});", format_expr(currency), format_expr(amount)),
+        Instruction::TakeMoneyExpr { currency, amount } => format!("take_money_expr({}, {});", format_expr(currency), format_expr(amount)),
+        Instruction::SoundCmd28(expr) => format!("sound_cmd_28({});", format_expr(expr)),
+        Instruction::SoundCmd2A(expr) => format!("sound_cmd_2a({});", format_expr(expr)),
+        Instruction::AddShopItem { item, count } => format!("add_shop_item({}, {});", format_expr(item), format_expr(count)),
+        Instruction::OpenShopMenu(expr) => format!("open_shop_menu({});", format_expr(expr)),
+        Instruction::SetBrightness(expr) => format!("set_brightness({});", format_expr(expr)),
+        Instruction::SetEntityPalette { target, palette } => format!("set_entity_palette({}, {});", format_expr(target), format_expr(palette)),
+        Instruction::DamageEntity { target, amount } => format!("damage_entity({}, {});", format_expr(target), format_expr(amount)),
+        Instruction::HealEntity { target, amount } => format!("heal_entity({}, {});", format_expr(target), format_expr(amount)),
+        Instruction::SetEntityHp { target, hp } => format!("set_entity_hp({}, {});", format_expr(target), format_expr(hp)),
+        Instruction::SetWeather(expr) => format!("set_weather({});", format_expr(expr)),
+        Instruction::AttachCamera(expr) => format!("attach_camera({});", format_expr(expr)),
+        Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
+            let extra_str = extra.iter().map(|e| format_expr(e)).collect::<Vec<_>>().join(", ");
+            format!("cast_alchemy_0x{:02X}({}, {}, {}, [{}]);", opcode, format_expr(target), format_expr(spell), format_expr(level), extra_str)
+        }
+        Instruction::TriggerEntityAction { target, action } => format!("trigger_entity_action({}, {});", format_expr(target), format_expr(action)),
+        Instruction::FlashScreen(expr) => format!("flash_screen({});", format_expr(expr)),
+        Instruction::SetEntityPosRel { target, dx, dy } => format!("set_entity_pos_rel({}, {}, {});", format_expr(target), format_expr(dx), format_expr(dy)),
+        Instruction::DamageEntity2 { target, val } => format!("damage_entity_2({}, {});", format_expr(target), format_expr(val)),
         Instruction::Raw { opcode, payload } => {
             let p_hex = payload.iter().map(|b| format!("0x{:02X}", b)).collect::<Vec<_>>().join(", ");
             format!("raw(0x{:02X}, [{}]);", opcode, p_hex)

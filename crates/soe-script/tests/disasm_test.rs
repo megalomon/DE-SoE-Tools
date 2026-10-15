@@ -38,9 +38,13 @@ fn test_disasm_all_map_start_scripts() {
     let mut successful_scripts = 0;
     let mut roundtrip_matches = 0;
 
-    for i in 0..126 {
+    for i in 0..127 {
         let entry_snes = map_table_snes + (i as u32) * 5;
         let script_ptr = rom.read_u24_snes(entry_snes).unwrap_or(0);
+        if script_ptr == 0 {
+            // Map 21 hat keinen Start-Skript-Pointer (ptr == 0)
+            continue;
+        }
         let snes_addr = Rom::script_to_rom_addr(script_ptr);
 
         let script = disasm.disassemble_script(snes_addr, 2048);

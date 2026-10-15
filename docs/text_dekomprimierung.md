@@ -90,16 +90,18 @@ Die deutschen Texte enthalten spezielle Steuer- und Formatierungsbytes:
 
 | Byte | Steuerzeichen | Bedeutung / Funktion im Spiel |
 | :---: | :--- | :--- |
+| `0x00` | *Terminator* | Beendet den dekomprimierten Textstring. |
 | `0x0A` | `\n` | Zeilenumbruch innerhalb der Box. |
+| `0x80 lo hi` | **`[Pause:n]`** | Pause/Verzögerung um 16-Bit Frame-Dauer (`lo \| (hi << 8)` Ticks). |
 | `0x81` | **`[Boy]`** | Name des Jungen (dynamisch aus Spieler-Eingabe). |
 | `0x82` | **`[Dog]`** | Name des Hundes (dynamisch aus Spieler-Eingabe). |
-| `0x86` | **`[Delay]`** | Wartet auf Bestätigung (A-Knopf) des Spielers. |
-| `0x87` | **`[Choice]`**| Markiert ein interaktives Auswahlfenster (z. B. Händler / Fragen). |
+| `0x86` | **`[Wait]`** | Wartet auf Bestätigung (A/B-Knopf) des Spielers. |
+| `0x87` | **`[Clear]`**| Textfenster sofort leeren. |
 | `0x8B` | **`[Marker]`**| Auswahlmarker für eine anwählbare Option (mit Positionsliste). |
 | `0x92` | **`[Center]`**| Zentriert Textzeile im Fenster. |
-| `0x93` | **`[Speaker]`**| Sprechername / Sprecherporträt. |
-| `0x96` | **`[Box]`** | Öffnet das grafische Textfenster / leert Inhalt. |
-| `0x97` | **`[Page]`** | Beginnt eine neue Textseite (wartet auf Bestätigung). |
+| `0x93` | **`[Left]`** | Richtet Textzeile linksbündig aus. |
+| `0x96` | **`[TypewriterOn]`** | Schreibmaschinen-Effekt aktivieren (verzögerter Zeichenaufbau). |
+| `0x97` | **`[TypewriterOff]`** | Schreibmaschinen-Effekt deaktivieren (sofortiger Zeichenaufbau). |
 | `0xA1..0xA8` | **`[Val1..8]`** | Dynamische Spielvariablen und Zahlenwerte aus `$7E:2535+`. |
 
 ### Deutsche Sonderzeichen-Codierung

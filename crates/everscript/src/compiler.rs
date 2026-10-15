@@ -129,10 +129,27 @@ impl Compiler {
                     if frames <= 255 {
                         let instr = sigil::Instruction::Sleep(frames as u8);
                         Assembler::assemble_instruction(&instr, &mut out);
-                    } else {
+                    } else if frames <= 65535 {
                         let instr = sigil::Instruction::SleepWord(frames as u16);
                         Assembler::assemble_instruction(&instr, &mut out);
+                    } else {
+                        return Err(format!("Sleep-Dauer {} übersteigt 65535 Frames", frames));
                     }
+                }
+                EvsStmt::LockPlayer(expr) => {
+                    let arg = self.eval_expr_const(expr)? as u8;
+                    let instr = sigil::Instruction::LockPlayer(arg);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::UnlockPlayer(expr) => {
+                    let arg = self.eval_expr_const(expr)? as u8;
+                    let instr = sigil::Instruction::UnlockPlayer(arg);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::Skip(expr) => {
+                    let off = self.eval_expr_const(expr)? as i16;
+                    let instr = sigil::Instruction::Skip(off);
+                    Assembler::assemble_instruction(&instr, &mut out);
                 }
                 EvsStmt::Raw { opcode, payload } => {
                     let instr = sigil::Instruction::Raw { opcode: *opcode, payload: payload.clone() };
@@ -228,10 +245,18 @@ impl Compiler {
 
     pub fn compile_expr(&self, expr: &EvsExpr) -> Result<sigil::Expr, String> {
         match expr {
-            EvsExpr::Number(n) => Ok(sigil::Expr::const_val(*n as i16)),
+            EvsExpr::Number(n) => {
+                if *n < -65536 || *n > 65535 {
+                    return Err(format!("Konstante {} liegt außerhalb des gültigen Bereichs (-65536..65535)", n));
+                }
+                Ok(sigil::Expr::const_val(*n as i32))
+            }
             EvsExpr::Ident(id) => {
                 if let Some(val) = self.symbols.get(id) {
-                    Ok(sigil::Expr::const_val(*val as i16))
+                    if *val < -65536 || *val > 65535 {
+                        return Err(format!("Symbol '{}' mit Wert {} liegt außerhalb des gültigen Bereichs (-65536..65535)", id, val));
+                    }
+                    Ok(sigil::Expr::const_val(*val as i32))
                 } else {
                     Err(format!("Unbekanntes Symbol: '{}'", id))
                 }

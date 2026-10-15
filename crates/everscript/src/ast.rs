@@ -32,6 +32,9 @@ pub enum EvsStmt {
     TextHide,
     GiveJewels(EvsExpr),
     Sleep(EvsExpr),
+    LockPlayer(EvsExpr),
+    UnlockPlayer(EvsExpr),
+    Skip(EvsExpr),
     Raw { opcode: u8, payload: Vec<u8> },
 }
 
