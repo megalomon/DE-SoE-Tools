@@ -150,10 +150,19 @@ Die Anzahlen aller 22 Zutaten werden ab Basisadresse `$7E:22FF` als 1-Byte-Werte
 
 | Eigenschaft | Junge | Hund | Format / Typ |
 | :--- | :--- | :--- | :--- |
+| **X-Koordinate (Pixel)** | **`$7E:4EA3`** (Entity `+0x1A`, Held `$4E89`) | **`$7E:4F51`** (Entity `+0x1A`, Hund `$4F37`) | 16-Bit Little-Endian (uint16) |
+| **Y-Koordinate (Pixel)** | **`$7E:4EA5`** (Entity `+0x1C`, Held `$4E89`) | **`$7E:4F53`** (Entity `+0x1C`, Hund `$4F37`) | 16-Bit Little-Endian (uint16) |
+| **Subpixel X / Höhe** | `$7E:4EA1` (Entity `+0x18`) | `$7E:4F4F` (Entity `+0x18`) | 16-Bit Little-Endian |
+| **Subpixel Y** | `$7E:4EA7` (Entity `+0x1E`) | `$7E:4F55` (Entity `+0x1E`) | 16-Bit Little-Endian |
 | **Aktuelle Lebenspunkte (HP)** | `$7E:4EB3` (Entity `+0x2A`, Held `$4E89`) | `$7E:4F61` (Entity `+0x2A`, Hund `$4F37`) | 16-Bit Little-Endian |
 | **Maximale Lebenspunkte (Max HP)** | `$7E:0A35` | `$7E:0A7F` | 16-Bit Little-Endian (Begrenzung auf 999 bei `$8F:83A6`, kopiert nach `$4F61` bei `$8F:84FC`) |
 | **Charakter-Level** | `$7E:0A50` | `$7E:0A9A` | 16-Bit Little-Endian (`$8F:832D` nutzt `$0A50`×2 als Wachstumsindex) |
 | **Erfahrungspunkte (EXP)** | `$7E:0A49` – `$7E:0A4C` | `$7E:0A93` – `$7E:0A96` | 32-Bit Little-Endian |
+
+- **Zeiger auf aktive Spielfigur (Controlled Entity):** Direct Page **`$0F44`** (2 Bytes)  
+  - Junge aktiv: `$0F44` = `0x4E89` $\rightarrow$ X = `[$0F44] + 0x1A` (`$7E:4EA3`), Y = `[$0F44] + 0x1C` (`$7E:4EA5`)
+  - Hund aktiv: `$0F44` = `0x4F37` $\rightarrow$ X = `[$0F44] + 0x1A` (`$7E:4F51`), Y = `[$0F44] + 0x1C` (`$7E:4F53`)
+- **Kamera-Position (Pixel):** Direct Page **`$0059`** (Kamera-X = `Spieler_X - 128`), **`$005B`** (Kamera-Y = `Spieler_Y - 112`)
 
 ---
 
