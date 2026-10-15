@@ -346,8 +346,8 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x75` | `$8C:E2F6` | Aktiv | target: entity | **`SET_ENTITY_NOCLIP`** – Setzt Noclip-Flag `$08` (ignoriert Hindernisse und Kachelkollision). |
 | `0x76` | `$8C:E302` | Aktiv | target: entity | **`SET_ENTITY_TRANSPARENT_NOCLIP`** – Aktiviert Halbtransparenz und Noclip (Flags `$0C`). |
 | `0x77` | `$8C:E2EA` | Aktiv | target: entity | **`SET_ENTITY_TRANSPARENT`** – Aktiviert Halbtransparenz (Flag `$04`, z. B. Geistereffekt). |
-| `0x78` | `$8C:E4B1` | Aktiv | target: entity, anim: u16 | **`SET_ANIMATION`** – Weist Spielfigur Animationssequenz `anim` zu. |
-| `0x79` | `$8C:E557` | Aktiv | target: entity, anim: u16 | **`SET_ANIMATION_WAIT`** – Startet Animationssequenz und pausiert Task bis zum Abschluss (Status 8). |
+| `0x78` | `$8C:E4B1` | Aktiv | target: entity, anim: u16, speed: expr | **`SET_ANIMATION`** – Weist Entity Animationssequenz `anim` mit Tempo `speed` zu. |
+| `0x79` | `$8C:E557` | Aktiv | target: entity, anim: u16, speed: expr | **`SET_ANIMATION_WAIT`** – Startet Animationssequenz via `$8C:E4B1` und pausiert Task bis zum Abschluss (Status 6). |
 | `0x7A` | `$8C:E48F` | Aktiv | target: expr, val: expr | **`WRITE_DEREF`** – 16-Bit Word via Zeiger schreiben (`*(u16*)target = val`). |
 | `0x7B` | `$8C:E49E` | Aktiv | target: expr, val: expr | **`WRITE_DEREF_BYTE`** – 8-Bit Byte via Zeiger schreiben (`*(u8*)target = val`). |
 | `0x7C` | `$8C:D940` | Aktiv | cur: expr, amt: u24 | **`GIVE_MONEY`** – Addiert 24-Bit-Betrag `amt` zur gewählten Währung `cur`. |

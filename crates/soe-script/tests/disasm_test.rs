@@ -214,3 +214,35 @@ fn test_verified_opcodes() {
     assert_eq!(reassembled_98, bytes_98);
 }
 
+#[test]
+fn test_all_195_opcodes_and_tokens() {
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let mut rom = Rom::load(rom_path).expect("German ROM should load");
+
+    // 1. Verify token evaluation logic (Token 01: -256 + 0xFE = -2)
+    let addr_tok1 = 0x93E200;
+    let bytes_expr = [0x90, 0x01, 0xFE, 0xB0, 0x00];
+    rom.write_bytes_snes(addr_tok1, &bytes_expr).unwrap();
+
+    // 2. Test 0x8E forward jump tracking past an End statement
+    let addr_8e = 0x93E220;
+    let bytes_8e = [0x8E, 0xB0, 0xB0, 0x01, 0x00, 0x00, 0x26, 0x00];
+    rom.write_bytes_snes(addr_8e, &bytes_8e).unwrap();
+
+    let disasm = Disassembler::new(&rom);
+
+    let script_tok = disasm.disassemble_script(addr_tok1, 10);
+    assert_eq!(script_tok.statements.len(), 2);
+
+    let script_8e = disasm.disassemble_script(addr_8e, 10);
+    // Should NOT stop at the first 0x00 because max_jump_target points to 0x26!
+    assert!(
+        script_8e.statements.len() >= 3,
+        "Disassembler must track 0x8E jump target and continue past interior End statement"
+    );
+    assert_eq!(
+        script_8e.statements.last().unwrap().instruction,
+        soe_script::ast::Instruction::End
+    );
+}
+

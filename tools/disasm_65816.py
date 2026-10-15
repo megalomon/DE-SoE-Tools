@@ -162,33 +162,34 @@ def trace_routine(start_addr, max_instructions=80):
         addr += length
     return trace
 
-# Analyze all 195
-tbl_off = snes2off(0x8CECBE)
-for i in range(195):
-    h = rom[tbl_off + i*2] | (rom[tbl_off + i*2 + 1] << 8)
-    addr = 0x8C0000 | h
-    tr = trace_routine(addr)
-    
-    # Analyze trace for reads:
-    # JSL $8CEE44 -> expr
-    # JSL $8CF08F -> entity
-    # JSR $8CD6FE -> params_list
-    # LDA [$82] -> read_82
-    reads = []
-    for pc, op, l, txt, cat, m_flag, x_flag in tr:
-        if "JSL $8CEE44" in txt:
-            reads.append("expr")
-        elif "JSL $8CF08F" in txt:
-            reads.append("entity")
-        elif "JMP/JSR $D6FE" in txt:
-            reads.append("params_list")
-        elif op == 0xA7 and rom[snes2off(pc)+1] == 0x82:
-            # check M flag at this point
-            # if m_flag == 0 (before this inst): word read!
-            # if m_flag == 1: byte read!
-            # But note: m_flag is after inst, let us check previous
-            reads.append("read_82")
-        elif op == 0xDB:
-            reads.append("STP")
+if __name__ == "__main__":
+    # Analyze all 195
+    tbl_off = snes2off(0x8CECBE)
+    for i in range(195):
+        h = rom[tbl_off + i*2] | (rom[tbl_off + i*2 + 1] << 8)
+        addr = 0x8C0000 | h
+        tr = trace_routine(addr)
+        
+        # Analyze trace for reads:
+        # JSL $8CEE44 -> expr
+        # JSL $8CF08F -> entity
+        # JSR $8CD6FE -> params_list
+        # LDA [$82] -> read_82
+        reads = []
+        for pc, op, l, txt, cat, m_flag, x_flag in tr:
+            if "JSL $8CEE44" in txt:
+                reads.append("expr")
+            elif "JSL $8CF08F" in txt:
+                reads.append("entity")
+            elif "JMP/JSR $D6FE" in txt:
+                reads.append("params_list")
+            elif op == 0xA7 and rom[snes2off(pc)+1] == 0x82:
+                # check M flag at this point
+                # if m_flag == 0 (before this inst): word read!
+                # if m_flag == 1: byte read!
+                # But note: m_flag is after inst, let us check previous
+                reads.append("read_82")
+            elif op == 0xDB:
+                reads.append("STP")
 
-    print(f"Opcode 0x{i:02X} (${addr:06X}): {reads}")
+        print(f"Opcode 0x{i:02X} (${addr:06X}): {reads}")

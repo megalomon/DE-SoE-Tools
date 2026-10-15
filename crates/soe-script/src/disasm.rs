@@ -63,6 +63,15 @@ impl<'a> Disassembler<'a> {
                         max_jump_target = target;
                     }
                 }
+                Instruction::Raw { opcode: 0x8E | 0x8F, payload } => {
+                    if payload.len() >= 2 {
+                        let off = i16::from_le_bytes([payload[payload.len() - 2], payload[payload.len() - 1]]);
+                        let target = (cur_file_off as isize + off as isize) as usize;
+                        if target > max_jump_target {
+                            max_jump_target = target;
+                        }
+                    }
+                }
                 _ => {}
             }
 
@@ -79,7 +88,7 @@ impl<'a> Disassembler<'a> {
             }
 
             // Wenn Terminal-Befehl erreicht und kein weiterer Sprung darüber hinaus zeigt: Abbruch
-            if instruction.is_terminal() && cur_file_off >= max_jump_target {
+            if instruction.is_terminal() && stmt_start >= max_jump_target {
                 break;
             }
         }
