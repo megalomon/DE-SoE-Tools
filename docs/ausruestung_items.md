@@ -27,12 +27,12 @@ Im Spiel verfügt der Held über drei primäre Nahkampfwaffengattungen (**Schwer
 
 ### A. Schwerter
 
-| Stufe | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Ingame-Beschreibung (ROM) | WRAM XP | WRAM Lvl |
-| :---: | :--- | :--- | :---: | :--- | :---: | :---: |
-| 1 | **Knochenknüppel** | Bone Crusher | `0x0507A0` | *Liegt gut in der Hand.* | `$7E0ADF` | `$7E0AE0` |
-| 2 | **Drachentöter** | Gladiator | `0x05077C` | *Effektiv gegen Moskitos.* | `$7E0AE1` | `$7E0AE2` |
-| 3 | **Exkalibur** | Crusader | `0x050789` | *Das Schwert aus der Legende.* | `$7E0AE3` | `$7E0AE4` |
-| 4 | **Laserschwert** | Neutron Blade | `0x050793` | *Das ultimative Schwert.* | `$7E0AE5` | `$7E0AE6` |
+| Stufe | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Basis-Angriff | Ingame-Beschreibung (ROM) | WRAM XP | WRAM Lvl |
+| :---: | :--- | :--- | :---: | :---: | :--- | :---: | :---: |
+| 1 | **Knochenknüppel** | Bone Crusher | `0x0507A0` | **10** | *Effektiv gegen Moskitos.* | `$7E0ADF` | `$7E0AE0` |
+| 2 | **Drachentöter** | Gladiator | `0x05077C` | **20** | *Liegt gut in der Hand.* | `$7E0AE1` | `$7E0AE2` |
+| 3 | **Exkalibur** | Crusader | `0x050789` | **30** | *Das Schwert aus der Legende.* | `$7E0AE3` | `$7E0AE4` |
+| 4 | **Laserschwert** | Neutron Blade | `0x050793` | **50** | *Das ultimative Schwert.* | `$7E0AE5` | `$7E0AE6` |
 
 ---
 
@@ -42,12 +42,12 @@ Im Spiel verfügt der Held über drei primäre Nahkampfwaffengattungen (**Schwer
 - **Tarantelaxt:** Zerschlägt störendes Buschwerk und Gestrüpp (z. B. in Prähistorie).
 - **Bronzeaxt & höher:** Zertrümmert Felsen, Barrikaden und Steinsäulen.
 
-| Stufe | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Ingame-Beschreibung (ROM) | WRAM XP | WRAM Lvl |
-| :---: | :--- | :--- | :---: | :--- | :---: | :---: |
-| 1 | **Tarantelaxt** | Spider's Claw | `0x0507AF` | *Zerstört störendes Buschwerk.* | `$7E0AE7` | `$7E0AE8` |
-| 2 | **Bronzeaxt** | Bronze Axe | `0x0507BB` | *Zertrümmert sogar solide Felsen.* | `$7E0AE9` | `$7E0AEA` |
-| 3 | **Streitaxt** | Knight's Basher | `0x0507C5` | *Vernichtet alle Arten von Gegnern.* | `$7E0AEB` | `$7E0AEC` |
-| 4 | **Atomaxt** | Atom Smasher | `0x0507CF` | *Zerteilt alles - sogar Atome.* | `$7E0AED` | `$7E0AEE` |
+| Stufe | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Basis-Angriff | Ingame-Beschreibung (ROM) | WRAM XP | WRAM Lvl |
+| :---: | :--- | :--- | :---: | :---: | :--- | :---: | :---: |
+| 1 | **Tarantelaxt** | Spider's Claw | `0x0507AF` | **15** | *Zerstört störendes Buschwerk.* | `$7E0AE7` | `$7E0AE8` |
+| 2 | **Bronzeaxt** | Bronze Axe | `0x0507BB` | **25** | *Zertrümmert sogar solide Felsen.* | `$7E0AE9` | `$7E0AEA` |
+| 3 | **Streitaxt** | Knight's Basher | `0x0507C5` | **35** | *Vernichtet alle Arten von Gegnern.* | `$7E0AEB` | `$7E0AEC` |
+| 4 | **Atomaxt** | Atom Smasher | `0x0507CF` | **50** | *Zerteilt alles - sogar Atome.* | `$7E0AED` | `$7E0AEE` |
 
 ---
 
@@ -55,12 +55,12 @@ Im Spiel verfügt der Held über drei primäre Nahkampfwaffengattungen (**Schwer
 
 Speere bieten eine höhere Nahkampfreichweite und können bei aufgeladenem Schlag geworfen werden oder über Schalterbrücken hebeln.
 
-| Stufe | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Ingame-Beschreibung (ROM) | WRAM XP | WRAM Lvl |
-| :---: | :--- | :--- | :---: | :--- | :---: | :---: |
-| 1 | **Speer** | Horn Spear | `0x0507D7` | *Die ideale Nahkampfwaffe.* | `$7E0AEF` | `$7E0AF0` |
-| 2 | **Bronzespeer** | Bronze Spear | `0x0507DD` | *Eine höchst ansehnliche Waffe.* | `$7E0AF1` | `$7E0AF2` |
-| 3 | **Elfenbeinspeer** | Lance | `0x0507E9` | *Sogar Du kannst sie benutzen.* | `$7E0AF3` | `$7E0AF4` |
-| 4 | **Neutronenspeer** | Laser Lance | `0x0507F8` | *Neutralisiert die Gegner.* | `$7E0AF5` | `$7E0AF6` |
+| Stufe | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Basis-Angriff | Ingame-Beschreibung (ROM) | WRAM XP | WRAM Lvl |
+| :---: | :--- | :--- | :---: | :---: | :--- | :---: | :---: |
+| 1 | **Speer** | Horn Spear | `0x0507D7` | **20** | *Die ideale Nahkampfwaffe.* | `$7E0AEF` | `$7E0AF0` |
+| 2 | **Bronzespeer** | Bronze Spear | `0x0507DD` | **30** | *Eine höchst ansehnliche Waffe.* | `$7E0AF1` | `$7E0AF2` |
+| 3 | **Elfenbeinspeer** | Lance | `0x0507E9` | **40** | *Sogar Du kannst sie benutzen.* | `$7E0AF3` | `$7E0AF4` |
+| 4 | **Neutronenspeer** | Laser Lance | `0x0507F8` | **50** | *Neutralisiert die Gegner.* | `$7E0AF5` | `$7E0AF6` |
 
 ---
 
@@ -68,11 +68,11 @@ Speere bieten eine höhere Nahkampfreichweite und können bei aufgeladenem Schla
 
 Die **Bazooka** (im ROM-Text `0x050830` wörtlich *Bazooka*) ist die schwere Fernkampfwaffe des Jungen. Sie besitzt kein Waffenlevel, sondern verbraucht bei jedem Schuss eine von drei Munitionsarten:
 
-| Munition (ROM) | US-Originalname | ROM-Offset | WRAM-Adresse | Wertebereich |
-| :--- | :--- | :---: | :---: | :---: |
-| **Donnergranaten** | Thunder Ball | `0x050807` | `$7E0B09` | `0` – `99` (`0x63`) |
-| **Plasmaraketen** | Particle Bomb | `0x050816` | `$7E0B0A` | `0` – `99` (`0x63`) |
-| **Cyberbomben** | Cryo-Blast | `0x050824` | `$7E0B0B` | `0` – `99` (`0x63`) |
+| Munition (ROM) | US-Originalname | ROM-Offset | Basis-Angriff | WRAM-Adresse | Wertebereich |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Donnergranaten** | Thunder Ball | `0x050807` | **200** | `$7E0B09` | `0` – `99` (`0x63`) |
+| **Plasmaraketen** | Particle Bomb | `0x050816` | **350** | `$7E0B0A` | `0` – `99` (`0x63`) |
+| **Cyberbomben** | Cryo-Blast | `0x050824` | **800** | `$7E0B0B` | `0` – `99` (`0x63`) |
 
 - **Bazooka Ausrüstungseintrag:** `$7E0AF7` / `$7E0AF8` (Status im Ringmenü).
 
@@ -86,87 +86,87 @@ Auch der Hund besitzt ein eigenes Angriffslevel:
   - **Prähistorie:** Urzeit-Wolfhund
   - **Antika:** Schlanker Windhund / Schakal
   - **Gotika:** Edelpudel mit Zopffrisur
-  - **Assitopia:** Toaster-Roboterhund
+  - **Assitopia / Omnitopia:** Toaster-Roboterhund
 
 ---
 
 ## 2. Rüstungen (Body Armor)
 
-In der deutschen ROM werden alle 12 Körperrüstungen in Bank `$05` ab Offset `0x0509AE` definiert.  
+In der deutschen ROM werden alle 12 Körperrüstungen in Bank `$05` ab Offset `0x0509AE` definiert. Ihre Werte stammen direkt aus der Item-Strukturtabelle bei `$C4:4142`:
 Der aktuell ausgerüstete Index des Jungen liegt im WRAM an Adresse **`$7E0A52`**.
 
-| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Epoche / Bereich |
-| :---: | :--- | :--- | :---: | :--- |
-| `0x00` | **Moosweste** | Grass Vest | `0x0509AE` | Prähistorie (Dschungel) |
-| `0x01` | **Panzerrüstung** | Shell Armor | `0x0509B8` | Prähistorie (Dschungeldorf) |
-| `0x02` | **Raptorleder** | Dino Skin | `0x0509C6` | Prähistorie (Vulkan) |
-| `0x03` | **Bronzerüstung** | Bronze Armor | `0x0509D2` | Antika (Krozkrübel) |
-| `0x04` | **Granitpanzer** | Stone Vest | `0x0509E0` | Antika (Oase / Camp) |
-| `0x05` | **Römertoga** | Centurion Cape | `0x0509ED` | Antika (Allelachema Markt) |
-| `0x06` | **Silberrüstung** | Silver Mail | `0x0509F7` | Gotika (Chaosturm) |
-| `0x07` | **Goldrüstung** | Gold Plated | `0x050A05` | Gotika (Terrorfels Markt) |
-| `0x08` | **Neonweste** | Shining Armor | `0x050A11` | Gotika (Schloss) |
-| `0x09` | **Stahlpanzer** | Magna Mail | `0x050A1B` | Assitopia (Schrottplatz) |
-| `0x0A` | **Titaniumweste** | Titanium Vest | `0x050A27` | Assitopia (Metroplex) |
-| `0x0B` | **Cyberweste** | Virtual Suit | `0x050A35` | Assitopia (Reaktor / Finale) |
+| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
+| :---: | :--- | :--- | :---: | :---: | :--- |
+| `0x00` | **Moosweste** | Grass Vest | `0x0509AE` | **+3** | Prähistorie (Dschungel) |
+| `0x01` | **Panzerrüstung** | Shell Armor | `0x0509B8` | **+4** | Prähistorie (Dschungeldorf) |
+| `0x02` | **Raptorleder** | Dino Skin | `0x0509C6` | **+7** | Prähistorie (Vulkan) |
+| `0x03` | **Bronzerüstung** | Bronze Armor | `0x0509D2` | **+12** | Antika (Krozkrübel) |
+| `0x04` | **Granitpanzer** | Stone Vest | `0x0509E0` | **+19** | Antika (Oase / Camp) |
+| `0x05` | **Römertoga** | Centurion Cape | `0x0509ED` | **+28** | Antika (Allelachema Markt) |
+| `0x06` | **Silberrüstung** | Silver Mail | `0x0509F7` | **+40** | Gotika (Chaosturm) |
+| `0x07` | **Goldrüstung** | Gold Plated | `0x050A05` | **+55** | Gotika (Terrorfels Markt) |
+| `0x08` | **Neonweste** | Shining Armor | `0x050A11` | **+73** | Gotika (Schloss) |
+| `0x09` | **Stahlpanzer** | Magna Mail | `0x050A1B` | **+94** | Omnitopia (Schrottplatz) |
+| `0x0A` | **Titaniumweste** | Titanium Vest | `0x050A27` | **+124** | Omnitopia (Metroplex) |
+| `0x0B` | **Cyberweste** | Virtual Suit | `0x050A35` | **+169** | Omnitopia (Reaktor / Finale) |
 
 ---
 
 ## 3. Helme (Helmets)
 
-Die 12 Kopfbedeckungen liegen in Bank `$05` ab Offset `0x050A40`.  
+Die 12 Kopfbedeckungen liegen in Bank `$05` ab Offset `0x050A40`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:41BA`:
 Der aktuell ausgerüstete Helm des Jungen liegt im WRAM an Adresse **`$7E0A54`**.
 
-| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Epoche / Bereich |
-| :---: | :--- | :--- | :---: | :--- |
-| `0x00` | **Hippiemütze** | Grass Hat | `0x050A40` | Prähistorie (Start) |
-| `0x01` | **Panzerhelm** | Shell Hat | `0x050A4C` | Prähistorie (Dschungeldorf) |
-| `0x02` | **Schädelhelm** | Dino Helm | `0x050A57` | Prähistorie (Käfersteppe) |
-| `0x03` | **Bronzehelm** | Bronze Helmet | `0x050A63` | Antika (Krozkrübel) |
-| `0x04` | **Blecheimer** | Obsidian Helm | `0x050A6E` | Antika (Davids Höhle) |
-| `0x05` | **Römerhelm** | Centurion Helm | `0x050A79` | Antika (Allelachema) |
-| `0x06` | **Titanenkrone** | Titan's Crown | `0x050A83` | Gotika (Schattenwald) |
-| `0x07` | **Drachenhelm** | Dragon Helm | `0x050A90` | Gotika (Chaosturm) |
-| `0x08` | **Ritterhelm** | Knight's Helm | `0x050A9C` | Gotika (Terrorfels) |
-| `0x09` | **Blitzableiter** | Lightning Helm | `0x050AA7` | Assitopia (Gewächshaus) |
-| `0x0A` | **Lampenschirm** | Old Reliable | `0x050AB5` | Assitopia (Lagerhalle) |
-| `0x0B` | **Elektrohelm** | Brainstorm | `0x050AC2` | Assitopia (Labor) |
+| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
+| :---: | :--- | :--- | :---: | :---: | :--- |
+| `0x00` | **Hippiemütze** | Grass Hat | `0x050A40` | **+2** | Prähistorie (Start) |
+| `0x01` | **Panzerhelm** | Shell Hat | `0x050A4C` | **+3** | Prähistorie (Dschungeldorf) |
+| `0x02` | **Schädelhelm** | Dino Helm | `0x050A57` | **+6** | Prähistorie (Käfersteppe) |
+| `0x03` | **Bronzehelm** | Bronze Helmet | `0x050A63` | **+11** | Antika (Krozkrübel) |
+| `0x04` | **Blecheimer** | Obsidian Helm | `0x050A6E` | **+18** | Antika (Davids Höhle) |
+| `0x05` | **Römerhelm** | Centurion Helm | `0x050A79` | **+27** | Antika (Allelachema) |
+| `0x06` | **Titanenkrone** | Titan's Crown | `0x050A83` | **+39** | Gotika (Schattenwald) |
+| `0x07` | **Drachenhelm** | Dragon Helm | `0x050A90` | **+54** | Gotika (Chaosturm) |
+| `0x08` | **Ritterhelm** | Knight's Helm | `0x050A9C` | **+72** | Gotika (Terrorfels) |
+| `0x09` | **Blitzableiter** | Lightning Helm | `0x050AA7` | **+93** | Omnitopia (Gewächshaus) |
+| `0x0A` | **Lampenschirm** | Old Reliable | `0x050AB5` | **+117** | Omnitopia (Lagerhalle) |
+| `0x0B` | **Elektrohelm** | Brainstorm | `0x050AC2` | **+144** | Omnitopia (Labor) |
 
 ---
 
 ## 4. Armbänder (Bracers / Gloves)
 
-Die 12 Armschutze liegen in Bank `$05` ab Offset `0x050ACE`.  
+Die 12 Armschutze liegen in Bank `$05` ab Offset `0x050ACE`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:4232`:
 Der aktuell ausgerüstete Armschutz des Jungen liegt im WRAM an Adresse **`$7E0A56`**.
 
-| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Epoche / Bereich |
-| :---: | :--- | :--- | :---: | :--- |
-| `0x00` | **Gemüsearmband** | Vine Bracelet | `0x050ACE` | Prähistorie (Start) |
-| `0x01` | **Bleiarmband** | Mammoth Guard | `0x050ADC` | Prähistorie (Mammutfriedhof) |
-| `0x02` | **Klauenreif** | Claw Guard | `0x050AE8` | Prähistorie (Vulkan) |
-| `0x03` | **Schlangenarmband** | Serpent Span | `0x050AF3` | Antika (Krozkrübel) |
-| `0x04` | **Bronzeklaue** | Bronze Gauntlet | `0x050B04` | Antika (Pyramide) |
-| `0x05` | **Feuerfetisch** | Gloves of Ra | `0x050B10` | Antika (Allelachema Markt) |
-| `0x06` | **Eisenarmband** | Iron Bracer | `0x050B1D` | Gotika (Chaosturm) |
-| `0x07` | **Roys Ring** | Dragon's Claw | `0x050B2A` | Gotika (Sumpf / Erwins Turm) |
-| `0x08` | **Drachenklaue** | Cybersleeve | `0x050B34` | Gotika (Terrorfels) |
-| `0x09` | **Cyberhandschuh** | Silver Sheath | `0x050B41` | Assitopia (Schrottplatz) |
-| `0x0A` | **Karmaring** | Shining Armlet | `0x050B50` | Assitopia (Shops) |
-| `0x0B` | **Elektroarmband** | Laser Glove | `0x050B5A` | Assitopia (Reaktor) |
+| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
+| :---: | :--- | :--- | :---: | :---: | :--- |
+| `0x00` | **Gemüsearmband** | Vine Bracelet | `0x050ACE` | **+1** | Prähistorie (Start) |
+| `0x01` | **Bleiarmband** | Mammoth Guard | `0x050ADC` | **+2** | Prähistorie (Mammutfriedhof) |
+| `0x02` | **Klauenreif** | Claw Guard | `0x050AE8` | **+5** | Prähistorie (Vulkan) |
+| `0x03` | **Schlangenarmband** | Serpent Span | `0x050AF3` | **+10** | Antika (Krozkrübel) |
+| `0x04` | **Bronzeklaue** | Bronze Gauntlet | `0x050B04` | **+17** | Antika (Pyramide) |
+| `0x05` | **Feuerfetisch** | Gloves of Ra | `0x050B10` | **+26** | Antika (Allelachema Markt) |
+| `0x06` | **Eisenarmband** | Iron Bracer | `0x050B1D` | **+37** | Gotika (Chaosturm) |
+| `0x07` | **Roys Ring** | Dragon's Claw | `0x050B2A` | **+50** | Gotika (Sumpf / Erwins Turm) |
+| `0x08` | **Drachenklaue** | Cybersleeve | `0x050B34` | **+65** | Gotika (Terrorfels) |
+| `0x09` | **Cyberhandschuh** | Silver Sheath | `0x050B41` | **+82** | Omnitopia (Schrottplatz) |
+| `0x0A` | **Karmaring** | Shining Armlet | `0x050B50` | **+101** | Omnitopia (Shops) |
+| `0x0B` | **Elektroarmband** | Laser Glove | `0x050B5A` | **+122** | Omnitopia (Reaktor) |
 
 ---
 
 ## 5. Hundehalsbänder (Dog Collars)
 
-Die 4 Halsbänder für den Hund liegen in Bank `$05` ab Offset `0x050B69`.  
+Die 4 Halsbänder für den Hund liegen in Bank `$05` ab Offset `0x050B69`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:42AA`:
 Das aktuell ausgerüstete Halsband des Hundes liegt im WRAM an Adresse **`$7E0A9C`**.
 
-| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Epoche / Bereich |
-| :---: | :--- | :--- | :---: | :--- |
-| `0x00` | **Lederhalsband** | Leather Collar | `0x050B69` | Prähistorie |
-| `0x01` | **Nietenhalsband** | Spiky Collar | `0x050B77` | Antika (Allelachema) |
-| `0x02` | **Silberhalsband** | Defender Collar | `0x050B86` | Gotika (Terrorfels) |
-| `0x03` | **Juwelenhalsband** | Spot's Collar | `0x050B95` | Assitopia |
+| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
+| :---: | :--- | :--- | :---: | :---: | :--- |
+| `0x00` | **Lederhalsband** | Leather Collar | `0x050B69` | **+5** | Prähistorie |
+| `0x01` | **Nietenhalsband** | Spiky Collar | `0x050B77` | **+42** | Antika (Allelachema) |
+| `0x02` | **Silberhalsband** | Defender Collar | `0x050B86` | **+86** | Gotika (Terrorfels) |
+| `0x03` | **Juwelenhalsband** | Spot's Collar | `0x050B95` | **+135** | Omnitopia |
 
 ---
 

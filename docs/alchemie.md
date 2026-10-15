@@ -95,4 +95,87 @@ Die Anzahlen aller Zutaten liegen als 1-Byte-Werte (`0` bis `99` / `0x63`) ab WR
 | **Arnitamin** | `0x14` | `$7E2384` | 99 | Atlas Medallion |
 | **Eichel** | `0x15` | `$7E239A` | 99 | Acorn |
 
+---
+
+## 4. Testzauber & Debug-Magie (Entwickler-Befehle)
+
+In der deutschen ROM sind im Textblock von Bank `$05` unmittelbar vor den spielbaren Alchemie-Formeln (ab `$C5:0CA2` bzw. Dateioffset `0x050CA2`) **sieben unfertige Test- und Debug-Zauber** sowie neun Entwickler-Debugaktionen in englischer Originalsprache erhalten geblieben. Diese wurden von den Programmierern bei Square Soft während der Entwicklung für Kampf- und Grafikeffekt-Tests verwendet:
+
+| ID / Zeiger | Interner Name im ROM | Datei-Offset (PC) | SNES-Adresse | Funktion / Entwicklerzweck |
+| :---: | :--- | :---: | :---: | :--- |
+| **Debug-1** | `Magic: Thud Ball Missile` | `0x050CA2` | `$C5:0CA2` | Projektiltest: Feuert Schappschapp-/Thud-Projektile ab. |
+| **Debug-2** | `Magic: Orb2Missile` | `0x050CBB` | `$C5:0CBB` | Projektiltest Stufe 2: Magische Sphäre Stufe 2. |
+| **Debug-3** | `Magic: Orb3Missile` | `0x050CCE` | `$C5:0CCE` | Projektiltest Stufe 3: Magische Sphäre Stufe 3. |
+| **Debug-4** | `Magic: Shak'em to DEATH!` | `0x050CE1` | `$C5:0CE1` | Screen-Shake & Instant-Kill Testzauber. |
+| **Debug-5** | `Magic: Beam me up Scotty` | `0x050CFA` | `$C5:0CFA` | Star-Trek Hommage: Raum-Teleportations- und Escape-Test. |
+| **Debug-6** | `Magic: Thud Vortex` | `0x050D13` | `$C5:0D13` | Wirbel-Effekt Testzauber (Schappschapp-Vortex). |
+| **Debug-7** | `Magic: High Voltage` | `0x050D26` | `$C5:0D26` | Blitz- und Hochspannungs-Effekttest. |
+
+### Vorangehende Debug-Menü-Aktionen (ab `$C5:0BBE`)
+Direkt vor den Testzaubern liegen die Menüstrings für das integrierte SNES-Debugmenü:
+- `0x050BBE` (`$C5:0BBE`): `Debug: Show thud balls on path`
+- `0x050BDD` (`$C5:0BDD`): `Debug: Turn off both backgrounds`
+- `0x050BFE` (`$C5:0BFE`): `Debug: Show background 1 only`
+- `0x050C1C` (`$C5:0C1C`): `Debug: Show background 2 only`
+- `0x050C3A` (`$C5:0C3A`): `Debug: Show both backgrounds`
+- `0x050C57` (`$C5:0C57`): `Debug: Create a monster`
+- `0x050C6F` (`$C5:0C6F`): `Debug: Select map`
+- `0x050C81` (`$C5:0C81`): `Debug: Mode 7 Flight`
+- `0x050C96` (`$C5:0C96`): `Debug: Heel`
+- `0x050D3A` (`$C5:0D3A`): `ROM Creation Date`
+
+---
+
+## 5. Ungenutzte Übersetzungs-Entwürfe (Draft Strings)
+
+Im Textbereich der deutschen Lokalisierung existieren mehrere Zaubernamen und Beschreibungstexte, die während der Übersetzung von Claude M. Moyse angelegt, im fertigen Spiel jedoch vor dem Release durch andere Formulierungen ersetzt wurden:
+
+| Entwurfs-String (ROM) | Datei-Offset (PC) | SNES-Adresse | Ursprünglicher Zweck / Analyse |
+| :--- | :---: | :---: | :--- |
+| **`Kraftmeierei`** | `0x050E60` | `$C5:0E60` | Ursprünglicher Entwurf für *Atlas*, bevor die Formel zu Ehren von Arnold Schwarzenegger final in **Arnold** umbenannt wurde. |
+| **`Lehmgranaten`** | `0x050EB3` | `$C5:0EB3` | Ursprünglicher Entwurf für *Hard Ball* oder *Call Up*, später durch **Schlammbombe** bzw. **Zauberperlen** ersetzt. |
+| **`Zauberwand`** | `0x050F1D` | `$C5:0F1D` | Ursprünglicher Entwurf für *Barrier*, später durch **Superschild** ersetzt. |
+| **`Splitter`** | `0x050F28` | `$C5:0F28` | Ursprünglicher Entwurf für *Sting*, später durch **Bienenattacke** ersetzt. |
+| **`Hebt & bewegt schwere Gegenstände.`** | `0x051140` | `$C5:1140` | Ursprüngliche Beschreibung für *Telekinese* (*Levitate*), im Ringmenü ersetzt durch: *Räumt Felsen aus dem Weg.* |
+| **`Ziel wird heftig vollgeschlammt.`** | `0x0511FE` | `$C5:11FE` | Zugehörige Entwurfsbeschreibung zur verworfenen Formel *Lehmgranaten*. |
+| **`Schützt vor Zaubersprüchen.`** | `0x051300` | `$C5:1300` | Zugehörige Entwurfsbeschreibung zum Entwurf *Zauberwand*. |
+| **`Ziel bekämpft seinen Doppelgänger.`** | `0x05131C` | `$C5:131C` | Unbenutzte Zauberbeschreibung für einen Verwirrungs- oder Spiegelungszauber. |
+
+---
+
+## 6. Gegnerzauber & Boss-Magie (Enemy Magic)
+
+Gegner und Bosse verwenden ein eigenständiges Magiesystem. Im Binärcode werden 17 exklusive Gegnerzauber ab Datei-Offset `0x051491` geführt. Ihre Bindung an Animationen und Skripte erfolgt über die 8-Byte-Objekttabelle in Bank `$0E` ab `$0E:85D8`:
+
+| Interner Index | Deutscher Name (ROM) | Datei-Offset (PC) | SNES-Adresse | Animations-Zeiger | Typ / Einsatz |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| `0x0000` | **Hitzewelle** | `0x05149C` | `$C5:149C` | `$5BEE` | Feuerangriff (Bosse / Lavawürmer) |
+| `0x0002` | **Orkantornado** | `0x0514A7` | `$C5:14A7` | `$5BFA` | Wind- & Wirbelsturm-Magie |
+| `0x0004` | **Feuerhölle** | `0x051491` | `$C5:1491` | `$5BF6` | Starker Flächenfeuerzauber |
+| `0x0006` | **Zeitsprung** | `0x0514C2` | `$C5:14C2` | `$5BFE` | Zeitmanipulation / Verlangsamung |
+| `0x0008` | **Erste Hilfe** | `0x0514CD` | `$C5:14CD` | `$5C02` | Heilzauber für Gegner |
+| `0x000A` | **Konfusion** | `0x0514D9` | `$C5:14D9` | `$5C06` | Statuszauber: Verwirrt den Helden/Hund |
+| `0x000C` | **Blitzgenesung** | `0x0514E3` | `$C5:14E3` | `$5C0A` | Schnelle Regeneration von Boss-KP |
+| `0x000E` | **Aura** | `0x0514F1` | `$C5:14F1` | `$5C0E` | Schutz- und Stärkungsaura |
+| `0x0010` | **Schockwelle** | `0x0514F6` | `$C5:14F6` | `$5C12` | Erschütterungs- und Druckwellen-Angriff |
+| `0x0012` | **Schild** | `0x051502` | `$C5:1502` | `$5C16` | Physischer Abwehrschild |
+| `0x0014` | **Beulenpest** | `0x051509` | `$C5:1509` | `$5C1A` | Starker Vergiftungszauber |
+| `0x0016` | **Trance** | `0x051514` | `$C5:1514` | `$5C1E` | Schlaf- und Lähmungsmagie |
+| `0x0018` | **Regeneration** | `0x051525` | `$C5:1525` | `$5C22` | Kontinuierliche Selbstheilung |
+| `0x001A` | **Erzwinger** | `0x05151B` | `$C5:151B` | — | Zwangseffekt / Boss-Event |
+| `0x001C` | **Stromschock** | `0x051532` | `$C5:1532` | `$5C26` | Elektrischer Schockangriff |
+| `0x001E` | **Disruptor** | `0x05153E` | `$C5:153E` | `$5C2A` | Omnitopia-Laser & Desintegrationsangriff |
+| — | **Reinkarnation** | `0x0514B4` | `$C5:14B4` | `$5BF2` | Wiederbelebungseffekt (z. B. Phönix/Bosse) |
+
+### Kampf-Laufschrift-Tabelle (Battle HUD Spell Banner)
+Wenn im Gefecht ein Zauber gewirkt wird, lädt die SNES-Routine bei `$CD:D511` (`LDA $C5062B, X`) den anzuzeigenden Namen aus einer 23 Einträge umfassenden Zeigertabelle bei `$C5:062B` (`0x05062B`):
+- Enthält die animierten Spielerzauber (*Säureregen*, *Hitzeblitz*, *Höllenfaust*, *Energiesog*, *Supersog*, *Bienenattacke*, *Hagelsturm*, *Explosion*, *Säuresturm*, *Nitro*, *Unterbrechung*, *Feuerball*, *Heilaura*, *Krafthauch*, *Heilkraft*, *Frischzellen*, *Fegefeuer*, *Kraftfeld*).
+- Enthält direkt integriert die 5 aktiven Kampf-Gegnerzauber:
+  - `0x14D9`: **Konfusion**
+  - `0x149C`: **Hitzewelle**
+  - `0x14A7`: **Orkantornado**
+  - `0x153E`: **Disruptor**
+  - `0x1509`: **Beulenpest**
+
+
 

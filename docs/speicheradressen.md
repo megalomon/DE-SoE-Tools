@@ -31,14 +31,14 @@ Secret of Evermore besitzt 4 Zeitzonen mit jeweils eigener Währung. Alle Beträ
 | **Krallen** (Talons) | Prähistorie | `$7E0AC6` – `$7E0AC8` | 3 | 24-Bit Little-Endian |
 | **Juwelen / Edelsteine** (Jewels) | Antika (Nobilia) | **`$7E0AC9` – `$7E0ACB`** | 3 | 24-Bit Little-Endian |
 | **Goldmünzen** (Gold Coins) | Gotika | `$7E0ACC` – `$7E0ACE` | 3 | 24-Bit Little-Endian |
-| **Credits** | Omnitopia | `$7E0ACF` – `$7E0AD1` | 3 | 24-Bit Little-Endian |
+| **Kreditkarten** (Credits) | Omnitopia | `$7E0ACF` – `$7E0AD1` | 3 | 24-Bit Little-Endian |
 
 - **Aktiver Währungs-Offset:** `$7E2348`  
   Gibt an, welche Währung aktuell im Menü und bei Händlern genutzt wird:
   - `0x00`: Krallen
   - `0x03`: Juwelen
   - `0x06`: Goldmünzen
-  - `0x09`: Credits
+  - `0x09`: Kreditkarten
 
 *(Routine zur Währungsänderung im deutschen ROM: `$8C:D940` – `ADC $000AC6, X`).*
 

@@ -26,32 +26,32 @@ $$\text{Bitmaske} = 1 \ll (F \ \& \ 7)$$
 
 Wird ein Boss besiegt, setzt die Skript-Engine das entsprechende Flag auf `1`. Dies steuert den Raumwechsel, das Freischalten von Ausgängen und das Einstellen der Kampfmusik:
 
-| Flag-ID | WRAM-Adresse | Bit & Maske | Boss / Gegner (DE-ROM) | Ort / Gebiet (DE-ROM) |
-| :---: | :---: | :---: | :--- | :--- |
-| **`0x0044`** | `$7E2260` | Bit 4 (`0x10`) | **Vulgor** (Thraxx) | Käfersteppe (Prähistorie) |
-| **`0x0037`** | `$7E225E` | Bit 7 (`0x80`) | **Moorhexe** (Salabog) | Sumpf (Prähistorie) |
-| **`0x003A`** | `$7E225F` | Bit 2 (`0x04`) | **Viper Commander** | Mammut-Friedhof (Prähistorie) |
-| **`0x0024`** | `$7E225C` | Bit 4 (`0x10`) | **Vulkan Viper Commander** | Vulkan-Höhle (Prähistorie) |
-| **`0x0046`** | `$7E2260` | Bit 6 (`0x40`) | **Magmar** (Lavaboss) | Vulkangipfel (Prähistorie) |
-| **`0x043F`** | `$7E22DF` | Bit 7 (`0x80`) | **Höhlen-Raptoren** | Raptor-Kluft (Prähistorie) |
-| **`0x0023`** | `$7E225C` | Bit 3 (`0x08`) | **Monsterqualle** (Aquagoth) | Schiffswrack (Antika) |
-| **`0x0025`** | `$7E225C` | Bit 5 (`0x20`) | **Mad Monk** | Hektors Camp / Oase (Antika) |
-| **`0x003D`** | `$7E225F` | Bit 5 (`0x20`) | **Vigor** (Gladiator) | Allelachema Arena (Antika) |
-| **`0x0406`** | `$7E22D8` | Bit 6 (`0x40`) | **Bastet / Rimsala** | Pyramide Spitze (Antika) |
-| **`0x0407`** | `$7E22D8` | Bit 7 (`0x80`) | **Panzerminos** (Megataur) | Collosia Tempel (Antika) |
-| **`0x040B`** | `$7E22D9` | Bit 3 (`0x08`) | **Aegis** | Allelachema Marktplatz (Antika) |
-| **`0x045D`** | `$7E22E3` | Bit 5 (`0x20`) | **Minitaurus** (Tiny) | Pyramide Untergeschoss (Antika) |
-| **`0x0428`** | `$7E22DD` | Bit 0 (`0x01`) | **Rattus** (Verminator) | Chaosturm Kanalisation (Gotika) |
-| **`0x0429`** | `$7E22DD` | Bit 1 (`0x02`) | **Feuerdrache** (Sterling) | Chaosturm Schlosshof (Gotika) |
-| **`0x042A`** | `$7E22DD` | Bit 2 (`0x04`) | **Baumdrache** (Timberdrake) | Schattenwald (Gotika) |
-| **`0x0438`** | `$7E22DF` | Bit 0 (`0x01`) | **Doppelgänger** (Bad Boys) | Schattenwald (Gotika) |
-| **`0x0456`** | `$7E22E2` | Bit 6 (`0x40`) | **Dr. Gallenstein & Dr. Nierenfels** | Chaosturm Labor (Gotika) |
-| **`0x046E`** | `$7E22E5` | Bit 6 (`0x40`) | **Mungola** (Puppenspieler) | Terrorfels Puppentheater (Gotika) |
-| **`0x0470`** | `$7E22E6` | Bit 0 (`0x01`) | **Footknight** | Terrorfels Burgtor (Gotika) |
-| **`0x0477`** | `$7E22E6` | Bit 7 (`0x80`) | **Fratzenwand** (Wall Face) | Schachbrett-Verlies (Gotika) |
-| **`0x0486`** | `$7E22E8` | Bit 6 (`0x40`) | **Gorvul** (Coleoptera) | Vulkan-Röhrenlabyrinth (Prähistorie) |
-| **`0x048E`** | `$7E22E9` | Bit 6 (`0x40`) | **Minitaur** | Kerker (Gotika) |
-| **`0x04CE`** | `$7E22F1` | Bit 6 (`0x40`) | **Edgars Roboter** | Finaler Thronsaal Assitopia (Endboss) |
+| Flag-ID | WRAM-Adresse | Bit & Maske | Boss / Gegner (DE-ROM) | US-Originalname | Ort / Gebiet (DE-ROM) |
+| :---: | :---: | :---: | :--- | :--- | :--- |
+| **`0x0044`** | `$7E2260` | Bit 4 (`0x10`) | **Vulgor** (`$C5:1694`) | Thraxx | Käfersteppe (Prähistorie) |
+| **`0x0037`** | `$7E225E` | Bit 7 (`0x80`) | **Sumpfmonster** (`$C5:161B`) | Salabog | Sumpf (Prähistorie) |
+| **`0x003A`** | `$7E225F` | Bit 2 (`0x04`) | **Knochenviper** (`$C5:160E`) | Viper Commander | Mammut-Friedhof (Prähistorie) |
+| **`0x0024`** | `$7E225C` | Bit 4 (`0x10`) | **Knochenviper (Vulkan)** | Magma Viper | Vulkan-Höhle (Prähistorie) |
+| **`0x0046`** | `$7E2260` | Bit 6 (`0x40`) | **Lavarex** (`$C5:1728`) | Magmar | Vulkangipfel (Prähistorie) |
+| **`0x043F`** | `$7E22DF` | Bit 7 (`0x80`) | **Raptor** (`$C5:1642`) | Cave Raptors | Raptor-Kluft (Prähistorie) |
+| **`0x0023`** | `$7E225C` | Bit 3 (`0x08`) | **Monsterqualle** (`$C5:175E`) | Aquagoth | Schiffswrack (Antika) |
+| **`0x0025`** | `$7E225C` | Bit 5 (`0x20`) | **Sachmet & Ureus** (`$C5:16F9`) | Mad Monk | Hektors Camp / Oase (Antika) |
+| **`0x003D`** | `$7E225F` | Bit 5 (`0x20`) | **Vigor** (`$C5:1758`) | Vigor | Allelachema Arena (Antika) |
+| **`0x0406`** | `$7E22D8` | Bit 6 (`0x40`) | **Bastet** (`$C5:1744`) | Rimsala | Pyramide Spitze (Antika) |
+| **`0x0407`** | `$7E22D8` | Bit 7 (`0x80`) | **Panzerminos** (`$C5:183B`) | Megataur | Collosia Tempel (Antika) |
+| **`0x040B`** | `$7E22D9` | Bit 3 (`0x08`) | **Aegis** (`$C5:17AC`) | Aegis | Allelachema Marktplatz (Antika) |
+| **`0x045D`** | `$7E22E3` | Bit 5 (`0x20`) | **Minitaurus** (`$C5:171D`) | Tiny | Pyramide Untergeschoss (Antika) |
+| **`0x0428`** | `$7E22DD` | Bit 0 (`0x01`) | **Rattus** (`$C5:1788`) | Verminator | Chaosturm Kanalisation (Gotika) |
+| **`0x0429`** | `$7E22DD` | Bit 1 (`0x02`) | **Feuerdrache** (`$C5:178F`) | Sterling | Chaosturm Schlosshof (Gotika) |
+| **`0x042A`** | `$7E22DD` | Bit 2 (`0x04`) | **Baumdrache** (`$C5:179B`) | Timberdrake | Schattenwald (Gotika) |
+| **`0x0438`** | `$7E22DF` | Bit 0 (`0x01`) | **Doppelgänger** (`$C5:18FB`) | Bad Boys | Schattenwald (Gotika) |
+| **`0x0456`** | `$7E22E2` | Bit 6 (`0x40`) | **Dr. Gallenstein & Dr. Nierenfels** | Mad Doctor | Chaosturm Labor (Gotika) |
+| **`0x046E`** | `$7E22E5` | Bit 6 (`0x40`) | **Faustus, Mephista & Lakosius** | Mungola (Puppen) | Terrorfels Puppentheater (Gotika) |
+| **`0x0470`** | `$7E22E6` | Bit 0 (`0x01`) | **Cybermax** (`$C5:17C0`) | Footknight | Terrorfels Burgtor (Gotika) |
+| **`0x0477`** | `$7E22E6` | Bit 7 (`0x80`) | **Fratzenwand** (`$C5:1923`) | Wall Face | Schachbrett-Verlies (Gotika) |
+| **`0x0486`** | `$7E22E8` | Bit 6 (`0x40`) | **Gorvul** (`$C5:16A7`) | Coleoptera | Vulkan-Röhrenlabyrinth (Prähistorie) |
+| **`0x048E`** | `$7E22E9` | Bit 6 (`0x40`) | **Minitaur** | Minitaur | Kerker (Gotika) |
+| **`0x04CE`** | `$7E22F1` | Bit 6 (`0x40`) | **Edgars Roboter & Edgar** (`$C5:18E0`) | Carltron's Robot | Finaler Thronsaal Omnitopia (Endboss) |
 
 ---
 
