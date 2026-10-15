@@ -95,16 +95,4 @@ Die Anzahlen aller Zutaten liegen als 1-Byte-Werte (`0` bis `99` / `0x63`) ab WR
 | **Arnitamin** | `0x14` | `$7E2384` | 99 | Atlas Medallion |
 | **Eichel** | `0x15` | `$7E239A` | 99 | Acorn |
 
----
 
-## 4. Mesen2 Cheat-Codes für Alchemie
-
-### Alle 35 Zauber auf Level 9:00 setzen
-Navigiere im Mesen2 Memory Viewer zu **`$7E2F98`** und überschreibe die 70 Bytes von `$7E2F98` bis `$7E2FDD` mit:
-```text
-09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00
-09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00
-09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00 09 00
-09 00 09 00 09 00 09 00 09 00
-```
-Und setze optional die XP-Werte an **`$7E2F52` bis `$7E2F97`** auf `00 00 00 00 ...`.

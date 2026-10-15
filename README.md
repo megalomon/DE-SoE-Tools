@@ -55,7 +55,7 @@ Ausführliche, deutschsprachige Dokumente nach Vorbild von DataCrystal (speziell
 - [**`docs/alchemie.md`**](docs/alchemie.md) – Alle 35 Zauberformeln mit echten deutschen Ingame-Namen, Rezepten, XP/Level-Adressen & Zutaten.
 - [**`docs/ausruestung_items.md`**](docs/ausruestung_items.md) – Alle Waffen, Rüstungen, Helme, Armbänder, Hundehalsbänder, Verbrauchsitems, Allelachema-Tauschwaren & Relikte.
 - [**`docs/event_flags.md`**](docs/event_flags.md) – Story- & Event-Flags, alle 24 Bosse (*Vulgor*, *Gorvul*, *Moorhexe*, etc.), Allelachema-Markt-Tauschflags & Sniff-Spots.
-- [**`docs/speicheradressen.md`**](docs/speicheradressen.md) – WRAM-Systemübersicht: Währungen, Waffenlevel (16-Bit Word), Items & Mesen2-Cheats.
+- [**`docs/speicheradressen.md`**](docs/speicheradressen.md) – WRAM-Systemübersicht: Währungen, Waffenlevel (16-Bit Word), Items & System-Offsets.
 - [**`docs/maps.md`**](docs/maps.md) – Komplette Tabelle aller 127 Maps mit echten deutschen Ortsnamen (*Allelachema*, *Krozkrübel*, *Terrorfels*, *Chaosturm*, *Assitopia*), SNES-Headern, Enter-Skripten und Triggern.
 - [**`docs/sigil_skripte.md`**](docs/sigil_skripte.md) – SIGIL Script-Engine, Opcode-Referenz und Kontrollfluss.
 - [**`docs/text_dekomprimierung.md`**](docs/text_dekomprimierung.md) – 65816-Markov-Huffman-Dekomprimierer und Text-Steuerzeichen.
@@ -85,9 +85,9 @@ Im Gegensatz zur US-ROM gelten für `Secret of Evermore (Germany).sfc` (SHA-1 / 
 ## WRAM-Referenz (Deutsche ROM)
 
 > [!TIP]
-> Die vollständige, detaillierte Dokumentation aller Speicheradressen (inklusive aller 35 Zauberformeln, aller 22 Zutaten, Verbrauchsitems, Story-Flags und Mesen2-Cheats) befindet sich in [**`docs/speicheradressen.md`**](docs/speicheradressen.md).
+> Die vollständige, detaillierte Dokumentation aller Speicheradressen (inklusive aller 35 Zauberformeln, aller 22 Zutaten, Verbrauchsitems und Story-Flags) befindet sich in [**`docs/speicheradressen.md`**](docs/speicheradressen.md).
 
-Für Emulator-Skripte (z. B. Mesen2 / TAS) und Romhacks:
+Für Romhacks, Skripte und TAS-Analysen:
 
 ### Währungen (24-Bit Little-Endian)
 - **Krallen (Prähistorie):** `$7E0AC6` – `$7E0AC8`

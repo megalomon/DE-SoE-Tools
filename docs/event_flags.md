@@ -102,23 +102,4 @@ Der Speicherbereich von **`$7E2265` bis `$7E22D9`** (Flags `0x0068` bis `0x040F`
 - Jedes Mal, wenn der Hund an einer Stelle eine Zutat ausgräbt, wird das zugehörige Bit auf `1` gesetzt.
 - Dadurch wird verhindert, dass der Hund dieselbe Zutat an exakt derselben Stelle unendlich oft hintereinander ausgräbt, bis das Gebiet neu betreten oder zurückgesetzt wird.
 
----
 
-## 6. Praxis-Anleitung: Flags in Mesen2 manipulieren
-
-### Ein Flag zurücksetzen (z. B. Chocobo-Ei erneut ertauschen)
-Das Chocobo-Ei liegt an **Flag `0x004E`** $\rightarrow$ WRAM-Adresse **`$7E2261`**, **Bit 6** (Maske `0x40`).
-
-1. Öffne in Mesen2 den Memory Viewer (`Debug` $\rightarrow$ `Memory Viewer`).
-2. Navigiere zu `$7E2261`.
-3. Lies den aktuellen Byte-Wert ab (z. B. `0x78` = Binär `0111 1000`).
-4. Um Bit 6 zu löschen, subtrahiere `0x40` (oder wende bitweises `AND NOT 0x40` an):
-   $$0x78 - 0x40 = 0x38$$
-5. Schreibe `38` an Adresse `$7E2261`. Der Töpfer bietet das Ei nun sofort wieder an!
-
-### Ein Flag setzen (z. B. Boss als besiegt markieren)
-Möchtest du einen Boss überspringen (z. B. Vigor im Kolosseum = Flag `0x003D` an `$7E225F`, Bit 5 = `0x20`):
-1. Lies den Wert an `$7E225F` ab (z. B. `0x04`).
-2. Führe ein bitweises OR mit der Maske durch:
-   $$0x04 \ | \ 0x20 = 0x24$$
-3. Schreibe `24` an Adresse `$7E225F`. Vigor gilt sofort als besiegt.

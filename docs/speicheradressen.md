@@ -19,7 +19,6 @@ Diese Dokumentation bietet eine vollständige, disassemblierte und verifizierte 
 7. [WRAM: Story- & Event-Flags (Bitfield)](#7-wram-story---event-flags-bitfield)
 8. [WRAM: Ausrüstung & Verbrauchs-Items](#8-wram-ausrüstung--verbrauchs-items)
 9. [ROM: Wichtige Offsets & Zeigertabellen](#9-rom-wichtige-offsets--zeigertabellen)
-10. [Mesen2 Cheat- & Praxis-Guide](#10-mesen2-cheat---praxis-guide)
 
 ---
 
@@ -178,11 +177,7 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 | :---: | :--- | :---: | :---: | :--- |
 | **`0x004E`** | **Chocobo-Ei** (Pot Trader Nobilia) | **`$7E2261`** | `0x40` (Bit 6) | `1` = Ei erhalten / getauscht |
 | **`0x0052`** | **Mythenschärpe** (Magic Gourd) | **`$7E2262`** | `0x04` (Bit 2) | `1` = Schärpe im Besitz |
-| **`0x002B`** | Nobilia Markt Einlass / Eintritt | `$7E225D` | `0x08` (Bit 3) | `1` = Tor offen |
-
-> [!TIP]
-> **Chocobo-Ei erneut ertauschen:**  
-> Setze in Mesen2 an Adresse **`$7E2261`** das Bit 6 auf `0` (z. B. wenn das Byte `0x78` ist, ändere es auf `0x38`), damit der Töpfer das Chocobo-Ei erneut anbietet.
+| **`0x002B`** | Allelachema Markt Einlass / Eintritt | `$7E225D` | `0x08` (Bit 3) | `1` = Tor offen |
 
 ---
 
@@ -224,27 +219,4 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 | **8×8 Sprite-Blöcke** | `$D8:0000` | `0x180000` | 6.265 komprimierte 8×8 Tiles |
 | **Charakter- & Gegnerdaten** | `$8E:B678` | `0x0EB678` | 142 Tabelleneinträge à 74 Bytes |
 
----
 
-## 10. Mesen2 Cheat- & Praxis-Guide
-
-### A. Alle 12 normalen Waffen auf Level 3:00 maxen
-Öffne in Mesen2 den **Memory Viewer** (`Debug` → `Memory Viewer`), navigiere zu WRAM `$7E0ADF` und überschreibe die 24 aufeinanderfolgenden Bytes von **`$7E0ADF` bis `$7E0AF6`** mit:
-
-```text
-00 03 00 03 00 03 00 03 00 03 00 03 00 03 00 03 00 03 00 03 00 03 00 03
-```
-Und für den **Hund** an **`$7E0B07`**:
-```text
-00 03
-```
-
-### B. Maximales Geld für alle Zeitzonen
-Setze die folgenden 12 Bytes ab **`$7E0AC6`**:
-```text
-FF FF FF  FF FF FF  FF FF FF  FF FF FF
-```
-Ergibt **16.777.215** Krallen, Juwelen, Goldmünzen und Credits.
-
-### C. 99 Stück aller Alchemie-Zutaten
-Setze den 44-Byte-Block ab **`$7E2370` bis `$7E239B`** auf `63 00 63 00 ...` (jede Zutat auf `0x63` = 99 decimal).
