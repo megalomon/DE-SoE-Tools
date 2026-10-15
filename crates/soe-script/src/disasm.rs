@@ -50,7 +50,10 @@ impl<'a> Disassembler<'a> {
                         max_jump_target = target;
                     }
                 }
-                Instruction::If { target_offset, .. } | Instruction::IfNot { target_offset, .. } => {
+                Instruction::If { target_offset, .. }
+                | Instruction::IfNot { target_offset, .. }
+                | Instruction::IfEqual { target_offset, .. }
+                | Instruction::IfNotEqual { target_offset, .. } => {
                     let target = (cur_file_off as isize + *target_offset as isize) as usize;
                     if target > max_jump_target {
                         max_jump_target = target;
@@ -61,15 +64,6 @@ impl<'a> Disassembler<'a> {
                     let target = (cur_file_off as isize + *target_offset as isize) as usize;
                     if target > max_jump_target {
                         max_jump_target = target;
-                    }
-                }
-                Instruction::Raw { opcode: 0x8E | 0x8F, payload } => {
-                    if payload.len() >= 2 {
-                        let off = i16::from_le_bytes([payload[payload.len() - 2], payload[payload.len() - 1]]);
-                        let target = (cur_file_off as isize + off as isize) as usize;
-                        if target > max_jump_target {
-                            max_jump_target = target;
-                        }
                     }
                 }
                 _ => {}
@@ -197,11 +191,11 @@ impl<'a> Disassembler<'a> {
                 (Instruction::WriteVarFast { addr, val }, true)
             }
             0x1B => {
-                let _w1 = self.read_u16(cur_file_off);
-                let _w2 = self.read_u16(cur_file_off);
-                let _b1 = self.read_u8(cur_file_off);
-                let _b2 = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let w1 = self.read_u16(cur_file_off);
+                let w2 = self.read_u16(cur_file_off);
+                let b1 = self.read_u8(cur_file_off);
+                let b2 = self.read_u8(cur_file_off);
+                (Instruction::SetRamPairsX8 { w1, w2, b1, b2 }, true)
             }
             0x20 => {
                 let x = self.read_u8(cur_file_off);
@@ -220,8 +214,8 @@ impl<'a> Disassembler<'a> {
                 (Instruction::ChangeMap { x, y, map }, true)
             }
             0x23 => {
-                let _scroll = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let val = self.read_u16(cur_file_off);
+                (Instruction::SetBgScroll(val), true)
             }
             0x26 => (Instruction::FadeIn, true),
             0x27 => (Instruction::FadeOut, true),
@@ -246,47 +240,54 @@ impl<'a> Disassembler<'a> {
                 let id = self.read_u8(cur_file_off);
                 (Instruction::PlayMusic(id), true)
             }
-            0x38 | 0x3A => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x38 | 0x3A => (Instruction::Yield { opcode }, true),
             0x3C => {
-                for _ in 0..6 { self.read_u8(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let npc_type = self.read_u16(cur_file_off);
+                let param = self.read_u16(cur_file_off);
+                let x = self.read_u8(cur_file_off);
+                let y = self.read_u8(cur_file_off);
+                (Instruction::SpawnNpcParam { npc_type, param, x, y }, true)
             }
             0x3D => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _w = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let script_id = self.read_u16(cur_file_off);
+                (Instruction::AttachScript { target, script_id }, true)
             }
             0x3F => {
-                let _e = self.parse_sub(cur_file_off);
-                let _w1 = self.read_u16(cur_file_off);
-                let _w2 = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let w1 = self.read_u16(cur_file_off);
+                let w2 = self.read_u16(cur_file_off);
+                (Instruction::SetNpcScript { target, w1, w2 }, true)
             }
             0x42 => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _w = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let speed = self.read_u16(cur_file_off);
+                (Instruction::SetEntitySpeed { target, speed }, true)
             }
             0x43 => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _x = self.parse_sub(cur_file_off);
-                let _y = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let x = self.parse_sub(cur_file_off);
+                let y = self.parse_sub(cur_file_off);
+                (Instruction::SetEntityPos { target, x, y }, true)
             }
             0x44..=0x47 => {
-                for _ in 0..5 { self.read_u8(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let window = self.read_u8(cur_file_off);
+                let x = self.read_u8(cur_file_off);
+                let y = self.read_u8(cur_file_off);
+                let w = self.read_u8(cur_file_off);
+                let h = self.read_u8(cur_file_off);
+                (Instruction::SetWindowSize { opcode, window, x, y, w, h }, true)
             }
-            0x48..=0x4B => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x48..=0x4B => (Instruction::ResetWindowDefaults(opcode - 0x48), true),
             0x4C => {
-                let _b = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let b = self.read_u8(cur_file_off);
+                (Instruction::NopSkipByte(b), true)
             }
-            0x4D => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x4D => (Instruction::Nop, true),
             0x50 => {
-                let _win = self.read_u8(cur_file_off);
-                let _txt = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let window = self.read_u8(cur_file_off);
+                let text_id = self.read_u16(cur_file_off);
+                (Instruction::ShowWindowText { window, text_id }, true)
             }
             0x51 => {
                 let text_id = self.read_u16(cur_file_off);
@@ -297,64 +298,84 @@ impl<'a> Disassembler<'a> {
                 (Instruction::ShowTextEnd(text_id), true)
             }
             0x54 => {
-                let _win = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let window = self.read_u8(cur_file_off);
+                (Instruction::HideWindowText(window), true)
             }
             0x55 => (Instruction::HideText, true),
-            0x58 | 0x59 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
-            0x5A | 0x5B => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x58 => (Instruction::FadeInMusic, true),
+            0x59 => (Instruction::FadeOutMusic, true),
+            0x5A => (Instruction::DisableInterrupts, true),
+            0x5B => (Instruction::EnableInterrupts, true),
             0x5C => {
-                let _e1 = self.parse_sub(cur_file_off);
-                let _e2 = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let arg1 = self.parse_sub(cur_file_off);
+                let arg2 = self.parse_sub(cur_file_off);
+                (Instruction::MapEffect5C { arg1, arg2 }, true)
             }
             0x5D | 0x5E => {
-                let _e = self.parse_sub(cur_file_off);
-                let _w = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let attr = self.read_u16(cur_file_off);
+                (Instruction::SetTileAttr { opcode, target, attr }, true)
             }
             0x62 => {
-                let _b = self.read_u8(cur_file_off);
-                let _w1 = self.read_u16(cur_file_off);
-                let _w2 = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let id = self.read_u8(cur_file_off);
+                let x = self.read_u16(cur_file_off);
+                let y = self.read_u16(cur_file_off);
+                (Instruction::SetAmbientActorPos { id, x, y }, true)
             }
-            0x63 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
-            0x65 | 0x66 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
-            0x69 | 0x6A => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x63 => (Instruction::WaitPathEnd, true),
+            0x65 => (Instruction::EnableBg1, true),
+            0x66 => (Instruction::DisableBg1, true),
+            0x69 => (Instruction::EnableBg2, true),
+            0x6A => (Instruction::DisableBg2, true),
             0x6C | 0x6E => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _cx = self.read_u8(cur_file_off);
-                let _cy = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let cx = self.read_u8(cur_file_off);
+                let cy = self.read_u8(cur_file_off);
+                (Instruction::SetEntityPosFast { opcode, target, cx, cy }, true)
             }
             0x6D | 0x6F => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _dx = self.parse_sub(cur_file_off);
-                let _dy = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let dx = self.parse_sub(cur_file_off);
+                let dy = self.parse_sub(cur_file_off);
+                (Instruction::SetEntityPosRelFast { opcode, target, dx, dy }, true)
             }
-            0x70 | 0x71 => {
-                let _e1 = self.parse_sub(cur_file_off);
-                let _e2 = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x70 => {
+                let a = self.parse_sub(cur_file_off);
+                let b = self.parse_sub(cur_file_off);
+                (Instruction::EntityFaceEntity { a, b }, true)
+            }
+            0x71 => {
+                let a = self.parse_sub(cur_file_off);
+                let b = self.parse_sub(cur_file_off);
+                (Instruction::FaceEachOther { a, b }, true)
             }
             0x73 => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _x = self.parse_sub(cur_file_off);
-                let _y = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let x = self.parse_sub(cur_file_off);
+                let y = self.parse_sub(cur_file_off);
+                (Instruction::MoveEntityTo { target, x, y }, true)
             }
-            0x78 | 0x79 => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _anim = self.read_u16(cur_file_off);
-                let _e = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x78 => {
+                let target = self.parse_sub(cur_file_off);
+                let anim = self.read_u16(cur_file_off);
+                let speed = self.parse_sub(cur_file_off);
+                (Instruction::PlayEntityAnim { target, anim, speed }, true)
             }
-            0x7A | 0x7B => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _e = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x79 => {
+                let target = self.parse_sub(cur_file_off);
+                let anim = self.read_u16(cur_file_off);
+                let speed = self.parse_sub(cur_file_off);
+                (Instruction::PlayEntityAnimWait { target, anim, speed }, true)
+            }
+            0x7A => {
+                let target = self.parse_sub(cur_file_off);
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::WriteWramByte { target, val }, true)
+            }
+            0x7B => {
+                let target = self.parse_sub(cur_file_off);
+                let val = self.parse_sub(cur_file_off);
+                (Instruction::WriteWramWord { target, val }, true)
             }
             0x7C => {
                 let currency = self.parse_sub(cur_file_off);
@@ -371,47 +392,65 @@ impl<'a> Disassembler<'a> {
                 (Instruction::TakeMoney { currency, amount }, true)
             }
             0x7E => {
-                for _ in 0..3 { self.parse_sub(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let arg1 = self.parse_sub(cur_file_off);
+                let arg2 = self.parse_sub(cur_file_off);
+                let arg3 = self.parse_sub(cur_file_off);
+                let arg4 = self.parse_sub(cur_file_off);
+                (Instruction::ScriptCmd7E { arg1, arg2, arg3, arg4 }, true)
             }
             0x7F => {
-                let _w = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.read_u16(cur_file_off);
+                (Instruction::ShowNamingScreen(target), true)
             }
-            0x80..=0x83 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
-            0x88 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x80 => (Instruction::ShowHudAll, true),
+            0x81 => (Instruction::HideHudAll, true),
+            0x82 => (Instruction::RestoreMainScreenLayers, true),
+            0x83 => (Instruction::SetSubScreenLayers, true),
+            0x88 => (Instruction::ClearShopMenu, true),
             0x8C => {
-                let _txt = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let msg_id = self.read_u16(cur_file_off);
+                (Instruction::ShowMessage(msg_id), true)
             }
             0x8D => {
-                let _b = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let vol = self.read_u8(cur_file_off);
+                (Instruction::SetMusicVolume(vol), true)
             }
-            0x8E | 0x8F => {
-                let _e1 = self.parse_sub(cur_file_off);
-                let _e2 = self.parse_sub(cur_file_off);
-                let _off = self.read_i16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x8E => {
+                let left = self.parse_sub(cur_file_off);
+                let right = self.parse_sub(cur_file_off);
+                let target_offset = self.read_i16(cur_file_off);
+                (Instruction::IfEqual { left, right, target_offset }, true)
+            }
+            0x8F => {
+                let left = self.parse_sub(cur_file_off);
+                let right = self.parse_sub(cur_file_off);
+                let target_offset = self.read_i16(cur_file_off);
+                (Instruction::IfNotEqual { left, right, target_offset }, true)
             }
             0x96 => {
-                let _x = self.parse_sub(cur_file_off);
-                let _y = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let x = self.parse_sub(cur_file_off);
+                let y = self.parse_sub(cur_file_off);
+                (Instruction::SetCameraBase { x, y }, true)
             }
             0x97 => {
-                for _ in 0..7 { self.parse_sub(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..7 {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                (Instruction::ShakeScreenComplex(args), true)
             }
             0x99 => {
-                for _ in 0..6 { self.parse_sub(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..6 {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                (Instruction::EnterMode7Map(args), true)
             }
             0x9D => {
-                let _ent = self.parse_sub(cur_file_off);
-                let _x = self.parse_sub(cur_file_off);
-                let _y = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let target = self.parse_sub(cur_file_off);
+                let x = self.parse_sub(cur_file_off);
+                let y = self.parse_sub(cur_file_off);
+                (Instruction::SetEntityPosExpr { target, x, y }, true)
             }
             0x9E | 0xAC => {
                 let target = self.parse_sub(cur_file_off);
@@ -428,21 +467,23 @@ impl<'a> Disassembler<'a> {
                 }
                 (Instruction::CastAlchemy { opcode, target, spell, level, extra }, true)
             }
-            0x9F..=0xA1 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x9F => (Instruction::ShowCurrencyHud, true),
+            0xA0 => (Instruction::UpdateCurrencyHud, true),
+            0xA1 => (Instruction::HideCurrencyHud, true),
             0xA2 => {
-                let _type = self.read_u16(cur_file_off);
-                let _param = self.read_u16(cur_file_off);
-                let _x = self.parse_sub(cur_file_off);
-                let _y = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let npc_type = self.read_u16(cur_file_off);
+                let param = self.read_u16(cur_file_off);
+                let x = self.parse_sub(cur_file_off);
+                let y = self.parse_sub(cur_file_off);
+                (Instruction::SpawnNpc { npc_type, param, x, y }, true)
             }
             0xA3 => {
-                let _idx = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let idx = self.read_u8(cur_file_off);
+                (Instruction::CallTableByte(idx), true)
             }
             0xA4 => {
-                let _idx = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let idx = self.read_u16(cur_file_off);
+                (Instruction::CallTableWord(idx), true)
             }
             0xA5 => {
                 let off = self.read_i8(cur_file_off);
@@ -460,65 +501,106 @@ impl<'a> Disassembler<'a> {
                 let frames = self.read_u16(cur_file_off);
                 (Instruction::SleepWord(frames), true)
             }
-            0xAA => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0xAA => (Instruction::SetCanineAiTargeting, true),
             0xAB => (Instruction::ResetGame, true),
             0xAD => {
-                for _ in 0..6 { self.read_u8(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let w1 = self.read_u16(cur_file_off);
+                let w2 = self.read_u16(cur_file_off);
+                let b1 = self.read_u8(cur_file_off);
+                let b2 = self.read_u8(cur_file_off);
+                (Instruction::SetTempPairsX8 { w1, w2, b1, b2 }, true)
             }
             0xAE => {
-                for _ in 0..4 { self.read_u8(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let arg1 = self.read_u8(cur_file_off);
+                let arg2 = self.read_u8(cur_file_off);
+                let b1 = self.read_u8(cur_file_off);
+                let b2 = self.read_u8(cur_file_off);
+                (Instruction::SetArgPairsX8 { arg1, arg2, b1, b2 }, true)
             }
             0xAF => {
                 let count = self.read_u8(cur_file_off);
-                for _ in 0..count { self.parse_sub(cur_file_off); }
-                let _addr = self.read_u24(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..count {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                let script_addr = self.read_u24(cur_file_off);
+                let addr = Rom::script_to_rom_addr(script_addr);
+                (Instruction::CallParams { args, addr }, true)
             }
             0xB0 => {
                 let count = self.read_u8(cur_file_off);
-                for _ in 0..count { self.parse_sub(cur_file_off); }
-                let _idx = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..count {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                let idx = self.read_u8(cur_file_off);
+                (Instruction::CallTableByteParams { args, idx }, true)
             }
             0xB1 => {
                 let count = self.read_u8(cur_file_off);
-                for _ in 0..count { self.parse_sub(cur_file_off); }
-                let _idx = self.read_u16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..count {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                let idx = self.read_u16(cur_file_off);
+                (Instruction::CallTableWordParams { args, idx }, true)
             }
             0xB2 => {
                 let count = self.read_u8(cur_file_off);
-                for _ in 0..count { self.parse_sub(cur_file_off); }
-                let _off = self.read_i8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..count {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                let offset = self.read_i8(cur_file_off);
+                (Instruction::CallRelativeByteParams { args, offset }, true)
             }
             0xB3 => {
                 let count = self.read_u8(cur_file_off);
-                for _ in 0..count { self.parse_sub(cur_file_off); }
-                let _off = self.read_i16(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..count {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                let offset = self.read_i16(cur_file_off);
+                (Instruction::CallRelativeWordParams { args, offset }, true)
             }
             0xB4 => {
                 let count = self.read_u8(cur_file_off);
-                for _ in 0..count { self.parse_sub(cur_file_off); }
-                let _addr = self.read_u24(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..count {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                let script_addr = self.read_u24(cur_file_off);
+                let addr = Rom::script_to_rom_addr(script_addr);
+                (Instruction::ForkParams { args, addr }, true)
             }
             0xB5 => {
-                for _ in 0..8 { self.parse_sub(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..8 {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                (Instruction::PaletteFadeCustom(args), true)
             }
             0xB6 => {
-                for _ in 0..4 { self.parse_sub(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let mut args = Vec::new();
+                for _ in 0..4 {
+                    args.push(self.parse_sub(cur_file_off));
+                }
+                (Instruction::StartPaletteCycle(args), true)
             }
-            0xBA | 0xC2 => {
-                for _ in 0..3 { self.read_u8(cur_file_off); }
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0xBA => {
+                let b1 = self.read_u8(cur_file_off);
+                let b2 = self.read_u8(cur_file_off);
+                let b3 = self.read_u8(cur_file_off);
+                (Instruction::SpawnEntity { b1, b2, b3 }, true)
             }
-            0xBC..=0xC1 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0xC2 => {
+                let b1 = self.read_u8(cur_file_off);
+                let b2 = self.read_u8(cur_file_off);
+                let b3 = self.read_u8(cur_file_off);
+                (Instruction::SpawnEntityExtra { b1, b2, b3 }, true)
+            }
+            0xBC | 0xBE | 0xC0 => (Instruction::LockPlayerFast { opcode }, true),
+            0xBD | 0xBF | 0xC1 => (Instruction::UnlockPlayerFast { opcode }, true),
             // Strukturierte Expression-Opcodes
             0x2E => {
                 let cond = self.parse_sub(cur_file_off);
@@ -632,10 +714,33 @@ impl<'a> Disassembler<'a> {
                 let val = self.parse_sub(cur_file_off);
                 (Instruction::DamageEntity2 { target, val }, true)
             }
-            // Weitere Opcodes mit 1 Ausdrucks-Operanden (Raw)
-            0x2A | 0x2B | 0x4E | 0x74..=0x77 | 0x91 | 0x9A | 0x9C => {
-                let _expr = self.parse_sub(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x2A => {
+                let expr = self.parse_sub(cur_file_off);
+                (Instruction::SoundCmd2AExpr(expr), true)
+            }
+            0x2B => {
+                let expr = self.parse_sub(cur_file_off);
+                (Instruction::SoundCmd2BExpr(expr), true)
+            }
+            0x4E => {
+                let expr = self.parse_sub(cur_file_off);
+                (Instruction::ScriptCmd4E(expr), true)
+            }
+            0x74..=0x77 => {
+                let target = self.parse_sub(cur_file_off);
+                (Instruction::EntityAction { opcode, target }, true)
+            }
+            0x91 => {
+                let expr = self.parse_sub(cur_file_off);
+                (Instruction::SetBrightnessFast(expr), true)
+            }
+            0x9A => {
+                let expr = self.parse_sub(cur_file_off);
+                (Instruction::SetPitch(expr), true)
+            }
+            0x9C => {
+                let expr = self.parse_sub(cur_file_off);
+                (Instruction::CameraAction9C(expr), true)
             }
             _ => {
                 let payload_len = Self::get_known_payload_len(opcode);

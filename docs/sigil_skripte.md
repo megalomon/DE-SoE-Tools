@@ -352,7 +352,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x7B` | `$8C:E49E` | Aktiv | target: expr, val: expr | **`WRITE_DEREF_BYTE`** – 8-Bit Byte via Zeiger schreiben (`*(u8*)target = val`). |
 | `0x7C` | `$8C:D940` | Aktiv | cur: expr, amt: u24 | **`GIVE_MONEY`** – Addiert 24-Bit-Betrag `amt` zur gewählten Währung `cur`. |
 | `0x7D` | `$8C:D8EA` | Aktiv | cur: expr, amt: u24 | **`TAKE_MONEY`** – Zieht 24-Bit-Betrag `amt` von der gewählten Währung `cur` ab. |
-| `0x7E` | `$8C:D993` | Aktiv | a: expr, b: expr, c: expr | **`EXCHANGE_MONEY`** – Geldwechsel/Arithmetik mit 3 Ausdrücken (`E E E`). |
+| `0x7E` | `$8C:D993` | Aktiv | a: expr, b: expr, c: expr, d: expr | **`EXCHANGE_MONEY` / `SCRIPT_CMD_7E`** – Geldwechsel/Arithmetik mit 4 Ausdrücken (`E E E E`). Wertet intern vier Ausdrücke via `$8C:EE44` aus (für Betrag, Quell-/Zielparameter und Konditionen). |
 | `0x7F` | `$8C:E57B` | Aktiv | target: u16 | **`SHOW_NAMING_SCREEN`** – Öffnet Namenseingabe-Bildschirm (im ROM `target = 3` für Hund). |
 | `0x80` | `$8C:E604` | Aktiv | *keine* | **`SHOW_HUD_ALL`** – Blendet HP- und Ring-Menü-HUD vollständig ein. |
 | `0x81` | `$8C:E60A` | Aktiv | *keine* | **`HIDE_HUD_ALL`** – Blendet gesamtes HUD für Zwischensequenzen aus. |
@@ -414,12 +414,12 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0xB9` | `$8C:E441` | Aktiv | target: expr, dx: expr, dy: expr | **`TELEPORT_REL`** – Relative Teleportation um berechnete Deltas (`E E E`). |
 | `0xBA` | `$8C:E0DA` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FAST`** – Schneller NPC-Spawn mit festen Byte-Koordinaten. |
 | `0xBB` | `$8C:E868` | Aktiv | target: expr, val: expr | **`DAMAGE_ENTITY_2`** – Sekundärer Schadensbefehl via `$8F:C103` (prüft Statusbit `$1000` an `Entity+$10`, addiert auf `Entity+$76`, setzt Flag `$0018` in `+$12`). |
-| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`FACE_NORTH`** – Dreht Spielfigur/NPC nach oben (Norden). |
-| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`FACE_NORTH_WAIT`** – Dreht Figur nach oben und wartet auf Animations-Tick. |
-| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`FACE_SOUTH`** – Dreht Spielfigur/NPC nach unten (Süden). |
-| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`FACE_SOUTH_WAIT`** – Dreht Figur nach unten und wartet auf Animations-Tick. |
-| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`FACE_WEST`** – Dreht Spielfigur/NPC nach links (Westen). |
-| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`FACE_EAST`** – Dreht Spielfigur/NPC nach rechts (Osten). |
+| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`LOCK_PLAYER_BOY_FAST`** – Schnelles Sperren der Eingaben für den Jungen (setzt Bit 0 in `$7E:2429` via `$8C:DF15`). Historisch in Community-Docs irrtümlich als `FACE_NORTH` gelistet. |
+| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOY_FAST`** – Schnelles Freigeben der Eingaben für den Jungen (löscht Bit 0 in `$7E:2429` via `$8C:DEBF`). Historisch irrtümlich als `FACE_NORTH_WAIT`. |
+| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`LOCK_PLAYER_DOG_FAST`** – Schnelles Sperren der Eingaben für den Hund (setzt Bit 1 in `$7E:2429` via `$8C:DF15`). Historisch irrtümlich als `FACE_SOUTH`. |
+| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`UNLOCK_PLAYER_DOG_FAST`** – Schnelles Freigeben der Eingaben für den Hund (löscht Bit 1 in `$7E:2429` via `$8C:DEBF`). Historisch irrtümlich als `FACE_SOUTH_WAIT`. |
+| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`LOCK_PLAYER_BOTH_FAST`** – Schnelles Sperren der Eingaben für Junge und Hund (setzt Bits 0 und 1 in `$7E:2429` via `$8C:DF15`). Historisch irrtümlich als `FACE_WEST`. |
+| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOTH_FAST`** – Schnelles Freigeben der Eingaben für Junge und Hund (löscht Bits 0 und 1 in `$7E:2429` via `$8C:DEBF`). Historisch irrtümlich als `FACE_EAST`. |
 | `0xC2` | `$8C:E0C4` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FLAGGED`** – Erzeugt NPC über `$8E:B55A` mit gesetztem `$8000`-Zustandsflag. |
 
 ---

@@ -144,6 +144,174 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::FlashScreen(expr) => format!("FLASH_SCREEN ({})", format_expr(expr)),
         Instruction::SetEntityPosRel { target, dx, dy } => format!("SET_ENTITY_POS_REL target: ({}) dx: ({}) dy: ({})", format_expr(target), format_expr(dx), format_expr(dy)),
         Instruction::DamageEntity2 { target, val } => format!("DAMAGE_ENTITY_2 target: ({}) val: ({})", format_expr(target), format_expr(val)),
+        Instruction::IfEqual { left, right, target_offset } => {
+            let target = (offset as isize + *target_offset as isize) as usize;
+            format!("IF {} == {} SKIP {:+} -> [{:04X}]", format_expr(left), format_expr(right), target_offset, target)
+        }
+        Instruction::IfNotEqual { left, right, target_offset } => {
+            let target = (offset as isize + *target_offset as isize) as usize;
+            format!("IF {} != {} SKIP {:+} -> [{:04X}]", format_expr(left), format_expr(right), target_offset, target)
+        }
+        Instruction::PlayEntityAnim { target, anim, speed } => {
+            format!("PLAY_ENTITY_ANIM target: ({}) anim: 0x{:04X} speed: ({})", format_expr(target), anim, format_expr(speed))
+        }
+        Instruction::PlayEntityAnimWait { target, anim, speed } => {
+            format!("PLAY_ENTITY_ANIM_WAIT target: ({}) anim: 0x{:04X} speed: ({})", format_expr(target), anim, format_expr(speed))
+        }
+        Instruction::SetEntityPos { target, x, y } => {
+            format!("SET_ENTITY_POS target: ({}) x: ({}) y: ({})", format_expr(target), format_expr(x), format_expr(y))
+        }
+        Instruction::MoveEntityTo { target, x, y } => {
+            format!("MOVE_ENTITY_TO target: ({}) x: ({}) y: ({})", format_expr(target), format_expr(x), format_expr(y))
+        }
+        Instruction::SetEntityPosExpr { target, x, y } => {
+            format!("SET_ENTITY_POS_EXPR target: ({}) x: ({}) y: ({})", format_expr(target), format_expr(x), format_expr(y))
+        }
+        Instruction::SetEntityPosFast { opcode, target, cx, cy } => {
+            format!("SET_ENTITY_POS_FAST_0x{:02X} target: ({}) cx: {} cy: {}", opcode, format_expr(target), cx, cy)
+        }
+        Instruction::SetEntityPosRelFast { opcode, target, dx, dy } => {
+            format!("SET_ENTITY_POS_REL_FAST_0x{:02X} target: ({}) dx: ({}) dy: ({})", opcode, format_expr(target), format_expr(dx), format_expr(dy))
+        }
+        Instruction::SetEntitySpeed { target, speed } => {
+            format!("SET_ENTITY_SPEED target: ({}) speed: 0x{:04X}", format_expr(target), speed)
+        }
+        Instruction::AttachScript { target, script_id } => {
+            format!("ATTACH_SCRIPT target: ({}) script: 0x{:04X}", format_expr(target), script_id)
+        }
+        Instruction::EntityAction { opcode, target } => {
+            format!("ENTITY_ACTION_0x{:02X} target: ({})", opcode, format_expr(target))
+        }
+        Instruction::CameraAction9C(expr) => format!("CAMERA_ACTION_9C ({})", format_expr(expr)),
+        Instruction::SpawnEntity { b1, b2, b3 } => format!("SPAWN_ENTITY {} {} {}", b1, b2, b3),
+        Instruction::SpawnEntityExtra { b1, b2, b3 } => format!("SPAWN_ENTITY_EXTRA {} {} {}", b1, b2, b3),
+        Instruction::SpawnNpc { npc_type, param, x, y } => {
+            format!("SPAWN_NPC type: 0x{:04X} param: 0x{:04X} x: ({}) y: ({})", npc_type, param, format_expr(x), format_expr(y))
+        }
+        Instruction::MapEffect5C { arg1, arg2 } => {
+            format!("MAP_EFFECT_5C arg1: ({}) arg2: ({})", format_expr(arg1), format_expr(arg2))
+        }
+        Instruction::SetTileAttr { opcode, target, attr } => {
+            format!("SET_TILE_ATTR_0x{:02X} target: ({}) attr: 0x{:04X}", opcode, format_expr(target), attr)
+        }
+        Instruction::SetBgScroll(val) => format!("SET_BG_SCROLL 0x{:04X}", val),
+        Instruction::ShowWindowText { window, text_id } => {
+            format!("SHOW_WINDOW_TEXT win: {} text: 0x{:04X}", window, text_id)
+        }
+        Instruction::HideWindowText(window) => format!("HIDE_WINDOW_TEXT win: {}", window),
+        Instruction::SetWindowSize { opcode, window, x, y, w, h } => {
+            format!("SET_WINDOW_SIZE_0x{:02X} win: {} x: {} y: {} w: {} h: {}", opcode, window, x, y, w, h)
+        }
+        Instruction::ShowNamingScreen(target) => format!("SHOW_NAMING_SCREEN 0x{:04X}", target),
+        Instruction::ShowMessage(msg_id) => format!("SHOW_MESSAGE 0x{:04X}", msg_id),
+        Instruction::SetBrightnessFast(expr) => format!("SET_BRIGHTNESS_FAST ({})", format_expr(expr)),
+        Instruction::SetPitch(expr) => format!("SET_PITCH ({})", format_expr(expr)),
+        Instruction::SetMusicVolume(vol) => format!("SET_MUSIC_VOLUME {}", vol),
+        Instruction::SoundCmd2AExpr(expr) => format!("SOUND_CMD_2A_EXPR ({})", format_expr(expr)),
+        Instruction::SoundCmd2BExpr(expr) => format!("SOUND_CMD_2B_EXPR ({})", format_expr(expr)),
+        Instruction::ScriptCmd4E(expr) => format!("SCRIPT_CMD_4E ({})", format_expr(expr)),
+        Instruction::ScriptCmd7E { arg1, arg2, arg3, arg4 } => {
+            format!("SCRIPT_CMD_7E ({}) ({}) ({}) ({})", format_expr(arg1), format_expr(arg2), format_expr(arg3), format_expr(arg4))
+        }
+        Instruction::WriteWramByte { target, val } => {
+            format!("WRITE_WRAM_BYTE target: ({}) val: ({})", format_expr(target), format_expr(val))
+        }
+        Instruction::WriteWramWord { target, val } => {
+            format!("WRITE_WRAM_WORD target: ({}) val: ({})", format_expr(target), format_expr(val))
+        }
+        Instruction::CallTableByte(idx) => format!("CALL_TABLE_BYTE {}", idx),
+        Instruction::CallTableWord(idx) => format!("CALL_TABLE_WORD 0x{:04X}", idx),
+        Instruction::SpawnNpcParam { npc_type, param, x, y } => {
+            format!("SPAWN_NPC_PARAM type: 0x{:04X} param: 0x{:04X} pos: ({}, {})", npc_type, param, x, y)
+        }
+        Instruction::ResetWindowDefaults(win) => format!("RESET_WINDOW_DEFAULTS win: {}", win),
+        Instruction::LockPlayerFast { opcode } => format!("LOCK_PLAYER_FAST_0x{:02X}", opcode),
+        Instruction::UnlockPlayerFast { opcode } => format!("UNLOCK_PLAYER_FAST_0x{:02X}", opcode),
+        Instruction::CallParams { args, addr } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("CALL_PARAMS 0x{:06X} [{}]", addr, a_str)
+        }
+        Instruction::CallTableByteParams { args, idx } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("CALL_TABLE_BYTE_PARAMS {} [{}]", idx, a_str)
+        }
+        Instruction::CallTableWordParams { args, idx } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("CALL_TABLE_WORD_PARAMS 0x{:04X} [{}]", idx, a_str)
+        }
+        Instruction::CallRelativeByteParams { args, offset } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("CALL_REL_BYTE_PARAMS {:+} [{}]", offset, a_str)
+        }
+        Instruction::CallRelativeWordParams { args, offset } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("CALL_REL_WORD_PARAMS {:+} [{}]", offset, a_str)
+        }
+        Instruction::ForkParams { args, addr } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("FORK_PARAMS 0x{:06X} [{}]", addr, a_str)
+        }
+        Instruction::Yield { opcode } => format!("YIELD_0x{:02X}", opcode),
+        Instruction::NopSkipByte(b) => format!("NOP_SKIP_BYTE {}", b),
+        Instruction::Nop => "NOP".to_string(),
+        Instruction::FadeInMusic => "FADE_IN_MUSIC".to_string(),
+        Instruction::FadeOutMusic => "FADE_OUT_MUSIC".to_string(),
+        Instruction::DisableInterrupts => "DISABLE_INTERRUPTS".to_string(),
+        Instruction::EnableInterrupts => "ENABLE_INTERRUPTS".to_string(),
+        Instruction::WaitPathEnd => "WAIT_PATH_END".to_string(),
+        Instruction::EnableBg1 => "ENABLE_BG1".to_string(),
+        Instruction::DisableBg1 => "DISABLE_BG1".to_string(),
+        Instruction::EnableBg2 => "ENABLE_BG2".to_string(),
+        Instruction::DisableBg2 => "DISABLE_BG2".to_string(),
+        Instruction::EntityFaceEntity { a, b } => {
+            format!("ENTITY_FACE_ENTITY ({}) ({})", format_expr(a), format_expr(b))
+        }
+        Instruction::FaceEachOther { a, b } => {
+            format!("FACE_EACH_OTHER ({}) ({})", format_expr(a), format_expr(b))
+        }
+        Instruction::ShowHudAll => "SHOW_HUD_ALL".to_string(),
+        Instruction::HideHudAll => "HIDE_HUD_ALL".to_string(),
+        Instruction::RestoreMainScreenLayers => "RESTORE_MAIN_SCREEN_LAYERS".to_string(),
+        Instruction::SetSubScreenLayers => "SET_SUB_SCREEN_LAYERS".to_string(),
+        Instruction::ClearShopMenu => "CLEAR_SHOP_MENU".to_string(),
+        Instruction::SetCameraBase { x, y } => {
+            format!("SET_CAMERA_BASE ({}) ({})", format_expr(x), format_expr(y))
+        }
+        Instruction::ShakeScreenComplex(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("SHAKE_SCREEN_COMPLEX [{}]", a_str)
+        }
+        Instruction::EnterMode7Map(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("ENTER_MODE7_MAP [{}]", a_str)
+        }
+        Instruction::ShowCurrencyHud => "SHOW_CURRENCY_HUD".to_string(),
+        Instruction::UpdateCurrencyHud => "UPDATE_CURRENCY_HUD".to_string(),
+        Instruction::HideCurrencyHud => "HIDE_CURRENCY_HUD".to_string(),
+        Instruction::SetCanineAiTargeting => "SET_CANINE_AI_TARGETING".to_string(),
+        Instruction::SetRamPairsX8 { w1, w2, b1, b2 } => {
+            format!("SET_RAM_PAIRS_X8 w1: 0x{:04X} w2: 0x{:04X} b1: {} b2: {}", w1, w2, b1, b2)
+        }
+        Instruction::SetTempPairsX8 { w1, w2, b1, b2 } => {
+            format!("SET_TEMP_PAIRS_X8 w1: 0x{:04X} w2: 0x{:04X} b1: {} b2: {}", w1, w2, b1, b2)
+        }
+        Instruction::SetArgPairsX8 { arg1, arg2, b1, b2 } => {
+            format!("SET_ARG_PAIRS_X8 arg1: {} arg2: {} b1: {} b2: {}", arg1, arg2, b1, b2)
+        }
+        Instruction::SetNpcScript { target, w1, w2 } => {
+            format!("SET_NPC_SCRIPT target: ({}) w1: 0x{:04X} w2: 0x{:04X}", format_expr(target), w1, w2)
+        }
+        Instruction::SetAmbientActorPos { id, x, y } => {
+            format!("SET_AMBIENT_ACTOR_POS id: {} pos: ({}, {})", id, x, y)
+        }
+        Instruction::PaletteFadeCustom(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("PALETTE_FADE_CUSTOM [{}]", a_str)
+        }
+        Instruction::StartPaletteCycle(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("START_PALETTE_CYCLE [{}]", a_str)
+        }
         Instruction::Raw { opcode, payload } => {
             let p_hex = payload.iter().map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" ");
             format!("RAW 0x{:02X} [{}]", opcode, p_hex)
@@ -246,6 +414,172 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::FlashScreen(expr) => format!("flash_screen({});", format_expr(expr)),
         Instruction::SetEntityPosRel { target, dx, dy } => format!("set_entity_pos_rel({}, {}, {});", format_expr(target), format_expr(dx), format_expr(dy)),
         Instruction::DamageEntity2 { target, val } => format!("damage_entity_2({}, {});", format_expr(target), format_expr(val)),
+        Instruction::IfEqual { left, right, target_offset } => {
+            format!("if ({} == {}) skip({:+});", format_expr(left), format_expr(right), target_offset)
+        }
+        Instruction::IfNotEqual { left, right, target_offset } => {
+            format!("if ({} != {}) skip({:+});", format_expr(left), format_expr(right), target_offset)
+        }
+        Instruction::PlayEntityAnim { target, anim, speed } => {
+            format!("play_entity_anim({}, 0x{:04X}, {});", format_expr(target), anim, format_expr(speed))
+        }
+        Instruction::PlayEntityAnimWait { target, anim, speed } => {
+            format!("play_entity_anim_wait({}, 0x{:04X}, {});", format_expr(target), anim, format_expr(speed))
+        }
+        Instruction::SetEntityPos { target, x, y } => {
+            format!("set_entity_pos({}, {}, {});", format_expr(target), format_expr(x), format_expr(y))
+        }
+        Instruction::MoveEntityTo { target, x, y } => {
+            format!("move_entity_to({}, {}, {});", format_expr(target), format_expr(x), format_expr(y))
+        }
+        Instruction::SetEntityPosExpr { target, x, y } => {
+            format!("set_entity_pos_expr({}, {}, {});", format_expr(target), format_expr(x), format_expr(y))
+        }
+        Instruction::SetEntityPosFast { opcode, target, cx, cy } => {
+            format!("set_entity_pos_fast_0x{:02X}({}, {}, {});", opcode, format_expr(target), cx, cy)
+        }
+        Instruction::SetEntityPosRelFast { opcode, target, dx, dy } => {
+            format!("set_entity_pos_rel_fast_0x{:02X}({}, {}, {});", opcode, format_expr(target), format_expr(dx), format_expr(dy))
+        }
+        Instruction::SetEntitySpeed { target, speed } => {
+            format!("set_entity_speed({}, 0x{:04X});", format_expr(target), speed)
+        }
+        Instruction::AttachScript { target, script_id } => {
+            format!("attach_script({}, 0x{:04X});", format_expr(target), script_id)
+        }
+        Instruction::EntityAction { opcode, target } => {
+            format!("entity_action_0x{:02X}({});", opcode, format_expr(target))
+        }
+        Instruction::CameraAction9C(expr) => format!("camera_action_9c({});", format_expr(expr)),
+        Instruction::SpawnEntity { b1, b2, b3 } => format!("spawn_entity({}, {}, {});", b1, b2, b3),
+        Instruction::SpawnEntityExtra { b1, b2, b3 } => format!("spawn_entity_extra({}, {}, {});", b1, b2, b3),
+        Instruction::SpawnNpc { npc_type, param, x, y } => {
+            format!("spawn_npc(0x{:04X}, 0x{:04X}, {}, {});", npc_type, param, format_expr(x), format_expr(y))
+        }
+        Instruction::MapEffect5C { arg1, arg2 } => {
+            format!("map_effect_5c({}, {});", format_expr(arg1), format_expr(arg2))
+        }
+        Instruction::SetTileAttr { opcode, target, attr } => {
+            format!("set_tile_attr_0x{:02X}({}, 0x{:04X});", opcode, format_expr(target), attr)
+        }
+        Instruction::SetBgScroll(val) => format!("set_bg_scroll(0x{:04X});", val),
+        Instruction::ShowWindowText { window, text_id } => {
+            format!("show_window_text({}, 0x{:04X});", window, text_id)
+        }
+        Instruction::HideWindowText(window) => format!("hide_window_text({});", window),
+        Instruction::SetWindowSize { opcode, window, x, y, w, h } => {
+            format!("set_window_size_0x{:02X}({}, {}, {}, {}, {});", opcode, window, x, y, w, h)
+        }
+        Instruction::ShowNamingScreen(target) => format!("show_naming_screen(0x{:04X});", target),
+        Instruction::ShowMessage(msg_id) => format!("show_message(0x{:04X});", msg_id),
+        Instruction::SetBrightnessFast(expr) => format!("set_brightness_fast({});", format_expr(expr)),
+        Instruction::SetPitch(expr) => format!("set_pitch({});", format_expr(expr)),
+        Instruction::SetMusicVolume(vol) => format!("set_music_volume({});", vol),
+        Instruction::SoundCmd2AExpr(expr) => format!("sound_cmd_2a_expr({});", format_expr(expr)),
+        Instruction::SoundCmd2BExpr(expr) => format!("sound_cmd_2b_expr({});", format_expr(expr)),
+        Instruction::ScriptCmd4E(expr) => format!("script_cmd_4e({});", format_expr(expr)),
+        Instruction::ScriptCmd7E { arg1, arg2, arg3, arg4 } => {
+            format!("script_cmd_7e({}, {}, {}, {});", format_expr(arg1), format_expr(arg2), format_expr(arg3), format_expr(arg4))
+        }
+        Instruction::WriteWramByte { target, val } => {
+            format!("write_wram_byte({}, {});", format_expr(target), format_expr(val))
+        }
+        Instruction::WriteWramWord { target, val } => {
+            format!("write_wram_word({}, {});", format_expr(target), format_expr(val))
+        }
+        Instruction::CallTableByte(idx) => format!("call_table_byte({});", idx),
+        Instruction::CallTableWord(idx) => format!("call_table_word(0x{:04X});", idx),
+        Instruction::SpawnNpcParam { npc_type, param, x, y } => {
+            format!("spawn_npc_param(0x{:04X}, 0x{:04X}, {}, {});", npc_type, param, x, y)
+        }
+        Instruction::ResetWindowDefaults(win) => format!("reset_window_defaults({});", win),
+        Instruction::LockPlayerFast { opcode } => format!("lock_player_fast_0x{:02X}();", opcode),
+        Instruction::UnlockPlayerFast { opcode } => format!("unlock_player_fast_0x{:02X}();", opcode),
+        Instruction::CallParams { args, addr } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("call_params(0x{:06X}, [{}]);", addr, a_str)
+        }
+        Instruction::CallTableByteParams { args, idx } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("call_table_byte_params({}, [{}]);", idx, a_str)
+        }
+        Instruction::CallTableWordParams { args, idx } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("call_table_word_params(0x{:04X}, [{}]);", idx, a_str)
+        }
+        Instruction::CallRelativeByteParams { args, offset } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("call_rel_byte_params({:+}, [{}]);", offset, a_str)
+        }
+        Instruction::CallRelativeWordParams { args, offset } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("call_rel_word_params({:+}, [{}]);", offset, a_str)
+        }
+        Instruction::ForkParams { args, addr } => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("fork_params(0x{:06X}, [{}]);", addr, a_str)
+        }
+        Instruction::Yield { opcode } => format!("yield_0x{:02X}();", opcode),
+        Instruction::NopSkipByte(b) => format!("nop_skip_byte({});", b),
+        Instruction::Nop => "nop();".to_string(),
+        Instruction::FadeInMusic => "fade_in_music();".to_string(),
+        Instruction::FadeOutMusic => "fade_out_music();".to_string(),
+        Instruction::DisableInterrupts => "disable_interrupts();".to_string(),
+        Instruction::EnableInterrupts => "enable_interrupts();".to_string(),
+        Instruction::WaitPathEnd => "wait_path_end();".to_string(),
+        Instruction::EnableBg1 => "enable_bg1();".to_string(),
+        Instruction::DisableBg1 => "disable_bg1();".to_string(),
+        Instruction::EnableBg2 => "enable_bg2();".to_string(),
+        Instruction::DisableBg2 => "disable_bg2();".to_string(),
+        Instruction::EntityFaceEntity { a, b } => {
+            format!("entity_face_entity({}, {});", format_expr(a), format_expr(b))
+        }
+        Instruction::FaceEachOther { a, b } => {
+            format!("face_each_other({}, {});", format_expr(a), format_expr(b))
+        }
+        Instruction::ShowHudAll => "show_hud_all();".to_string(),
+        Instruction::HideHudAll => "hide_hud_all();".to_string(),
+        Instruction::RestoreMainScreenLayers => "restore_main_screen_layers();".to_string(),
+        Instruction::SetSubScreenLayers => "set_sub_screen_layers();".to_string(),
+        Instruction::ClearShopMenu => "clear_shop_menu();".to_string(),
+        Instruction::SetCameraBase { x, y } => {
+            format!("set_camera_base({}, {});", format_expr(x), format_expr(y))
+        }
+        Instruction::ShakeScreenComplex(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("shake_screen_complex([{}]);", a_str)
+        }
+        Instruction::EnterMode7Map(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("enter_mode7_map([{}]);", a_str)
+        }
+        Instruction::ShowCurrencyHud => "show_currency_hud();".to_string(),
+        Instruction::UpdateCurrencyHud => "update_currency_hud();".to_string(),
+        Instruction::HideCurrencyHud => "hide_currency_hud();".to_string(),
+        Instruction::SetCanineAiTargeting => "set_canine_ai_targeting();".to_string(),
+        Instruction::SetRamPairsX8 { w1, w2, b1, b2 } => {
+            format!("set_ram_pairs_x8(0x{:04X}, 0x{:04X}, {}, {});", w1, w2, b1, b2)
+        }
+        Instruction::SetTempPairsX8 { w1, w2, b1, b2 } => {
+            format!("set_temp_pairs_x8(0x{:04X}, 0x{:04X}, {}, {});", w1, w2, b1, b2)
+        }
+        Instruction::SetArgPairsX8 { arg1, arg2, b1, b2 } => {
+            format!("set_arg_pairs_x8({}, {}, {}, {});", arg1, arg2, b1, b2)
+        }
+        Instruction::SetNpcScript { target, w1, w2 } => {
+            format!("set_npc_script({}, 0x{:04X}, 0x{:04X});", format_expr(target), w1, w2)
+        }
+        Instruction::SetAmbientActorPos { id, x, y } => {
+            format!("set_ambient_actor_pos({}, 0x{:04X}, 0x{:04X});", id, x, y)
+        }
+        Instruction::PaletteFadeCustom(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("palette_fade_custom([{}]);", a_str)
+        }
+        Instruction::StartPaletteCycle(args) => {
+            let a_str = args.iter().map(format_expr).collect::<Vec<_>>().join(", ");
+            format!("start_palette_cycle([{}]);", a_str)
+        }
         Instruction::Raw { opcode, payload } => {
             let p_hex = payload.iter().map(|b| format!("0x{:02X}", b)).collect::<Vec<_>>().join(", ");
             format!("raw(0x{:02X}, [{}]);", opcode, p_hex)

@@ -313,6 +313,387 @@ impl Assembler {
                 Self::assemble_expr(target, out);
                 Self::assemble_expr(val, out);
             }
+            Instruction::IfEqual { left, right, target_offset } => {
+                out.push(0x8E);
+                Self::assemble_expr(left, out);
+                Self::assemble_expr(right, out);
+                out.extend_from_slice(&target_offset.to_le_bytes());
+            }
+            Instruction::IfNotEqual { left, right, target_offset } => {
+                out.push(0x8F);
+                Self::assemble_expr(left, out);
+                Self::assemble_expr(right, out);
+                out.extend_from_slice(&target_offset.to_le_bytes());
+            }
+            Instruction::PlayEntityAnim { target, anim, speed } => {
+                out.push(0x78);
+                Self::assemble_expr(target, out);
+                out.extend_from_slice(&anim.to_le_bytes());
+                Self::assemble_expr(speed, out);
+            }
+            Instruction::PlayEntityAnimWait { target, anim, speed } => {
+                out.push(0x79);
+                Self::assemble_expr(target, out);
+                out.extend_from_slice(&anim.to_le_bytes());
+                Self::assemble_expr(speed, out);
+            }
+            Instruction::SetEntityPos { target, x, y } => {
+                out.push(0x43);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(x, out);
+                Self::assemble_expr(y, out);
+            }
+            Instruction::MoveEntityTo { target, x, y } => {
+                out.push(0x73);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(x, out);
+                Self::assemble_expr(y, out);
+            }
+            Instruction::SetEntityPosExpr { target, x, y } => {
+                out.push(0x9D);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(x, out);
+                Self::assemble_expr(y, out);
+            }
+            Instruction::SetEntityPosFast { opcode, target, cx, cy } => {
+                out.push(*opcode);
+                Self::assemble_expr(target, out);
+                out.push(*cx);
+                out.push(*cy);
+            }
+            Instruction::SetEntityPosRelFast { opcode, target, dx, dy } => {
+                out.push(*opcode);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(dx, out);
+                Self::assemble_expr(dy, out);
+            }
+            Instruction::SetEntitySpeed { target, speed } => {
+                out.push(0x42);
+                Self::assemble_expr(target, out);
+                out.extend_from_slice(&speed.to_le_bytes());
+            }
+            Instruction::AttachScript { target, script_id } => {
+                out.push(0x3D);
+                Self::assemble_expr(target, out);
+                out.extend_from_slice(&script_id.to_le_bytes());
+            }
+            Instruction::EntityAction { opcode, target } => {
+                out.push(*opcode);
+                Self::assemble_expr(target, out);
+            }
+            Instruction::CameraAction9C(expr) => {
+                out.push(0x9C);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SpawnEntity { b1, b2, b3 } => {
+                out.push(0xBA);
+                out.push(*b1);
+                out.push(*b2);
+                out.push(*b3);
+            }
+            Instruction::SpawnEntityExtra { b1, b2, b3 } => {
+                out.push(0xC2);
+                out.push(*b1);
+                out.push(*b2);
+                out.push(*b3);
+            }
+            Instruction::SpawnNpc { npc_type, param, x, y } => {
+                out.push(0xA2);
+                out.extend_from_slice(&npc_type.to_le_bytes());
+                out.extend_from_slice(&param.to_le_bytes());
+                Self::assemble_expr(x, out);
+                Self::assemble_expr(y, out);
+            }
+            Instruction::MapEffect5C { arg1, arg2 } => {
+                out.push(0x5C);
+                Self::assemble_expr(arg1, out);
+                Self::assemble_expr(arg2, out);
+            }
+            Instruction::SetTileAttr { opcode, target, attr } => {
+                out.push(*opcode);
+                Self::assemble_expr(target, out);
+                out.extend_from_slice(&attr.to_le_bytes());
+            }
+            Instruction::SetBgScroll(val) => {
+                out.push(0x23);
+                out.extend_from_slice(&val.to_le_bytes());
+            }
+            Instruction::ShowWindowText { window, text_id } => {
+                out.push(0x50);
+                out.push(*window);
+                out.extend_from_slice(&text_id.to_le_bytes());
+            }
+            Instruction::HideWindowText(window) => {
+                out.push(0x54);
+                out.push(*window);
+            }
+            Instruction::SetWindowSize { opcode, window, x, y, w, h } => {
+                out.push(*opcode);
+                out.push(*window);
+                out.push(*x);
+                out.push(*y);
+                out.push(*w);
+                out.push(*h);
+            }
+            Instruction::ShowNamingScreen(target) => {
+                out.push(0x7F);
+                out.extend_from_slice(&target.to_le_bytes());
+            }
+            Instruction::ShowMessage(msg_id) => {
+                out.push(0x8C);
+                out.extend_from_slice(&msg_id.to_le_bytes());
+            }
+            Instruction::SetBrightnessFast(expr) => {
+                out.push(0x91);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SetPitch(expr) => {
+                out.push(0x9A);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SetMusicVolume(vol) => {
+                out.push(0x8D);
+                out.push(*vol);
+            }
+            Instruction::SoundCmd2AExpr(expr) => {
+                out.push(0x2A);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::SoundCmd2BExpr(expr) => {
+                out.push(0x2B);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::ScriptCmd4E(expr) => {
+                out.push(0x4E);
+                Self::assemble_expr(expr, out);
+            }
+            Instruction::ScriptCmd7E { arg1, arg2, arg3, arg4 } => {
+                out.push(0x7E);
+                Self::assemble_expr(arg1, out);
+                Self::assemble_expr(arg2, out);
+                Self::assemble_expr(arg3, out);
+                Self::assemble_expr(arg4, out);
+            }
+            Instruction::WriteWramByte { target, val } => {
+                out.push(0x7A);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(val, out);
+            }
+            Instruction::WriteWramWord { target, val } => {
+                out.push(0x7B);
+                Self::assemble_expr(target, out);
+                Self::assemble_expr(val, out);
+            }
+            Instruction::CallTableByte(idx) => {
+                out.push(0xA3);
+                out.push(*idx);
+            }
+            Instruction::CallTableWord(idx) => {
+                out.push(0xA4);
+                out.extend_from_slice(&idx.to_le_bytes());
+            }
+            Instruction::SpawnNpcParam { npc_type, param, x, y } => {
+                out.push(0x3C);
+                out.extend_from_slice(&npc_type.to_le_bytes());
+                out.extend_from_slice(&param.to_le_bytes());
+                out.push(*x);
+                out.push(*y);
+            }
+            Instruction::ResetWindowDefaults(win) => {
+                out.push(0x48 + (*win & 3));
+            }
+            Instruction::LockPlayerFast { opcode } => {
+                out.push(*opcode);
+            }
+            Instruction::UnlockPlayerFast { opcode } => {
+                out.push(*opcode);
+            }
+            Instruction::CallParams { args, addr } => {
+                out.push(0xAF);
+                out.push(args.len() as u8);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+                let s_addr = Rom::rom_to_script_addr(*addr);
+                out.extend_from_slice(&s_addr.to_le_bytes()[..3]);
+            }
+            Instruction::CallTableByteParams { args, idx } => {
+                out.push(0xB0);
+                out.push(args.len() as u8);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+                out.push(*idx);
+            }
+            Instruction::CallTableWordParams { args, idx } => {
+                out.push(0xB1);
+                out.push(args.len() as u8);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+                out.extend_from_slice(&idx.to_le_bytes());
+            }
+            Instruction::CallRelativeByteParams { args, offset } => {
+                out.push(0xB2);
+                out.push(args.len() as u8);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+                out.push(*offset as u8);
+            }
+            Instruction::CallRelativeWordParams { args, offset } => {
+                out.push(0xB3);
+                out.push(args.len() as u8);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+                out.extend_from_slice(&offset.to_le_bytes());
+            }
+            Instruction::ForkParams { args, addr } => {
+                out.push(0xB4);
+                out.push(args.len() as u8);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+                let s_addr = Rom::rom_to_script_addr(*addr);
+                out.extend_from_slice(&s_addr.to_le_bytes()[..3]);
+            }
+            Instruction::Yield { opcode } => {
+                out.push(*opcode);
+            }
+            Instruction::NopSkipByte(b) => {
+                out.push(0x4C);
+                out.push(*b);
+            }
+            Instruction::Nop => {
+                out.push(0x4D);
+            }
+            Instruction::FadeInMusic => {
+                out.push(0x58);
+            }
+            Instruction::FadeOutMusic => {
+                out.push(0x59);
+            }
+            Instruction::DisableInterrupts => {
+                out.push(0x5A);
+            }
+            Instruction::EnableInterrupts => {
+                out.push(0x5B);
+            }
+            Instruction::WaitPathEnd => {
+                out.push(0x63);
+            }
+            Instruction::EnableBg1 => {
+                out.push(0x65);
+            }
+            Instruction::DisableBg1 => {
+                out.push(0x66);
+            }
+            Instruction::EnableBg2 => {
+                out.push(0x69);
+            }
+            Instruction::DisableBg2 => {
+                out.push(0x6A);
+            }
+            Instruction::EntityFaceEntity { a, b } => {
+                out.push(0x70);
+                Self::assemble_expr(a, out);
+                Self::assemble_expr(b, out);
+            }
+            Instruction::FaceEachOther { a, b } => {
+                out.push(0x71);
+                Self::assemble_expr(a, out);
+                Self::assemble_expr(b, out);
+            }
+            Instruction::ShowHudAll => {
+                out.push(0x80);
+            }
+            Instruction::HideHudAll => {
+                out.push(0x81);
+            }
+            Instruction::RestoreMainScreenLayers => {
+                out.push(0x82);
+            }
+            Instruction::SetSubScreenLayers => {
+                out.push(0x83);
+            }
+            Instruction::ClearShopMenu => {
+                out.push(0x88);
+            }
+            Instruction::SetCameraBase { x, y } => {
+                out.push(0x96);
+                Self::assemble_expr(x, out);
+                Self::assemble_expr(y, out);
+            }
+            Instruction::ShakeScreenComplex(args) => {
+                out.push(0x97);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+            }
+            Instruction::EnterMode7Map(args) => {
+                out.push(0x99);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+            }
+            Instruction::ShowCurrencyHud => {
+                out.push(0x9F);
+            }
+            Instruction::UpdateCurrencyHud => {
+                out.push(0xA0);
+            }
+            Instruction::HideCurrencyHud => {
+                out.push(0xA1);
+            }
+            Instruction::SetCanineAiTargeting => {
+                out.push(0xAA);
+            }
+            Instruction::SetRamPairsX8 { w1, w2, b1, b2 } => {
+                out.push(0x1B);
+                out.extend_from_slice(&w1.to_le_bytes());
+                out.extend_from_slice(&w2.to_le_bytes());
+                out.push(*b1);
+                out.push(*b2);
+            }
+            Instruction::SetTempPairsX8 { w1, w2, b1, b2 } => {
+                out.push(0xAD);
+                out.extend_from_slice(&w1.to_le_bytes());
+                out.extend_from_slice(&w2.to_le_bytes());
+                out.push(*b1);
+                out.push(*b2);
+            }
+            Instruction::SetArgPairsX8 { arg1, arg2, b1, b2 } => {
+                out.push(0xAE);
+                out.push(*arg1);
+                out.push(*arg2);
+                out.push(*b1);
+                out.push(*b2);
+            }
+            Instruction::SetNpcScript { target, w1, w2 } => {
+                out.push(0x3F);
+                Self::assemble_expr(target, out);
+                out.extend_from_slice(&w1.to_le_bytes());
+                out.extend_from_slice(&w2.to_le_bytes());
+            }
+            Instruction::SetAmbientActorPos { id, x, y } => {
+                out.push(0x62);
+                out.push(*id);
+                out.extend_from_slice(&x.to_le_bytes());
+                out.extend_from_slice(&y.to_le_bytes());
+            }
+            Instruction::PaletteFadeCustom(args) => {
+                out.push(0xB5);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+            }
+            Instruction::StartPaletteCycle(args) => {
+                out.push(0xB6);
+                for a in args {
+                    Self::assemble_expr(a, out);
+                }
+            }
             Instruction::Raw { opcode, payload } => {
                 out.push(*opcode);
                 out.extend_from_slice(payload);
