@@ -90,10 +90,40 @@ Auch der Hund besitzt ein eigenes Angriffslevel:
 
 ---
 
-## 2. Rüstungen (Body Armor)
+## 2. ROM-Tabellenarchitektur (Bank $C4) & Ausrüstungs-WRAM
 
-In der deutschen ROM werden alle 12 Körperrüstungen in Bank `$05` ab Offset `0x0509AE` definiert. Ihre Werte stammen direkt aus der Item-Strukturtabelle bei `$C4:4142`:
-Der aktuell ausgerüstete Index des Jungen liegt im WRAM an Adresse **`$7E0A52`**.
+Die Ausrüstungsdaten des Spiels werden in **Bank `$C4`** über eine Master-Zeigertabelle bei **`$84:3EAD` / `$C4:3EAD`** adressiert:
+- **Waffen:** `$C4:3F26` (15 Einträge, Stride **36 Bytes / `0x24`**)
+- **Körperrüstungen:** `$C4:4142` (12 Einträge, Stride **10 Bytes / `0x0A`**)
+- **Helme:** `$C4:41BA` (12 Einträge, Stride **10 Bytes / `0x0A`**)
+- **Armbänder:** `$C4:4232` (12 Einträge, Stride **10 Bytes / `0x0A`**)
+- **Hundehalsbänder:** `$C4:42AA` (4 Einträge, Stride **10 Bytes / `0x0A`**)
+
+### 10-Byte-Struktur für Rüstungen, Helme, Armbänder & Halsbänder:
+```
++0x00 (2 Bytes): Abwehr-Bonus (Defense)
++0x02 (2 Bytes): Basiswert / Kaufpreis
++0x04 (2 Bytes): Zeiger auf deutschen Textnamen in Bank $05
++0x06 (4 Bytes): Status-/Attributflags & Padding
+```
+
+### WRAM: Ausgerüstete Gegenstände vs. Kampf-Charge-Register:
+> [!IMPORTANT]
+> Frühere inoffizielle Dokumentationen verwechselten die ausgerüsteten Ringmenü-Slots mit den Kampf-Charge-Registern. Im disassemblierten 65816-Code (`$8F:8262`) gilt:
+> - **Ausgerüstete Rüstung (Held):** **`$7E:2350`** (Item-ID `0` bis `11`)
+> - **Ausgerüsteter Helm (Held):** **`$7E:2352`** (Item-ID `0` bis `11`)
+> - **Ausgerüstetes Armband (Held):** **`$7E:2354`** (Item-ID `0` bis `11`)
+> - **Ausgerüstetes Halsband (Hund):** **`$7E:2356`** (Item-ID `0` bis `3`)
+> - *Charge-Limit Junge (`$7E:0A52`):* Waffenlevel × `0x400`
+> - *Charge-Bonus Junge (`$7E:0A54`):* Additionsbonus bei `$8F:CC2D`
+> - *Charge-Limit Hund (`$7E:0A9C`):* Aus Hund-Waffenlevel abgeleitet
+
+---
+
+## 3. Rüstungen (Body Armor)
+
+In der deutschen ROM werden alle 12 Körperrüstungen in Bank `$05` ab Offset `0x0509AE` benannt. Ihre Werte stammen direkt aus der Item-Strukturtabelle bei `$C4:4142` (Stride 10 Bytes):
+Der aktuell ausgerüstete Index des Jungen liegt im WRAM an Adresse **`$7E:2350`** (ID 0..11).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
 | :---: | :--- | :--- | :---: | :---: | :--- |
@@ -112,10 +142,10 @@ Der aktuell ausgerüstete Index des Jungen liegt im WRAM an Adresse **`$7E0A52`*
 
 ---
 
-## 3. Helme (Helmets)
+## 4. Helme (Helmets)
 
-Die 12 Kopfbedeckungen liegen in Bank `$05` ab Offset `0x050A40`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:41BA`:
-Der aktuell ausgerüstete Helm des Jungen liegt im WRAM an Adresse **`$7E0A54`**.
+Die 12 Kopfbedeckungen liegen in Bank `$05` ab Offset `0x050A40`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:41BA` (Stride 10 Bytes):
+Der aktuell ausgerüstete Helm des Jungen liegt im WRAM an Adresse **`$7E:2352`** (ID 0..11).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
 | :---: | :--- | :--- | :---: | :---: | :--- |
@@ -134,10 +164,10 @@ Der aktuell ausgerüstete Helm des Jungen liegt im WRAM an Adresse **`$7E0A54`**
 
 ---
 
-## 4. Armbänder (Bracers / Gloves)
+## 5. Armbänder (Bracers / Gloves)
 
-Die 12 Armschutze liegen in Bank `$05` ab Offset `0x050ACE`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:4232`:
-Der aktuell ausgerüstete Armschutz des Jungen liegt im WRAM an Adresse **`$7E0A56`**.
+Die 12 Armschutze liegen in Bank `$05` ab Offset `0x050ACE`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:4232` (Stride 10 Bytes):
+Der aktuell ausgerüstete Armschutz des Jungen liegt im WRAM an Adresse **`$7E:2354`** (ID 0..11).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
 | :---: | :--- | :--- | :---: | :---: | :--- |
@@ -156,10 +186,10 @@ Der aktuell ausgerüstete Armschutz des Jungen liegt im WRAM an Adresse **`$7E0A
 
 ---
 
-## 5. Hundehalsbänder (Dog Collars)
+## 6. Hundehalsbänder (Dog Collars)
 
-Die 4 Halsbänder für den Hund liegen in Bank `$05` ab Offset `0x050B69`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:42AA`:
-Das aktuell ausgerüstete Halsband des Hundes liegt im WRAM an Adresse **`$7E0A9C`**.
+Die 4 Halsbänder für den Hund liegen in Bank `$05` ab Offset `0x050B69`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:42AA` (Stride 10 Bytes):
+Das aktuell ausgerüstete Halsband des Hundes liegt im WRAM an Adresse **`$7E:2356`** (ID 0..3).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
 | :---: | :--- | :--- | :---: | :---: | :--- |
@@ -170,7 +200,7 @@ Das aktuell ausgerüstete Halsband des Hundes liegt im WRAM an Adresse **`$7E0A9
 
 ---
 
-## 6. Verbrauchsgegenstände (Consumables)
+## 7. Verbrauchsgegenstände (Consumables)
 
 Die Verbrauchsitems liegen in Bank `$05` ab Offset `0x0519E8`. Im WRAM werden ihre Mengen (jeweils `0` bis `99`) in einem 2-Byte-Abstand gespeichert:
 
@@ -187,7 +217,7 @@ Die Verbrauchsitems liegen in Bank `$05` ab Offset `0x0519E8`. Im WRAM werden ih
 
 ---
 
-## 7. Tauschwaren auf dem Basar von Allelachema (Trade Goods)
+## 8. Tauschwaren auf dem Basar von Allelachema (Trade Goods)
 
 Auf dem großen Markt von **Allelachema** (Nobilia) tauscht der Held Güter in komplexen Tauschketten. Im WRAM werden die Stückzahlen der Waren in der 16-Bit-Variablen-Tabelle ab `$7E2258` verwaltet:
 
@@ -208,7 +238,7 @@ Auf dem großen Markt von **Allelachema** (Nobilia) tauscht der Held Güter in k
 
 ---
 
-## 8. Permanente Relikte & Charms (Markt-Artefakte)
+## 9. Permanente Relikte & Charms (Markt-Artefakte)
 
 Auf dem Basar von Allelachema können 14 permanente Artefakte ertauscht werden, die dem Helden passive Statusboni verleihen. Ihr Besitz wird im **Event-Flag Bitfield** ab `$7E2258` gespeichert:
 
@@ -231,7 +261,7 @@ Auf dem Basar von Allelachema können 14 permanente Artefakte ertauscht werden, 
 
 ---
 
-## 9. Schlüsselobjekte & Quest-Gegenstände
+## 10. Schlüsselobjekte & Quest-Gegenstände
 
 | Gegenstand (ROM) | US-Originalname | ROM-Offset | Quest-Bedeutung & Fundort |
 | :--- | :--- | :---: | :--- |
@@ -248,7 +278,7 @@ Auf dem Basar von Allelachema können 14 permanente Artefakte ertauscht werden, 
 
 ---
 
-## 10. Währungen (Currencies)
+## 11. Währungen (Currencies)
 
 In *Secret of Evermore* besitzt jede der vier Zeitzonen ihre eigene Währung:
 

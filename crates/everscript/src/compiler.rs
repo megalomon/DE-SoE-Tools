@@ -128,6 +128,28 @@ impl Compiler {
                     let instr = sigil::Instruction::GiveJewels(amount);
                     Assembler::assemble_instruction(&instr, &mut out);
                 }
+                EvsStmt::GiveMoney { currency, amount } => {
+                    let cur = self.compile_expr(currency)?;
+                    if let Ok(amt) = self.eval_expr_const(amount) {
+                        let instr = sigil::Instruction::GiveMoney { currency: cur, amount: amt as u32 };
+                        Assembler::assemble_instruction(&instr, &mut out);
+                    } else {
+                        let amt_expr = self.compile_expr(amount)?;
+                        let instr = sigil::Instruction::GiveMoneyExpr { currency: cur, amount: amt_expr };
+                        Assembler::assemble_instruction(&instr, &mut out);
+                    }
+                }
+                EvsStmt::TakeMoney { currency, amount } => {
+                    let cur = self.compile_expr(currency)?;
+                    if let Ok(amt) = self.eval_expr_const(amount) {
+                        let instr = sigil::Instruction::TakeMoney { currency: cur, amount: amt as u32 };
+                        Assembler::assemble_instruction(&instr, &mut out);
+                    } else {
+                        let amt_expr = self.compile_expr(amount)?;
+                        let instr = sigil::Instruction::TakeMoneyExpr { currency: cur, amount: amt_expr };
+                        Assembler::assemble_instruction(&instr, &mut out);
+                    }
+                }
                 EvsStmt::Sleep(expr) => {
                     let frames = self.eval_expr_const(expr)? as u32;
                     if frames <= 255 {
@@ -155,6 +177,78 @@ impl Compiler {
                     let instr = sigil::Instruction::Skip(off);
                     Assembler::assemble_instruction(&instr, &mut out);
                 }
+                EvsStmt::FadeIn => {
+                    Assembler::assemble_instruction(&sigil::Instruction::FadeIn, &mut out);
+                }
+                EvsStmt::FadeOut => {
+                    Assembler::assemble_instruction(&sigil::Instruction::FadeOut, &mut out);
+                }
+                EvsStmt::ChangeMap { x, y, map } => {
+                    let x_val = self.eval_expr_const(x)? as u8;
+                    let y_val = self.eval_expr_const(y)? as u8;
+                    let map_val = self.eval_expr_const(map)? as u16;
+                    let instr = sigil::Instruction::ChangeMap { x: x_val, y: y_val, map: map_val };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::CameraFollow { x, y } => {
+                    let x_val = self.eval_expr_const(x)? as u8;
+                    let y_val = self.eval_expr_const(y)? as u8;
+                    let instr = sigil::Instruction::CameraFollow { x: x_val, y: y_val };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::SetCameraPos { x, y } => {
+                    let x_val = self.eval_expr_const(x)? as u8;
+                    let y_val = self.eval_expr_const(y)? as u8;
+                    let instr = sigil::Instruction::SetCameraPos { x: x_val, y: y_val };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::WaitFrame(expr) => {
+                    let sigil_expr = self.compile_expr(expr)?;
+                    let instr = sigil::Instruction::WaitFrame(sigil_expr);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::WaitAnim(expr) => {
+                    let sigil_expr = self.compile_expr(expr)?;
+                    let instr = sigil::Instruction::WaitAnim(sigil_expr);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::WaitUntil(expr) => {
+                    let sigil_expr = self.compile_expr(expr)?;
+                    let instr = sigil::Instruction::WaitUntil(sigil_expr);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::DamageEntity { target, amount } => {
+                    let target_expr = self.compile_expr(target)?;
+                    let amount_expr = self.compile_expr(amount)?;
+                    let instr = sigil::Instruction::DamageEntity { target: target_expr, amount: amount_expr };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::HealEntity { target, amount } => {
+                    let target_expr = self.compile_expr(target)?;
+                    let amount_expr = self.compile_expr(amount)?;
+                    let instr = sigil::Instruction::HealEntity { target: target_expr, amount: amount_expr };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::SetEntityHp { target, hp } => {
+                    let target_expr = self.compile_expr(target)?;
+                    let hp_expr = self.compile_expr(hp)?;
+                    let instr = sigil::Instruction::SetEntityHp { target: target_expr, hp: hp_expr };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::PlaySound { channel, id } => {
+                    let ch = match channel {
+                        Some(c) => self.eval_expr_const(c)? as u8,
+                        None => 0,
+                    };
+                    let sound_id = self.eval_expr_const(id)? as u8;
+                    let instr = sigil::Instruction::PlaySound { channel: ch, id: sound_id };
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::PlayMusic(expr) => {
+                    let music_id = self.eval_expr_const(expr)? as u8;
+                    let instr = sigil::Instruction::PlayMusic(music_id);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
                 EvsStmt::SwitchCharacter(expr) => {
                     let sigil_expr = self.compile_expr(expr)?;
                     let instr = sigil::Instruction::SwitchCharacter(sigil_expr);
@@ -173,6 +267,50 @@ impl Compiler {
                     self.compile_assignment(target, value, &mut out)?;
                 }
                 EvsStmt::If { cond, then_branch, else_branch } => {
+                    // Check for single skip optimization: if (...) skip(+n);
+                    if then_branch.len() == 1 && else_branch.is_none() {
+                        if let EvsStmt::Skip(off_expr) = &then_branch[0] {
+                            let target_offset = self.eval_expr_const(off_expr)? as i16;
+                            // Check for if (money(cur) >= amt) skip(...)
+                            if let EvsExpr::Binary { op: sigil::BinaryOp::Ge, left, right } = cond {
+                                if let EvsExpr::Money(cur) = **left {
+                                    if let Ok(amt) = self.eval_expr_const(right) {
+                                        let instr = sigil::Instruction::IfMoneyGe {
+                                            currency: sigil::Expr::const_val(cur as i32),
+                                            amount: amt as u32,
+                                            target_offset,
+                                        };
+                                        Assembler::assemble_instruction(&instr, &mut out);
+                                        continue;
+                                    }
+                                }
+                            }
+                            // Check for if (money(cur) < amt) skip(...)
+                            if let EvsExpr::Binary { op: sigil::BinaryOp::Lt, left, right } = cond {
+                                if let EvsExpr::Money(cur) = **left {
+                                    if let Ok(amt) = self.eval_expr_const(right) {
+                                        let instr = sigil::Instruction::IfMoneyLt {
+                                            currency: sigil::Expr::const_val(cur as i32),
+                                            amount: amt as u32,
+                                            target_offset,
+                                        };
+                                        Assembler::assemble_instruction(&instr, &mut out);
+                                        continue;
+                                    }
+                                }
+                            }
+                            if let EvsExpr::Unary { op: sigil::UnaryOp::Not, expr: inner } = cond {
+                                let sigil_cond = self.compile_expr(inner)?;
+                                Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset }, &mut out);
+                                continue;
+                            } else {
+                                let sigil_cond = self.compile_expr(cond)?;
+                                Assembler::assemble_instruction(&sigil::Instruction::If { cond: sigil_cond, target_offset }, &mut out);
+                                continue;
+                            }
+                        }
+                    }
+
                     let mut then_bytes = self.compile_statements(then_branch)?;
 
                     if let Some(else_branch) = else_branch {
@@ -289,12 +427,19 @@ impl Compiler {
             }
             EvsExpr::Arg(a) => Ok(sigil::Expr::arg_word(*a)),
             EvsExpr::ArgBit(b) => Ok(sigil::Expr::ArgBit(*b)),
+            EvsExpr::Money(m) => Ok(sigil::Expr::const_val(*m as i32)),
             EvsExpr::Rng => Ok(sigil::Expr::Rng),
             EvsExpr::RngRange(r) => {
                 let sub = self.compile_expr(r)?;
                 Ok(sigil::Expr::RngRange(Box::new(sub)))
             }
-            EvsExpr::DialogResponse => Ok(sigil::Expr::DialogResponse(None)),
+            EvsExpr::DialogResponse(param) => {
+                let sigil_param = match param {
+                    Some(p) => Some(Box::new(self.compile_expr(p)?)),
+                    None => None,
+                };
+                Ok(sigil::Expr::DialogResponse(sigil_param))
+            }
             EvsExpr::Unary { op, expr } => {
                 if *op == soe_script::ast::UnaryOp::Neg {
                     if let Ok(val) = self.eval_expr_const(expr) {

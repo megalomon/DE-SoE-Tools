@@ -159,6 +159,21 @@ impl Assembler {
                 out.push(0x2D);
                 out.push(*arg);
             }
+            Instruction::FadeIn => out.push(0x26),
+            Instruction::FadeOut => out.push(0x27),
+            Instruction::SetCameraPos { x, y } => {
+                out.push(0x20);
+                out.push(*x);
+                out.push(*y);
+            }
+            Instruction::PlaySound { channel, id } => {
+                out.push(0x30 + (*channel & 3));
+                out.push(*id);
+            }
+            Instruction::PlayMusic(id) => {
+                out.push(0x33);
+                out.push(*id);
+            }
             Instruction::CameraFollow { x, y } => {
                 out.push(0x21);
                 out.push(*x);

@@ -66,11 +66,15 @@ impl<'a> Dumper<'a> {
         let escript_ptr = DE_SCRIPTS_START_ADDR + 0x1B + 5 * (map_id as u32);
         let escript_ptr_off = Rom::snes_to_file_offset(escript_ptr);
         let escript_target = self.rom.read_u24_at(escript_ptr_off)?;
-        let enter_script_snes_addr = Rom::script_to_rom_addr(escript_target);
-        let enter_script = if enter_script_snes_addr >= 0x800000 && enter_script_snes_addr <= 0xC00000 {
-            Some(self.disasm.disassemble_script(enter_script_snes_addr, 500))
+        let (enter_script_snes_addr, enter_script) = if escript_target != 0 {
+            let addr = Rom::script_to_rom_addr(escript_target);
+            if addr >= 0x800000 && addr <= 0xC00000 {
+                (addr, Some(self.disasm.disassemble_script(addr, 500)))
+            } else {
+                (addr, None)
+            }
         } else {
-            None
+            (0, None)
         };
 
         // Step-On Triggers (mscripts)

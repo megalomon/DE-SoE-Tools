@@ -204,9 +204,9 @@ impl<'a> Disassembler<'a> {
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
             0x20 => {
-                let _x = self.read_u8(cur_file_off);
-                let _y = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+                let x = self.read_u8(cur_file_off);
+                let y = self.read_u8(cur_file_off);
+                (Instruction::SetCameraPos { x, y }, true)
             }
             0x21 => {
                 let x = self.read_u8(cur_file_off);
@@ -223,7 +223,8 @@ impl<'a> Disassembler<'a> {
                 let _scroll = self.read_u16(cur_file_off);
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
-            0x26 | 0x27 => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
+            0x26 => (Instruction::FadeIn, true),
+            0x27 => (Instruction::FadeOut, true),
             0x29 => {
                 let script_addr = self.read_u24(cur_file_off);
                 let rom_addr = Rom::script_to_rom_addr(script_addr);
@@ -237,9 +238,13 @@ impl<'a> Disassembler<'a> {
                 let arg = self.read_u8(cur_file_off);
                 (Instruction::UnlockPlayer(arg), true)
             }
-            0x30..=0x33 => {
-                let _b = self.read_u8(cur_file_off);
-                (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
+            0x30..=0x32 => {
+                let id = self.read_u8(cur_file_off);
+                (Instruction::PlaySound { channel: opcode - 0x30, id }, true)
+            }
+            0x33 => {
+                let id = self.read_u8(cur_file_off);
+                (Instruction::PlayMusic(id), true)
             }
             0x38 | 0x3A => (self.raw_instruction(opcode, stmt_start, *cur_file_off), true),
             0x3C => {

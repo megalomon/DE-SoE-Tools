@@ -107,6 +107,11 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::SleepWord(frames) => format!("SLEEP_ALIGNED {} frames", frames),
         Instruction::LockPlayer(arg) => format!("LOCK_PLAYER 0x{:02X}", arg),
         Instruction::UnlockPlayer(arg) => format!("UNLOCK_PLAYER 0x{:02X}", arg),
+        Instruction::FadeIn => "FADE_IN".to_string(),
+        Instruction::FadeOut => "FADE_OUT".to_string(),
+        Instruction::SetCameraPos { x, y } => format!("SET_CAMERA_POS {}, {}", x, y),
+        Instruction::PlaySound { channel, id } => format!("PLAY_SOUND ch: {}, id: 0x{:02X}", channel, id),
+        Instruction::PlayMusic(id) => format!("PLAY_MUSIC id: 0x{:02X}", id),
         Instruction::CameraFollow { x, y } => format!("CAMERA_FOLLOW {}, {}", x, y),
         Instruction::ChangeMap { x, y, map } => format!("CHANGE_MAP map: 0x{:04X}, pos: ({}, {})", map, x, y),
         Instruction::ResetGame => "RESET_GAME".to_string(),
@@ -150,19 +155,23 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
     match instr {
         Instruction::End => "end();".to_string(),
         Instruction::Return => "return;".to_string(),
-        Instruction::Skip(jmp) => format!("// branch {:+}", jmp),
-        Instruction::SkipNeg(jmp) => format!("// branch neg {:+}", jmp),
+        Instruction::Skip(jmp) => format!("skip({:+});", jmp),
+        Instruction::SkipNeg(jmp) => format!("skip({:+});", jmp),
         Instruction::Call(rom_addr) => format!("call(0x{:06X});", rom_addr),
         Instruction::Fork(rom_addr) => format!("fork(0x{:06X});", rom_addr),
         Instruction::CallRelative(jmp) => format!("call_rel({:+});", jmp),
         Instruction::CallRelativeByte(jmp) => format!("call_rel({:+});", jmp),
-        Instruction::If { cond, .. } => format!("if ({}) {{", format_expr(cond)),
-        Instruction::IfNot { cond, .. } => format!("if (!({})) {{", format_expr(cond)),
-        Instruction::IfMoneyGe { currency, amount, .. } => {
-            format!("if (money({}) >= {}) {{", format_expr(currency), amount)
+        Instruction::If { cond, target_offset } => {
+            format!("if ({}) skip({:+});", format_expr(cond), target_offset)
         }
-        Instruction::IfMoneyLt { currency, amount, .. } => {
-            format!("if (money({}) < {}) {{", format_expr(currency), amount)
+        Instruction::IfNot { cond, target_offset } => {
+            format!("if (!({})) skip({:+});", format_expr(cond), target_offset)
+        }
+        Instruction::IfMoneyGe { currency, amount, target_offset } => {
+            format!("if (money({}) >= {}) skip({:+});", format_expr(currency), amount, target_offset)
+        }
+        Instruction::IfMoneyLt { currency, amount, target_offset } => {
+            format!("if (money({}) < {}) skip({:+});", format_expr(currency), amount, target_offset)
         }
         Instruction::SetFlag { base, bit_index, val } => {
             let prefix = match base {
@@ -175,20 +184,20 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
             format!("arg_bit({}) = {};", bit_index, format_expr(val))
         }
         Instruction::WriteVarFast { addr, val } => {
-            format!("$2258[0x{:04X}] = 0x{:04X};", addr, val)
+            format!("RAM[0x{:04X}] = 0x{:04X};", addr, val)
         }
         Instruction::WriteRam { addr, expr, .. } => {
-            format!("$2258[0x{:04X}] = {};", addr, format_expr(expr))
+            format!("RAM[0x{:04X}] = {};", addr, format_expr(expr))
         }
         Instruction::WriteTemp { addr, expr, .. } => {
-            format!("$2834[0x{:04X}] = {};", addr, format_expr(expr))
+            format!("TEMP[0x{:04X}] = {};", addr, format_expr(expr))
         }
         Instruction::WriteScriptArg { arg, expr, .. } => {
             format!("arg({}) = {};", arg, format_expr(expr))
         }
-        Instruction::ShowText(id) => format!("text(0x{:04X});", id),
-        Instruction::ShowTextEnd(id) => format!("text_end(0x{:04X});", id),
-        Instruction::HideText => "text_hide();".to_string(),
+        Instruction::ShowText(id) => format!("show_text(0x{:04X});", id),
+        Instruction::ShowTextEnd(id) => format!("show_text_end(0x{:04X});", id),
+        Instruction::HideText => "hide_text();".to_string(),
         Instruction::GiveMoney { currency, amount } => {
             format!("give_money({}, {});", format_expr(currency), amount)
         }
@@ -200,8 +209,11 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::SleepWord(frames) => format!("sleep_aligned({});", frames),
         Instruction::LockPlayer(arg) => format!("lock_player(0x{:02X});", arg),
         Instruction::UnlockPlayer(arg) => format!("unlock_player(0x{:02X});", arg),
+        Instruction::FadeIn => "fade_in();".to_string(),
+        Instruction::FadeOut => "fade_out();".to_string(),
+        Instruction::SetCameraPos { x, y } => format!("set_camera_pos({}, {});", x, y),
         Instruction::CameraFollow { x, y } => format!("camera_follow({}, {});", x, y),
-        Instruction::ChangeMap { x, y, map } => format!("change_map(0x{:04X}, {}, {});", map, x, y),
+        Instruction::ChangeMap { x, y, map } => format!("change_map({}, {}, 0x{:04X});", x, y, map),
         Instruction::ResetGame => "reset_game();".to_string(),
         Instruction::WaitUntil(expr) => format!("wait_until({});", format_expr(expr)),
         Instruction::WaitFrame(expr) => format!("wait_frame({});", format_expr(expr)),
@@ -222,6 +234,8 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::DamageEntity { target, amount } => format!("damage_entity({}, {});", format_expr(target), format_expr(amount)),
         Instruction::HealEntity { target, amount } => format!("heal_entity({}, {});", format_expr(target), format_expr(amount)),
         Instruction::SetEntityHp { target, hp } => format!("set_entity_hp({}, {});", format_expr(target), format_expr(hp)),
+        Instruction::PlaySound { channel, id } => format!("play_sound({}, 0x{:02X});", channel, id),
+        Instruction::PlayMusic(id) => format!("play_music(0x{:02X});", id),
         Instruction::SwitchCharacter(expr) => format!("switch_character({});", format_expr(expr)),
         Instruction::AttachCamera(expr) => format!("attach_camera({});", format_expr(expr)),
         Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
@@ -250,9 +264,9 @@ pub fn format_expr(expr: &Expr) -> String {
             format!("{}[0x{:04X}]", prefix, bit_index)
         }
         Expr::RamByte { addr, .. } => format!("RAM_BYTE[0x{:04X}]", addr),
-        Expr::RamWord { addr, .. } => format!("RAM_WORD[0x{:04X}]", addr),
+        Expr::RamWord { addr, .. } => format!("RAM[0x{:04X}]", addr),
         Expr::TempByte { addr, .. } => format!("TEMP_BYTE[0x{:04X}]", addr),
-        Expr::TempWord { addr, .. } => format!("TEMP_WORD[0x{:04X}]", addr),
+        Expr::TempWord { addr, .. } => format!("TEMP[0x{:04X}]", addr),
         Expr::ArgBit(bit) => format!("ARG_BIT[{}]", bit),
         Expr::ArgByte { arg, .. } => format!("ARG_BYTE[{}]", arg),
         Expr::ArgWord { arg, .. } => format!("ARG_WORD[{}]", arg),

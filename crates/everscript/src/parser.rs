@@ -148,22 +148,31 @@ impl Parser {
             self.consume(&Token::OpenParen, "Erwarte '(' nach if")?;
             let cond = self.parse_expr()?;
             self.consume(&Token::CloseParen, "Erwarte ')' nach if-Bedingung")?;
-            self.consume(&Token::OpenBrace, "Erwarte '{' nach if-Bedingung")?;
-            let mut then_branch = Vec::new();
-            while !self.check(&Token::CloseBrace) && !self.is_at_end() {
-                then_branch.push(self.parse_statement()?);
-            }
-            self.consume(&Token::CloseBrace, "Erwarte '}' nach then-Block")?;
+
+            let then_branch = if self.match_token(&Token::OpenBrace) {
+                let mut stmts = Vec::new();
+                while !self.check(&Token::CloseBrace) && !self.is_at_end() {
+                    stmts.push(self.parse_statement()?);
+                }
+                self.consume(&Token::CloseBrace, "Erwarte '}' nach then-Block")?;
+                stmts
+            } else {
+                vec![self.parse_statement()?]
+            };
 
             let mut else_branch = None;
             if self.match_token(&Token::Else) {
-                self.consume(&Token::OpenBrace, "Erwarte '{' nach else")?;
-                let mut e_branch = Vec::new();
-                while !self.check(&Token::CloseBrace) && !self.is_at_end() {
-                    e_branch.push(self.parse_statement()?);
-                }
-                self.consume(&Token::CloseBrace, "Erwarte '}' nach else-Block")?;
-                else_branch = Some(e_branch);
+                let e_stmts = if self.match_token(&Token::OpenBrace) {
+                    let mut stmts = Vec::new();
+                    while !self.check(&Token::CloseBrace) && !self.is_at_end() {
+                        stmts.push(self.parse_statement()?);
+                    }
+                    self.consume(&Token::CloseBrace, "Erwarte '}' nach else-Block")?;
+                    stmts
+                } else {
+                    vec![self.parse_statement()?]
+                };
+                else_branch = Some(e_stmts);
             }
 
             return Ok(EvsStmt::If { cond, then_branch, else_branch });
@@ -238,6 +247,26 @@ impl Parser {
             return Ok(EvsStmt::GiveJewels(expr));
         }
 
+        if self.match_token(&Token::GiveMoney) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach give_money")?;
+            let currency = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in give_money")?;
+            let amount = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach give_money")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::GiveMoney { currency, amount });
+        }
+
+        if self.match_token(&Token::TakeMoney) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach take_money")?;
+            let currency = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in take_money")?;
+            let amount = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach take_money")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::TakeMoney { currency, amount });
+        }
+
         if self.match_token(&Token::Sleep) {
             self.consume(&Token::OpenParen, "Erwarte '(' nach sleep")?;
             let expr = self.parse_expr()?;
@@ -247,19 +276,35 @@ impl Parser {
         }
 
         if self.match_token(&Token::LockPlayer) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach lock_player")?;
-            let expr = self.parse_expr()?;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach lock_player-Argument")?;
+            let arg = if self.match_token(&Token::OpenParen) {
+                if self.match_token(&Token::CloseParen) {
+                    EvsExpr::Number(0)
+                } else {
+                    let a = self.parse_expr()?;
+                    self.consume(&Token::CloseParen, "Erwarte ')' nach lock_player-Argument")?;
+                    a
+                }
+            } else {
+                EvsExpr::Number(0)
+            };
             self.match_token(&Token::Semicolon);
-            return Ok(EvsStmt::LockPlayer(expr));
+            return Ok(EvsStmt::LockPlayer(arg));
         }
 
         if self.match_token(&Token::UnlockPlayer) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach unlock_player")?;
-            let expr = self.parse_expr()?;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach unlock_player-Argument")?;
+            let arg = if self.match_token(&Token::OpenParen) {
+                if self.match_token(&Token::CloseParen) {
+                    EvsExpr::Number(0)
+                } else {
+                    let a = self.parse_expr()?;
+                    self.consume(&Token::CloseParen, "Erwarte ')' nach unlock_player-Argument")?;
+                    a
+                }
+            } else {
+                EvsExpr::Number(0)
+            };
             self.match_token(&Token::Semicolon);
-            return Ok(EvsStmt::UnlockPlayer(expr));
+            return Ok(EvsStmt::UnlockPlayer(arg));
         }
 
         if self.match_token(&Token::Skip) {
@@ -268,6 +313,139 @@ impl Parser {
             self.consume(&Token::CloseParen, "Erwarte ')' nach skip-Argument")?;
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::Skip(expr));
+        }
+
+        if self.match_token(&Token::FadeIn) {
+            if self.match_token(&Token::OpenParen) {
+                self.consume(&Token::CloseParen, "Erwarte ')' nach fade_in")?;
+            }
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::FadeIn);
+        }
+
+        if self.match_token(&Token::FadeOut) {
+            if self.match_token(&Token::OpenParen) {
+                self.consume(&Token::CloseParen, "Erwarte ')' nach fade_out")?;
+            }
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::FadeOut);
+        }
+
+        if self.match_token(&Token::ChangeMap) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach change_map")?;
+            let a1 = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in change_map")?;
+            let a2 = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in change_map")?;
+            let a3 = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach change_map")?;
+            self.match_token(&Token::Semicolon);
+            let (x, y, map) = if let EvsExpr::Number(n) = a1 {
+                if n > 255 {
+                    (a2, a3, EvsExpr::Number(n))
+                } else {
+                    (EvsExpr::Number(n), a2, a3)
+                }
+            } else {
+                (a1, a2, a3)
+            };
+            return Ok(EvsStmt::ChangeMap { x, y, map });
+        }
+
+        if self.match_token(&Token::CameraFollow) || self.match_token(&Token::TeleportLocal) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach camera_follow")?;
+            let x = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' nach x-Koordinate")?;
+            let y = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach y-Koordinate")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::CameraFollow { x, y });
+        }
+
+        if self.match_token(&Token::SetCameraPos) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach set_camera_pos")?;
+            let x = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' nach x-Koordinate")?;
+            let y = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach y-Koordinate")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::SetCameraPos { x, y });
+        }
+
+        if self.match_token(&Token::WaitFrame) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach wait_frame")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach wait_frame")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::WaitFrame(expr));
+        }
+
+        if self.match_token(&Token::WaitAnim) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach wait_anim")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach wait_anim")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::WaitAnim(expr));
+        }
+
+        if self.match_token(&Token::WaitUntil) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach wait_until")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach wait_until")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::WaitUntil(expr));
+        }
+
+        if self.match_token(&Token::DamageEntity) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach damage_entity")?;
+            let target = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in damage_entity")?;
+            let amount = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach damage_entity")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::DamageEntity { target, amount });
+        }
+
+        if self.match_token(&Token::HealEntity) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach heal_entity")?;
+            let target = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in heal_entity")?;
+            let amount = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach heal_entity")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::HealEntity { target, amount });
+        }
+
+        if self.match_token(&Token::SetEntityHp) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach set_entity_hp")?;
+            let target = self.parse_expr()?;
+            self.consume(&Token::Comma, "Erwarte ',' in set_entity_hp")?;
+            let hp = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach set_entity_hp")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::SetEntityHp { target, hp });
+        }
+
+        if self.match_token(&Token::PlaySound) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach play_sound")?;
+            let first = self.parse_expr()?;
+            let (channel, id) = if self.match_token(&Token::Comma) {
+                let second = self.parse_expr()?;
+                (Some(first), second)
+            } else {
+                (None, first)
+            };
+            self.consume(&Token::CloseParen, "Erwarte ')' nach play_sound")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::PlaySound { channel, id });
+        }
+
+        if self.match_token(&Token::PlayMusic) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach play_music")?;
+            let id = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach play_music")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::PlayMusic(id));
         }
 
         if self.match_token(&Token::SwitchCharacter) {
@@ -314,24 +492,94 @@ impl Parser {
         if let EvsExpr::Call { name, mut args } = expr {
             self.match_token(&Token::Semicolon);
             match name.as_str() {
-                "lock_player" if args.len() == 1 => return Ok(EvsStmt::LockPlayer(args.remove(0))),
-                "unlock_player" if args.len() == 1 => return Ok(EvsStmt::UnlockPlayer(args.remove(0))),
+                "lock_player" => {
+                    let a = if args.is_empty() { EvsExpr::Number(0) } else { args.remove(0) };
+                    return Ok(EvsStmt::LockPlayer(a));
+                }
+                "unlock_player" => {
+                    let a = if args.is_empty() { EvsExpr::Number(0) } else { args.remove(0) };
+                    return Ok(EvsStmt::UnlockPlayer(a));
+                }
                 "skip" if args.len() == 1 => return Ok(EvsStmt::Skip(args.remove(0))),
+                "fade_in" if args.is_empty() => return Ok(EvsStmt::FadeIn),
+                "fade_out" if args.is_empty() => return Ok(EvsStmt::FadeOut),
+                "change_map" if args.len() == 3 => {
+                    let (x, y, map) = if let EvsExpr::Number(n) = &args[0] {
+                        if *n > 255 {
+                            (args.remove(1), args.remove(1), args.remove(0))
+                        } else {
+                            (args.remove(0), args.remove(0), args.remove(0))
+                        }
+                    } else {
+                        (args.remove(0), args.remove(0), args.remove(0))
+                    };
+                    return Ok(EvsStmt::ChangeMap { x, y, map });
+                }
+                "camera_follow" | "teleport_local" if args.len() == 2 => {
+                    let x = args.remove(0);
+                    let y = args.remove(0);
+                    return Ok(EvsStmt::CameraFollow { x, y });
+                }
+                "set_camera_pos" if args.len() == 2 => {
+                    let x = args.remove(0);
+                    let y = args.remove(0);
+                    return Ok(EvsStmt::SetCameraPos { x, y });
+                }
+                "wait_frame" if args.len() == 1 => return Ok(EvsStmt::WaitFrame(args.remove(0))),
+                "wait_anim" if args.len() == 1 => return Ok(EvsStmt::WaitAnim(args.remove(0))),
+                "wait_until" if args.len() == 1 => return Ok(EvsStmt::WaitUntil(args.remove(0))),
+                "damage_entity" if args.len() == 2 => {
+                    let target = args.remove(0);
+                    let amount = args.remove(0);
+                    return Ok(EvsStmt::DamageEntity { target, amount });
+                }
+                "heal_entity" if args.len() == 2 => {
+                    let target = args.remove(0);
+                    let amount = args.remove(0);
+                    return Ok(EvsStmt::HealEntity { target, amount });
+                }
+                "set_entity_hp" if args.len() == 2 => {
+                    let target = args.remove(0);
+                    let hp = args.remove(0);
+                    return Ok(EvsStmt::SetEntityHp { target, hp });
+                }
+                "play_sound" | "play_sfx" => {
+                    if args.len() == 1 {
+                        return Ok(EvsStmt::PlaySound { channel: None, id: args.remove(0) });
+                    } else if args.len() == 2 {
+                        let ch = args.remove(0);
+                        let id = args.remove(0);
+                        return Ok(EvsStmt::PlaySound { channel: Some(ch), id });
+                    } else {
+                        return Err(format!("play_sound erwartet 1 oder 2 Argumente, erhalten: {}", args.len()));
+                    }
+                }
+                "play_music" | "play_bgm" if args.len() == 1 => return Ok(EvsStmt::PlayMusic(args.remove(0))),
+                "give_money" if args.len() == 2 => {
+                    let currency = args.remove(0);
+                    let amount = args.remove(0);
+                    return Ok(EvsStmt::GiveMoney { currency, amount });
+                }
+                "take_money" if args.len() == 2 => {
+                    let currency = args.remove(0);
+                    let amount = args.remove(0);
+                    return Ok(EvsStmt::TakeMoney { currency, amount });
+                }
                 "switch_character" if args.len() == 1 => return Ok(EvsStmt::SwitchCharacter(args.remove(0))),
                 "attach_camera" if args.len() == 1 => return Ok(EvsStmt::AttachCamera(args.remove(0))),
                 "end" if args.is_empty() => return Ok(EvsStmt::End),
                 "return" if args.is_empty() => return Ok(EvsStmt::Return),
-                "text" if args.len() == 1 => return Ok(EvsStmt::Text(args.remove(0))),
-                "text_end" if args.len() == 1 => return Ok(EvsStmt::TextEnd(args.remove(0))),
-                "text_hide" if args.is_empty() => return Ok(EvsStmt::TextHide),
+                "text" | "show_text" if args.len() == 1 => return Ok(EvsStmt::Text(args.remove(0))),
+                "text_end" | "show_text_end" if args.len() == 1 => return Ok(EvsStmt::TextEnd(args.remove(0))),
+                "text_hide" | "hide_text" if args.is_empty() => return Ok(EvsStmt::TextHide),
                 "give_jewels" if args.len() == 1 => return Ok(EvsStmt::GiveJewels(args.remove(0))),
-                "sleep" if args.len() == 1 => return Ok(EvsStmt::Sleep(args.remove(0))),
+                "sleep" | "sleep_aligned" if args.len() == 1 => return Ok(EvsStmt::Sleep(args.remove(0))),
                 _ => return Ok(EvsStmt::Call(EvsExpr::Call { name, args })),
             }
+        } else {
+            self.match_token(&Token::Semicolon);
+            return Err(format!("Unerwarteter Ausdruck als Anweisung: {:?}", expr));
         }
-
-        self.match_token(&Token::Semicolon);
-        Err(format!("Unerwarteter Ausdruck als Anweisung: {:?}", expr))
     }
 
     pub fn parse_expr(&mut self) -> Result<EvsExpr, String> {
@@ -529,38 +777,48 @@ impl Parser {
             let name = id.clone();
             self.advance();
 
-            if name == "FLAG" || name == "TEMP_FLAG" {
-                let base = if name == "FLAG" { FlagBase::Ram } else { FlagBase::Temp };
+            if name == "FLAG" || name == "TEMP_FLAG" || name == "RAM_FLAG" {
+                let base = if name == "TEMP_FLAG" { FlagBase::Temp } else { FlagBase::Ram };
                 self.consume(&Token::OpenBracket, "Erwarte '[' nach FLAG-Name")?;
                 let bit = self.parse_expr()?;
                 self.consume(&Token::CloseBracket, "Erwarte ']' nach FLAG-Index")?;
                 return Ok(EvsExpr::Flag { base, bit: Box::new(bit) });
             }
 
-            if name == "TEMP" || name == "TEMP_WORD" {
+            if name == "TEMP" || name == "TEMP_WORD" || name == "TEMP_BYTE" {
                 self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP")?;
                 let offset = self.parse_expr()?;
                 self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP-Offset")?;
                 return Ok(EvsExpr::Memory { base: 0x2834, offset: Box::new(offset) });
             }
 
-            if name == "RAM" || name == "RAM_WORD" {
+            if name == "RAM" || name == "RAM_WORD" || name == "RAM_BYTE" {
                 self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM")?;
                 let offset = self.parse_expr()?;
                 self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM-Offset")?;
                 return Ok(EvsExpr::Memory { base: 0x2258, offset: Box::new(offset) });
             }
 
-            if name == "rnd" {
+            if name == "rnd" || name == "rnd_range" {
                 self.consume(&Token::OpenParen, "Erwarte '(' nach rnd")?;
-                self.consume(&Token::CloseParen, "Erwarte ')' nach rnd")?;
-                return Ok(EvsExpr::Rng);
+                if self.match_token(&Token::CloseParen) {
+                    return Ok(EvsExpr::Rng);
+                } else {
+                    let range = self.parse_expr()?;
+                    self.consume(&Token::CloseParen, "Erwarte ')' nach rnd")?;
+                    return Ok(EvsExpr::RngRange(Box::new(range)));
+                }
             }
 
             if name == "dialog_response" {
                 self.consume(&Token::OpenParen, "Erwarte '(' nach dialog_response")?;
+                let param = if !self.check(&Token::CloseParen) {
+                    Some(Box::new(self.parse_expr()?))
+                } else {
+                    None
+                };
                 self.consume(&Token::CloseParen, "Erwarte ')' nach dialog_response")?;
-                return Ok(EvsExpr::DialogResponse);
+                return Ok(EvsExpr::DialogResponse(param));
             }
 
             if self.match_token(&Token::OpenParen) {

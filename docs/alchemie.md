@@ -12,7 +12,31 @@ Jede gelernte Zauberformel kann im Spiel bis auf **Level 9** gesteigert werden (
 
 - **XP-Zähler (Low-Word):** Liegt im Bereich **`$7E:2F52` bis `$7E:2F96`** (`$2F52 + 2 * formel_id`).
 - **Level-Stufe (High-Word):** Liegt im Bereich **`$7E:2F98` bis `$7E:2FDC`** (`$2F98 + 2 * formel_id`). Speichert das Level von `0` (nicht gelernt) bis `9` (Maximum).
-- **Level-Up Routine:** Der Zauber-Handler addiert `C5:0202[level]` auf `$2F52`. Bei Erreichen von $\ge 100$ (`CMP #$0064`) wird das Level um 1 erhöht (bei `$91:CC6C`), auf maximal Level 9 begrenzt (`CMP #$000A`) und der XP-Wert mit `TDC / STA` genullt.
+- **Level-Up Routine:** Der Zauber-Handler addiert den Wert aus der Levelkurven-Tabelle bei **`$C5:0202`** auf `$2F52`. Bei Erreichen von $\ge 100$ (`CMP #$0064`) wird das Level um 1 erhöht (bei `$91:CC6C`), auf maximal Level 9 begrenzt (`CMP #$000A`) und der XP-Wert mit `TDC / STA` genullt.
+
+### Levelkurven-Tabelle (`$C5:0202` / `0x050202`)
+Die Tabelle umfasst 10 16-Bit Little-Endian Words (für Level 0 bis 9):
+| Level | Wert (dezimal) | Wert (hex) | Zuwachs pro Zaubereinsatz |
+| :---: | :---: | :---: | :--- |
+| **0** | `1290` | `0x050A` | Höchster Zuwachs auf Basisstufe |
+| **1** | `772`  | `0x0304` | Schneller Anstieg zu Level 2 |
+| **2** | `514`  | `0x0202` | Mittlerer Zuwachs |
+| **3** | `257`  | `0x0101` | Linearer Anstieg |
+| **4** | `513`  | `0x0201` | Mittlerer Zuwachs |
+| **5** | `1796` | `0x0704` | Deutlich beschleunigter Zuwachs |
+| **6** | `3851` | `0x0F0B` | Höherer Zuwachs |
+| **7** | `6676` | `0x1A14` | Starker Zuwachs |
+| **8** | `10016`| `0x2720` | Schneller Sprung auf Max-Level 9 |
+| **9** | `22062`| `0x562E` | Maximaler Füllwert für Level 9:00 |
+
+### Rezeptur-Tabellenstruktur (`$C5:0685` / `0x050685`)
+Die 35 spielbaren Zauberformeln werden als kontinuierliche 4-Byte-Datensätze (insgesamt 140 Bytes) ab `$C5:0685` gespeichert:
+```
++0x00 (1 Byte): ID der ersten Zutat (0x00..0x15, siehe Zutaten-Tabelle)
++0x01 (1 Byte): ID der zweiten Zutat (0x00..0x15)
++0x02 (1 Byte): Benötigte Menge der ersten Zutat (1..3)
++0x03 (1 Byte): Benötigte Menge der zweiten Zutat (1..3)
+```
 
 ### Aktive Ringmenü-Slots
 Der Junge kann bis zu 9 Zauber gleichzeitig im Ringmenü ausrüsten. Die zugewiesenen Zauber-IDs (0 bis 34) liegen an folgenden Byte-Adressen:

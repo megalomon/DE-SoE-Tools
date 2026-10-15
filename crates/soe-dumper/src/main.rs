@@ -5,10 +5,7 @@ use soe_script::disasm::Disassembler;
 use std::fs;
 use std::path::PathBuf;
 
-mod dumper;
-mod maps;
-
-use dumper::Dumper;
+use soe_dumper::Dumper;
 
 #[derive(Parser)]
 #[command(name = "soe-dumper")]

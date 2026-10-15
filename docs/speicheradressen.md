@@ -187,6 +187,13 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 > Die vollständige Dokumentation aller **Waffen, Rüstungen, Helme, Armbänder, Hundehalsbänder, Verbrauchsgegenstände und Tauschwaren** mit ihren exakten deutschen Ingame-Namen und ROM-Offsets befindet sich im separaten Dokument:  
 > 👉 [**`docs/ausruestung_items.md`**](ausruestung_items.md)
 
+### Ausgerüstete Gegenstände (Ringmenü-Ausrüstung im WRAM)
+- **Ausgerüstete Rüstung (Held):** `$7E:2350` (Item-ID `0` bis `11`, z. B. `0` = Moosweste, `11` = Cyberweste)
+- **Ausgerüsteter Helm (Held):** `$7E:2352` (Item-ID `0` bis `11`, z. B. `0` = Hippiemütze, `11` = Elektrohelm)
+- **Ausgerüstetes Armband (Held):** `$7E:2354` (Item-ID `0` bis `11`, z. B. `0` = Gemüsearmband, `11` = Elektroarmband)
+- **Ausgerüstetes Halsband (Hund):** `$7E:2356` (Item-ID `0` bis `3`, z. B. `0` = Lederhalsband, `3` = Juwelenhalsband)
+- **Ausgerüstete Waffe (Held):** `$7E:235F` / `$7E:2360` (Waffenslot im Ringmenü)
+
 ### Heil- & Unterstützungsitems (Zähler 0–99 im WRAM)
 - **Blätter:** `$7E2364` (Zähler 0–99)
 - **Nektar:** `$7E2366` (Zähler 0–99)
@@ -196,6 +203,8 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 - **Elixier:** `$7E236E` (Zähler 0–99)
 
 ### Kampf- und Charge-Register
+> [!NOTE]
+> Diese Register dienen der Kampfengine zur Berechnung von Angriffskraft und Aufladebalken:
 - **Charge-Limit Junge:** `$7E:0A52` (`$8F:8262` schreibt Waffenlevel × `0x400`)
 - **Charge-Bonus Junge:** `$7E:0A54` (wird bei `$8F:CC2D` zum Charge addiert)
 - **Hund Waffenlevel:** `$7E:0B07` (Low = EXP, High = Level 1..3, gesteigert bei `$8F:9787`)
