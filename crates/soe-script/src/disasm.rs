@@ -591,10 +591,10 @@ impl<'a> Disassembler<'a> {
                 (Instruction::SetEntityHp { target, hp }, true)
             }
             0x98 => {
-                let weather = self.parse_sub(cur_file_off);
-                (Instruction::SetWeather(weather), true)
+                let character = self.parse_sub(cur_file_off);
+                (Instruction::SwitchCharacter(character), true)
             }
-            0x9A => {
+            0x9B => {
                 let target = self.parse_sub(cur_file_off);
                 (Instruction::AttachCamera(target), true)
             }
@@ -619,7 +619,7 @@ impl<'a> Disassembler<'a> {
                 (Instruction::DamageEntity2 { target, val }, true)
             }
             // Weitere Opcodes mit 1 Ausdrucks-Operanden (Raw)
-            0x2A | 0x2B | 0x4E | 0x74..=0x77 | 0x91 | 0x9B | 0x9C => {
+            0x2A | 0x2B | 0x4E | 0x74..=0x77 | 0x91 | 0x9A | 0x9C => {
                 let _expr = self.parse_sub(cur_file_off);
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }

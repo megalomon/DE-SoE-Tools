@@ -115,3 +115,102 @@ fn test_disasm_opcode_7e_and_money_jump() {
     assert_eq!(script2.statements[3].instruction, soe_script::ast::Instruction::End);
 }
 
+#[test]
+fn test_verified_opcodes() {
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let mut rom = Rom::load(rom_path).expect("German ROM should load");
+
+    // 1. Opcode 0x44: SET_WINDOW_0_SIZE consumes exactly 5 bytes (win, x, y, w, h)
+    let addr_44 = 0x93E100;
+    let bytes_44 = [0x44, 0x00, 0x02, 0x04, 0x1A, 0x0A, 0x00];
+    rom.write_bytes_snes(addr_44, &bytes_44).unwrap();
+
+    // 2. Opcode 0x7F: SHOW_NAMING_SCREEN consumes exactly 2 bytes (u16 target)
+    let addr_7f = 0x93E120;
+    let bytes_7f = [0x7F, 0x03, 0x00, 0x00];
+    rom.write_bytes_snes(addr_7f, &bytes_7f).unwrap();
+
+    // 3. Opcode 0x91: SET_BRIGHTNESS evaluates an expression (e.g. inline const 15: 0xBF = 0x3F | 0x80)
+    let addr_91 = 0x93E140;
+    let bytes_91 = [0x91, 0xBF, 0x00];
+    rom.write_bytes_snes(addr_91, &bytes_91).unwrap();
+
+    // 4. Opcode 0x9B: ATTACH_CAMERA (Instruction::AttachCamera)
+    let addr_9b = 0x93E160;
+    let bytes_9b = [0x9B, 0xB0, 0x00];
+    rom.write_bytes_snes(addr_9b, &bytes_9b).unwrap();
+
+    // 5. Opcode 0x98: SWITCH_CHARACTER (Instruction::SwitchCharacter)
+    let addr_98 = 0x93E180;
+    let bytes_98 = [0x98, 0xB1, 0x00];
+    rom.write_bytes_snes(addr_98, &bytes_98).unwrap();
+
+    let disasm = Disassembler::new(&rom);
+
+    // Verify 0x44
+    let script_44 = disasm.disassemble_script(addr_44, 10);
+    assert_eq!(script_44.statements.len(), 2);
+    assert_eq!(
+        script_44.statements[0].instruction,
+        soe_script::ast::Instruction::Raw {
+            opcode: 0x44,
+            payload: vec![0x00, 0x02, 0x04, 0x1A, 0x0A]
+        }
+    );
+    assert_eq!(script_44.statements[1].instruction, soe_script::ast::Instruction::End);
+    let reassembled_44 = soe_script::asm::Assembler::assemble_script(&script_44);
+    assert_eq!(reassembled_44, bytes_44);
+
+    // Verify 0x7F
+    let script_7f = disasm.disassemble_script(addr_7f, 10);
+    assert_eq!(script_7f.statements.len(), 2);
+    assert_eq!(
+        script_7f.statements[0].instruction,
+        soe_script::ast::Instruction::Raw {
+            opcode: 0x7F,
+            payload: vec![0x03, 0x00]
+        }
+    );
+    let reassembled_7f = soe_script::asm::Assembler::assemble_script(&script_7f);
+    assert_eq!(reassembled_7f, bytes_7f);
+
+    // Verify 0x91
+    let script_91 = disasm.disassemble_script(addr_91, 10);
+    assert_eq!(script_91.statements.len(), 2);
+    assert_eq!(
+        script_91.statements[0].instruction,
+        soe_script::ast::Instruction::Raw {
+            opcode: 0x91,
+            payload: vec![0xBF]
+        }
+    );
+    let reassembled_91 = soe_script::asm::Assembler::assemble_script(&script_91);
+    assert_eq!(reassembled_91, bytes_91);
+
+    // Verify 0x9B
+    let script_9b = disasm.disassemble_script(addr_9b, 10);
+    assert_eq!(script_9b.statements.len(), 2);
+    assert_eq!(
+        script_9b.statements[0].instruction,
+        soe_script::ast::Instruction::AttachCamera(soe_script::ast::Expr::Const {
+            opcode: Some(0x30),
+            val: 0,
+        })
+    );
+    let reassembled_9b = soe_script::asm::Assembler::assemble_script(&script_9b);
+    assert_eq!(reassembled_9b, bytes_9b);
+
+    // Verify 0x98
+    let script_98 = disasm.disassemble_script(addr_98, 10);
+    assert_eq!(script_98.statements.len(), 2);
+    assert_eq!(
+        script_98.statements[0].instruction,
+        soe_script::ast::Instruction::SwitchCharacter(soe_script::ast::Expr::Const {
+            opcode: Some(0x31),
+            val: 1,
+        })
+    );
+    let reassembled_98 = soe_script::asm::Assembler::assemble_script(&script_98);
+    assert_eq!(reassembled_98, bytes_98);
+}
+

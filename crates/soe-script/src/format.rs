@@ -129,10 +129,10 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::DamageEntity { target, amount } => format!("DAMAGE_ENTITY target: ({}) amt: ({})", format_expr(target), format_expr(amount)),
         Instruction::HealEntity { target, amount } => format!("HEAL_ENTITY target: ({}) amt: ({})", format_expr(target), format_expr(amount)),
         Instruction::SetEntityHp { target, hp } => format!("SET_ENTITY_HP target: ({}) hp: ({})", format_expr(target), format_expr(hp)),
-        Instruction::SetWeather(expr) => format!("SET_WEATHER ({})", format_expr(expr)),
+        Instruction::SwitchCharacter(expr) => format!("SWITCH_CHARACTER ({})", format_expr(expr)),
         Instruction::AttachCamera(expr) => format!("ATTACH_CAMERA ({})", format_expr(expr)),
         Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
-            let extra_str = extra.iter().map(|e| format_expr(e)).collect::<Vec<_>>().join(", ");
+            let extra_str = extra.iter().map(format_expr).collect::<Vec<_>>().join(", ");
             format!("CAST_ALCHEMY_0x{:02X} target: ({}) spell: ({}) lvl: ({}) extra: [{}]", opcode, format_expr(target), format_expr(spell), format_expr(level), extra_str)
         }
         Instruction::TriggerEntityAction { target, action } => format!("TRIGGER_ENTITY_ACTION target: ({}) act: ({})", format_expr(target), format_expr(action)),
@@ -222,10 +222,10 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::DamageEntity { target, amount } => format!("damage_entity({}, {});", format_expr(target), format_expr(amount)),
         Instruction::HealEntity { target, amount } => format!("heal_entity({}, {});", format_expr(target), format_expr(amount)),
         Instruction::SetEntityHp { target, hp } => format!("set_entity_hp({}, {});", format_expr(target), format_expr(hp)),
-        Instruction::SetWeather(expr) => format!("set_weather({});", format_expr(expr)),
+        Instruction::SwitchCharacter(expr) => format!("switch_character({});", format_expr(expr)),
         Instruction::AttachCamera(expr) => format!("attach_camera({});", format_expr(expr)),
         Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
-            let extra_str = extra.iter().map(|e| format_expr(e)).collect::<Vec<_>>().join(", ");
+            let extra_str = extra.iter().map(format_expr).collect::<Vec<_>>().join(", ");
             format!("cast_alchemy_0x{:02X}({}, {}, {}, [{}]);", opcode, format_expr(target), format_expr(spell), format_expr(level), extra_str)
         }
         Instruction::TriggerEntityAction { target, action } => format!("trigger_entity_action({}, {});", format_expr(target), format_expr(action)),

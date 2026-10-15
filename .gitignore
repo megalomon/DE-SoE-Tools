@@ -1,3 +1,5 @@
 /target
 *.png
 dump_de/
+__pycache__/
+*.pyc

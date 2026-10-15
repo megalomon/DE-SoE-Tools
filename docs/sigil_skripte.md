@@ -48,10 +48,10 @@ Secret of Evermore führt Skripte nicht blockierend aus, sondern besitzt einen k
    8C:D40E: BD EC  ; Status 0: Unbenutzt / Trap -> $8C:ECBD
    8C:D410: 81 D4  ; Status 2: Bereit (Ready) -> $8C:D481 (Ausführung starten/fortsetzen)
    8C:D412: 1C D4  ; Status 4: Timer-Wait -> $8C:D41C (Wartet auf 32-Bit Frame-Timer $7E:0B19)
-   8C:D414: 2F D4  ; Status 6: Tick-Sleep -> $8C:D42F (Dekrementiert Frame-Zähler)
-   8C:D416: 41 D4  ; Status 8: Event-Wait -> $8C:D441 (Prüft WRAM-Bedingung an $7E:2429)
-   8C:D418: 6B D4  ; Status 10: Animations-Wait -> $8C:D46B (Wartet auf Sprite-Animationsende)
-   8C:D41A: 4A D4  ; Status 12: Sprite-Wait -> $8C:D44A
+   8C:D414: 2F D4  ; Status 6: Task-Sync / Event-Flag-Wait -> $8C:D42F (Prüft und quittiert Bitmaske $0005,Y & $0009,Y)
+   8C:D416: 41 D4  ; Status 8: Dialog-/State-Wait -> $8C:D441 (Wartet auf WRAM-Zustand $7E:2429 == $0005,Y)
+   8C:D418: 6B D4  ; Status 10: Entity-/Animations-Wait -> $8C:D46B (Wartet auf Animations-/Bewegungsende von Entity X = $0005,Y an $1080,X)
+   8C:D41A: 4A D4  ; Status 12: Scroll-/Position-Wait -> $8C:D44A (Überwacht Scroll-/Positionsregister $BF/$C1)
    ```
 
 ### Aufbau einer Task-Struktur im WRAM (Register `Y`)
@@ -294,10 +294,10 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x41` | `$8C:ECBA` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x42` | `$8C:E3EF` | Aktiv | target: entity, x: u8, y: u8 | **`TELEPORT_ENTITY`** – Setzt Position einer Entity auf feste Kachel-Koordinaten. |
 | `0x43` | `$8C:E40E` | Aktiv | target: expr, x: expr, y: expr | **`TELEPORT_ENTITY_EXPR`** – Setzt Position anhand dynamisch berechneter Koordinaten (`E E E`). |
-| `0x44` | `$8C:DC79` | Aktiv | x: u8, y: u8, w: u8, h: u8, flags: u8 | **`SET_WINDOW_0_SIZE`** – Setzt Position, Maße und Flags für Textfenster 0 (5 Bytes). |
-| `0x45` | `$8C:DC79` | Aktiv | x: u8, y: u8, w: u8, h: u8, flags: u8 | **`SET_WINDOW_1_SIZE`** – Setzt Position, Maße und Flags für Textfenster 1 (5 Bytes). |
-| `0x46` | `$8C:DC79` | Aktiv | x: u8, y: u8, w: u8, h: u8, flags: u8 | **`SET_WINDOW_2_SIZE`** – Setzt Position, Maße und Flags für Textfenster 2 (5 Bytes). |
-| `0x47` | `$8C:DC79` | Aktiv | x: u8, y: u8, w: u8, h: u8, flags: u8 | **`SET_WINDOW_3_SIZE`** – Setzt Position, Maße und Flags für Textfenster 3 (5 Bytes). |
+| `0x44` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_0_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 0 via `$8C:DD50` (5 Bytes). |
+| `0x45` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_1_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 1 via `$8C:DD50` (5 Bytes). |
+| `0x46` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_2_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 2 via `$8C:DD50` (5 Bytes). |
+| `0x47` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_3_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 3 via `$8C:DD50` (5 Bytes). |
 | `0x48` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_0_DEFAULT`** – Setzt Textfenster 0 auf Standardmaße (2, 2, 28, 10). |
 | `0x49` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_1_DEFAULT`** – Setzt Textfenster 1 auf Standardmaße. |
 | `0x4A` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_2_DEFAULT`** – Setzt Textfenster 2 auf Standardmaße. |
@@ -371,7 +371,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x8E` | `$8C:D86C` | Aktiv | a: expr, b: expr, off: i16 | **`IF_EQUAL`** – Verzweigt um `off`, falls Ausdruck `a == b` ist. |
 | `0x8F` | `$8C:D8AB` | Aktiv | a: expr, b: expr, off: i16 | **`IF_NOT_EQUAL`** – Verzweigt um `off`, falls Ausdruck `a != b` ist. |
 | `0x90` | `$8C:E02A` | Aktiv | level: expr | **`SET_BRIGHTNESS_EXPR`** – Setzt Bildschirm-Helligkeit (0..15) anhand dynamischen Ausdrucks. |
-| `0x91` | `$8C:E051` | Aktiv | level: u8 | **`SET_BRIGHTNESS`** – Setzt Bildschirm-Helligkeit sofort auf Wert `level` (0..15). |
+| `0x91` | `$8C:E051` | Aktiv | level: expr | **`SET_BRIGHTNESS_ALT`** – Setzt Bildschirm-Helligkeit (0..15) an `$0106`/`$0B8B` anhand dynamischen Ausdrucks. |
 | `0x92` | `$8C:E831` | Aktiv | target: entity, focus: expr | **`SET_ENTITY_TARGET`** – Setzt AI-Kampf- und Verfolgungsfokus an `Entity+$46`. |
 | `0x93` | `$8C:E887` | Aktiv | target: entity, val: expr | **`QUEUE_ENTITY_DAMAGE`** – Trägt Schadenswert in Anzeige-Queue `Entity+$76` ein via `$8FC0C7`. |
 | `0x94` | `$8C:E811` | Aktiv | target: entity, dmg: expr | **`DAMAGE_ENTITY`** – Fügt Entity direkten HP-Schaden zu via `$8FC02F`. |
@@ -388,7 +388,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x9F` | `$8C:E9B1` | Aktiv | *keine* | **`SHOW_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts im Bildschirm ein. |
 | `0xA0` | `$8C:EA29` | Aktiv | *keine* | **`UPDATE_CURRENCY_HUD`** – Aktualisiert Ziffern der Währungsanzeige via `$8C:B2F2`. |
 | `0xA1` | `$8C:EA60` | Aktiv | *keine* | **`HIDE_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts aus via `$8C:B1AC`. |
-| `0xA2` | `$8C:E09B` | Aktiv | type: u16, x: expr, y: expr | **`SPAWN_NPC`** – Erzeugt neues Sprite auf der Map über Tabelle `$8E:B55A`. |
+| `0xA2` | `$8C:E09B` | Aktiv | type: u16, param: u16, x: expr, y: expr | **`SPAWN_NPC`** – Erzeugt neues Sprite auf der Map über Tabelle `$8E:B55A`. |
 | `0xA3` | `$8C:D789` | Aktiv | idx: u8 | **`CALL_INDEXED_BYTE`** – Subroutinenaufruf über 8-Bit-Offset in Sprungtabelle `$93:8000`. |
 | `0xA4` | `$8C:D77E` | Aktiv | idx: u16 | **`CALL_INDEXED_WORD`** – Subroutinenaufruf über 16-Bit-Offset in Sprungtabelle `$93:8000`. |
 | `0xA5` | `$8C:D745` | Aktiv | off: i8 | **`CALL_RELATIVE_BYTE`** – Relativer Subroutinen-Aufruf (8-Bit Offset) mit Caller-Link in `+0x0B`. |
@@ -399,8 +399,8 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0xAA` | `$8C:EBF0` | Aktiv | *keine* | **`SET_CANINE_AI_TARGETING`** – Schaltet Hund-AI-Such- und Schnüffelmodus an `$7E:23C7` via `$91B896` (keine Operanden). |
 | `0xAB` | `$8C:ECB2` | Aktiv | *keine* | **`RESET_GAME_STATE`** – Führt Soft-Reset zu Spielstart aus (`JMP $8084C9`, Terminal-Befehl). |
 | `0xAC` | `$8C:D4A8` | Aktiv | target: expr, spell: expr, level: expr, extra: expr... | **`CAST_ALCHEMY_CHECK_DOG`** – Löst Alchemiezauber aus (prüft inaktiven Hund `$3BC1`). |
-| `0xAD` | `$8C:DB3B` | Aktiv | src: u16, dst: u16, len: u16 | **`COPY_TEMP_TO_TEMP`** – Schneller Word-Blocktransfer innerhalb von Scratchpad `$7E:2834`. |
-| `0xAE` | `$8C:DB08` | Aktiv | src: u8, dst: u8, len: u16 | **`COPY_ARG_TO_ARG`** – Blocktransfer zwischen Argument-Frames (4 Bytes). |
+| `0xAD` | `$8C:DB3B` | Aktiv | w1: u16, w2: u16, b1: u8, b2: u8 | **`SET_TEMP_PAIRS_X8`** – Setzt `$7E:2834+w1 = b1*8` und `$7E:2834+w2 = b2*8` (6 Bytes). |
+| `0xAE` | `$8C:DB08` | Aktiv | arg1: u8, arg2: u8, b1: u8, b2: u8 | **`SET_ARG_PAIRS_X8`** – Setzt `Arg[arg1] = b1*8` und `Arg[arg2] = b2*8` (4 Bytes). |
 | `0xAF` | `$8C:D7AF` | Aktiv | count: u8, params: expr[count], addr: u24 | **`CALL_PARAMS`** – Subroutinenaufruf mit Parameterzähler `count` und Parametern auf dem Stack. |
 | `0xB0` | `$8C:D786` | Aktiv | count: u8, params: expr[count], idx: u8 | **`CALL_INDEXED_BYTE_PARAMS`** – Tabellensprung über `$93:8000` mit Zähler `count` und Stack-Parametern. |
 | `0xB1` | `$8C:D77B` | Aktiv | count: u8, params: expr[count], idx: u16 | **`CALL_INDEXED_WORD_PARAMS`** – 16-Bit-Tabellensprung mit Zähler `count` und Stack-Parametern. |
@@ -414,12 +414,12 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0xB9` | `$8C:E441` | Aktiv | target: expr, dx: expr, dy: expr | **`TELEPORT_REL`** – Relative Teleportation um berechnete Deltas (`E E E`). |
 | `0xBA` | `$8C:E0DA` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FAST`** – Schneller NPC-Spawn mit festen Byte-Koordinaten. |
 | `0xBB` | `$8C:E868` | Aktiv | target: expr, dmg: expr | **`SHOW_DAMAGE_NUM`** – Triggert Schadens- oder Heilungs-Popup über Figur via `$8FC103` (`E E`). |
-| `0xBC` | `$8C:DF04` | Aktiv | target: entity | **`FACE_NORTH`** – Dreht Spielfigur/NPC nach oben (Norden). |
-| `0xBD` | `$8C:DEAE` | Aktiv | target: entity | **`FACE_NORTH_WAIT`** – Dreht Figur nach oben und wartet auf Animations-Tick. |
-| `0xBE` | `$8C:DF09` | Aktiv | target: entity | **`FACE_SOUTH`** – Dreht Spielfigur/NPC nach unten (Süden). |
-| `0xBF` | `$8C:DEB3` | Aktiv | target: entity | **`FACE_SOUTH_WAIT`** – Dreht Figur nach unten und wartet auf Animations-Tick. |
-| `0xC0` | `$8C:DF0E` | Aktiv | target: entity | **`FACE_WEST`** – Dreht Spielfigur/NPC nach links (Westen). |
-| `0xC1` | `$8C:DEB8` | Aktiv | target: entity | **`FACE_EAST`** – Dreht Spielfigur/NPC nach rechts (Osten). |
+| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`FACE_NORTH`** – Dreht Spielfigur/NPC nach oben (Norden). |
+| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`FACE_NORTH_WAIT`** – Dreht Figur nach oben und wartet auf Animations-Tick. |
+| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`FACE_SOUTH`** – Dreht Spielfigur/NPC nach unten (Süden). |
+| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`FACE_SOUTH_WAIT`** – Dreht Figur nach unten und wartet auf Animations-Tick. |
+| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`FACE_WEST`** – Dreht Spielfigur/NPC nach links (Westen). |
+| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`FACE_EAST`** – Dreht Spielfigur/NPC nach rechts (Osten). |
 | `0xC2` | `$8C:E0C4` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FLAGGED`** – Erzeugt NPC über `$8E:B55A` mit gesetztem `$8000`-Zustandsflag. |
 
 ---

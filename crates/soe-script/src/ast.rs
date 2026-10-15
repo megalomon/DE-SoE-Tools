@@ -170,7 +170,7 @@ pub enum Instruction {
     DamageEntity { target: Expr, amount: Expr },
     HealEntity { target: Expr, amount: Expr },
     SetEntityHp { target: Expr, hp: Expr },
-    SetWeather(Expr),
+    SwitchCharacter(Expr),
     AttachCamera(Expr),
     CastAlchemy { opcode: u8, target: Expr, spell: Expr, level: Expr, extra: Vec<Expr> },
     TriggerEntityAction { target: Expr, action: Expr },

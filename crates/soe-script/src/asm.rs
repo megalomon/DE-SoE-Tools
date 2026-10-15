@@ -257,12 +257,12 @@ impl Assembler {
                 Self::assemble_expr(target, out);
                 Self::assemble_expr(hp, out);
             }
-            Instruction::SetWeather(expr) => {
+            Instruction::SwitchCharacter(expr) => {
                 out.push(0x98);
                 Self::assemble_expr(expr, out);
             }
             Instruction::AttachCamera(expr) => {
-                out.push(0x9A);
+                out.push(0x9B);
                 Self::assemble_expr(expr, out);
             }
             Instruction::CastAlchemy { opcode, target, spell, level, extra } => {
