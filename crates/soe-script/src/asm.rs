@@ -744,7 +744,9 @@ impl Assembler {
                         bytes.push(*tok);
                     }
                     _ => {
-                        if (-256..=-1).contains(val) {
+                        if (-16..=-1).contains(val) {
+                            bytes.push((0x50 + *val) as u8);
+                        } else if (-256..=-1).contains(val) {
                             bytes.push(0x01);
                             bytes.push((*val + 256) as u8);
                         } else if *val < 0 {

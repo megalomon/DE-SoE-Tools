@@ -366,16 +366,28 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
             format!("arg_bit({}) = {};", bit_index, format_expr(val))
         }
         Instruction::WriteVarFast { addr, val } => {
-            format!("RAM[0x{:04X}] = 0x{:04X};", addr, val)
+            format!("write_var_fast(0x{:04X}, 0x{:04X});", addr, val)
         }
-        Instruction::WriteRam { addr, expr, .. } => {
-            format!("RAM[0x{:04X}] = {};", addr, format_expr(expr))
+        Instruction::WriteRam { opcode, addr, expr } => {
+            match opcode {
+                0x1C => format!("RAM_BYTE[0x{:04X}] = {};", addr, format_expr(expr)),
+                0x18 => format!("RAM[0x{:04X}] = {};", addr, format_expr(expr)),
+                _ => format!("write_ram_0x{:02X}(0x{:04X}, {});", opcode, addr, format_expr(expr)),
+            }
         }
-        Instruction::WriteTemp { addr, expr, .. } => {
-            format!("TEMP[0x{:04X}] = {};", addr, format_expr(expr))
+        Instruction::WriteTemp { opcode, addr, expr } => {
+            match opcode {
+                0x1D => format!("TEMP_BYTE[0x{:04X}] = {};", addr, format_expr(expr)),
+                0x19 => format!("TEMP[0x{:04X}] = {};", addr, format_expr(expr)),
+                _ => format!("write_temp_0x{:02X}(0x{:04X}, {});", opcode, addr, format_expr(expr)),
+            }
         }
-        Instruction::WriteScriptArg { arg, expr, .. } => {
-            format!("arg({}) = {};", arg, format_expr(expr))
+        Instruction::WriteScriptArg { opcode, arg, expr } => {
+            match opcode {
+                0x1E => format!("ARG_BYTE[{}] = {};", arg, format_expr(expr)),
+                0x1A => format!("ARG_WORD[{}] = {};", arg, format_expr(expr)),
+                _ => format!("write_script_arg_0x{:02X}({}, {});", opcode, arg, format_expr(expr)),
+            }
         }
         Instruction::ShowText(id) => format!("show_text(0x{:04X});", id),
         Instruction::ShowTextEnd(id) => format!("show_text_end(0x{:04X});", id),

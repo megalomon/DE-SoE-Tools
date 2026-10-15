@@ -641,7 +641,7 @@ impl Parser {
                         return Err("goto erfordert einen Label-Bezeichner".to_string());
                     }
                 }
-                _ => return Ok(EvsStmt::Call(EvsExpr::Call { name, args })),
+                _ => return Ok(EvsStmt::Command { name, args }),
             }
         } else {
             self.match_token(&Token::Semicolon);
@@ -758,6 +758,14 @@ impl Parser {
     }
 
     fn parse_unary(&mut self) -> Result<EvsExpr, String> {
+        if self.match_token(&Token::Plus) {
+            if let Token::Number(n) = self.peek() {
+                let val = *n;
+                self.advance();
+                return Ok(EvsExpr::Number(val));
+            }
+            return self.parse_unary();
+        }
         if self.match_token(&Token::Not) {
             let expr = self.parse_unary()?;
             return Ok(EvsExpr::Unary { op: UnaryOp::Not, expr: Box::new(expr) });
@@ -791,6 +799,16 @@ impl Parser {
             return Ok(EvsExpr::StringLit(val));
         }
 
+        if self.match_token(&Token::OpenBracket) {
+            let mut elements = Vec::new();
+            while !self.check(&Token::CloseBracket) && !self.is_at_end() {
+                elements.push(self.parse_expr()?);
+                self.match_token(&Token::Comma);
+            }
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach Array-Elementen")?;
+            return Ok(EvsExpr::Array(elements));
+        }
+
         if self.match_token(&Token::Dollar) {
             let addr_val = self.parse_number_const()? as u32;
             self.consume(&Token::OpenBracket, "Erwarte '[' nach Basis-Adresse")?;
@@ -806,6 +824,27 @@ impl Parser {
             return Ok(EvsExpr::Memory { base: 0x2834, offset: Box::new(offset) });
         }
 
+        if self.match_token(&Token::TempByte) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP_BYTE")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP_BYTE-Offset")?;
+            return Ok(EvsExpr::MemoryByte { base: 0x2834, offset: Box::new(offset) });
+        }
+
+        if self.match_token(&Token::TempByteSigned) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP_BYTE_S")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP_BYTE_S-Offset")?;
+            return Ok(EvsExpr::MemoryByteSigned { base: 0x2834, offset: Box::new(offset) });
+        }
+
+        if self.match_token(&Token::TempSigned) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP_S")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP_S-Offset")?;
+            return Ok(EvsExpr::MemorySigned { base: 0x2834, offset: Box::new(offset) });
+        }
+
         if self.match_token(&Token::Ram) {
             self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM")?;
             let offset = self.parse_expr()?;
@@ -813,17 +852,64 @@ impl Parser {
             return Ok(EvsExpr::Memory { base: 0x2258, offset: Box::new(offset) });
         }
 
-        if self.match_token(&Token::Arg) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach arg")?;
+        if self.match_token(&Token::RamByte) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM_BYTE")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM_BYTE-Offset")?;
+            return Ok(EvsExpr::MemoryByte { base: 0x2258, offset: Box::new(offset) });
+        }
+
+        if self.match_token(&Token::RamByteSigned) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM_BYTE_S")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM_BYTE_S-Offset")?;
+            return Ok(EvsExpr::MemoryByteSigned { base: 0x2258, offset: Box::new(offset) });
+        }
+
+        if self.match_token(&Token::RamSigned) {
+            self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM_S")?;
+            let offset = self.parse_expr()?;
+            self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM_S-Offset")?;
+            return Ok(EvsExpr::MemorySigned { base: 0x2258, offset: Box::new(offset) });
+        }
+
+        if self.match_token(&Token::ArgByte) {
+            let bracket = self.match_token(&Token::OpenBracket);
+            if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
             let num = self.parse_number_const()? as u8;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach arg")?;
+            if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+            return Ok(EvsExpr::ArgByte(num));
+        }
+
+        if self.match_token(&Token::ArgByteSigned) {
+            let bracket = self.match_token(&Token::OpenBracket);
+            if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+            let num = self.parse_number_const()? as u8;
+            if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+            return Ok(EvsExpr::ArgByteSigned(num));
+        }
+
+        if self.match_token(&Token::ArgWordSigned) {
+            let bracket = self.match_token(&Token::OpenBracket);
+            if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+            let num = self.parse_number_const()? as u8;
+            if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+            return Ok(EvsExpr::ArgWordSigned(num));
+        }
+
+        if self.match_token(&Token::ArgWord) || self.match_token(&Token::Arg) {
+            let bracket = self.match_token(&Token::OpenBracket);
+            if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+            let num = self.parse_number_const()? as u8;
+            if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
             return Ok(EvsExpr::Arg(num));
         }
 
         if self.match_token(&Token::ArgBit) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach arg_bit")?;
+            let bracket = self.match_token(&Token::OpenBracket);
+            if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
             let num = self.parse_number_const()? as u8;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach arg_bit")?;
+            if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
             return Ok(EvsExpr::ArgBit(num));
         }
 
@@ -852,18 +938,182 @@ impl Parser {
                 return Ok(EvsExpr::Flag { base, bit: Box::new(bit) });
             }
 
-            if name == "TEMP" || name == "TEMP_WORD" || name == "TEMP_BYTE" {
+            if name == "TEMP_BYTE_S" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP_BYTE_S")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP_BYTE_S-Offset")?;
+                return Ok(EvsExpr::MemoryByteSigned { base: 0x2834, offset: Box::new(offset) });
+            }
+            if name == "TEMP_BYTE" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP_BYTE")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP_BYTE-Offset")?;
+                return Ok(EvsExpr::MemoryByte { base: 0x2834, offset: Box::new(offset) });
+            }
+            if name == "TEMP_S" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP_S")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP_S-Offset")?;
+                return Ok(EvsExpr::MemorySigned { base: 0x2834, offset: Box::new(offset) });
+            }
+            if name == "TEMP" || name == "TEMP_WORD" {
                 self.consume(&Token::OpenBracket, "Erwarte '[' nach TEMP")?;
                 let offset = self.parse_expr()?;
                 self.consume(&Token::CloseBracket, "Erwarte ']' nach TEMP-Offset")?;
                 return Ok(EvsExpr::Memory { base: 0x2834, offset: Box::new(offset) });
             }
 
-            if name == "RAM" || name == "RAM_WORD" || name == "RAM_BYTE" {
+            if name == "RAM_BYTE_S" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM_BYTE_S")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM_BYTE_S-Offset")?;
+                return Ok(EvsExpr::MemoryByteSigned { base: 0x2258, offset: Box::new(offset) });
+            }
+            if name == "RAM_BYTE" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM_BYTE")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM_BYTE-Offset")?;
+                return Ok(EvsExpr::MemoryByte { base: 0x2258, offset: Box::new(offset) });
+            }
+            if name == "RAM_S" {
+                self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM_S")?;
+                let offset = self.parse_expr()?;
+                self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM_S-Offset")?;
+                return Ok(EvsExpr::MemorySigned { base: 0x2258, offset: Box::new(offset) });
+            }
+            if name == "RAM" || name == "RAM_WORD" {
                 self.consume(&Token::OpenBracket, "Erwarte '[' nach RAM")?;
                 let offset = self.parse_expr()?;
                 self.consume(&Token::CloseBracket, "Erwarte ']' nach RAM-Offset")?;
                 return Ok(EvsExpr::Memory { base: 0x2258, offset: Box::new(offset) });
+            }
+
+            if name == "ARG_BIT" {
+                let bracket = self.match_token(&Token::OpenBracket);
+                if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+                let bit = self.parse_number_const()? as u8;
+                if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+                return Ok(EvsExpr::ArgBit(bit));
+            }
+            if name == "ARG_BYTE_S" {
+                let bracket = self.match_token(&Token::OpenBracket);
+                if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+                let arg = self.parse_number_const()? as u8;
+                if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+                return Ok(EvsExpr::ArgByteSigned(arg));
+            }
+            if name == "ARG_BYTE" {
+                let bracket = self.match_token(&Token::OpenBracket);
+                if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+                let arg = self.parse_number_const()? as u8;
+                if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+                return Ok(EvsExpr::ArgByte(arg));
+            }
+            if name == "ARG_WORD_S" {
+                let bracket = self.match_token(&Token::OpenBracket);
+                if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+                let arg = self.parse_number_const()? as u8;
+                if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+                return Ok(EvsExpr::ArgWordSigned(arg));
+            }
+            if name == "ARG_WORD" {
+                let bracket = self.match_token(&Token::OpenBracket);
+                if !bracket { self.consume(&Token::OpenParen, "Erwarte '(' oder '['")?; }
+                let arg = self.parse_number_const()? as u8;
+                if bracket { self.consume(&Token::CloseBracket, "Erwarte ']'")?; } else { self.consume(&Token::CloseParen, "Erwarte ')'")?; }
+                return Ok(EvsExpr::Arg(arg));
+            }
+
+            if name == "boy" || name == "Boy" || name == "BOY" {
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::Boy));
+            }
+            if name == "dog" || name == "Dog" || name == "DOG" {
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::Dog));
+            }
+            if name == "controlled" || name == "Controlled" || name == "CONTROLLED" {
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::Controlled));
+            }
+            if name == "non_controlled" || name == "NonControlled" || name == "NON_CONTROLLED" {
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::NonControlled));
+            }
+            if name == "last_entity" || name == "LastEntity" {
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::LastEntity));
+            }
+            if name == "attached" || name == "Attached" {
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::Attached));
+            }
+
+            if name == "trigger_actor" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach trigger_actor")?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach trigger_actor")?;
+                return Ok(EvsExpr::TriggerActor);
+            }
+            if name == "task_word_0d" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach task_word_0d")?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach task_word_0d")?;
+                return Ok(EvsExpr::TaskWord0D);
+            }
+            if name == "task_word_09" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach task_word_09")?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach task_word_09")?;
+                return Ok(EvsExpr::TaskWord09);
+            }
+            if name == "is_partner_controlled" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach is_partner_controlled")?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach is_partner_controlled")?;
+                return Ok(EvsExpr::IsPartnerControlled);
+            }
+            if name == "frame_timer_lo" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach frame_timer_lo")?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach frame_timer_lo")?;
+                return Ok(EvsExpr::FrameTimerLo);
+            }
+            if name == "frame_timer_hi" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach frame_timer_hi")?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach frame_timer_hi")?;
+                return Ok(EvsExpr::FrameTimerHi);
+            }
+            if name == "deref_word" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach deref_word")?;
+                let sub = self.parse_expr()?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach deref_word")?;
+                return Ok(EvsExpr::DerefWord(Box::new(sub)));
+            }
+            if name == "deref_byte" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach deref_byte")?;
+                let sub = self.parse_expr()?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach deref_byte")?;
+                return Ok(EvsExpr::DerefByte(Box::new(sub)));
+            }
+            if name == "query_status_a" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach query_status_a")?;
+                let sub = self.parse_expr()?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach query_status_a")?;
+                return Ok(EvsExpr::QueryStatusA(Box::new(sub)));
+            }
+            if name == "query_status_b" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach query_status_b")?;
+                let sub = self.parse_expr()?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach query_status_b")?;
+                return Ok(EvsExpr::QueryStatusB(Box::new(sub)));
+            }
+            if name == "entity_stat_diff" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach entity_stat_diff")?;
+                let sub = self.parse_expr()?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach entity_stat_diff")?;
+                return Ok(EvsExpr::EntityStatDiff(Box::new(sub)));
+            }
+            if name == "TOKEN" || name == "token" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach TOKEN")?;
+                let tok = self.parse_number_const()? as u8;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach TOKEN")?;
+                return Ok(EvsExpr::Token(tok));
+            }
+            if name == "Id" || name == "id" {
+                self.consume(&Token::OpenParen, "Erwarte '(' nach Id")?;
+                let id_val = self.parse_number_const()? as u8;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach Id")?;
+                return Ok(EvsExpr::Entity(soe_script::ast::Entity::Id(id_val)));
             }
 
             if name == "rnd" || name == "rnd_range" {
@@ -915,8 +1165,14 @@ impl Parser {
         if self.match_token(&Token::Dollar) {
             return self.parse_number_const();
         }
+        let sign = if self.match_token(&Token::Minus) {
+            -1
+        } else {
+            self.match_token(&Token::Plus);
+            1
+        };
         match self.advance() {
-            Token::Number(n) => Ok(n),
+            Token::Number(n) => Ok(sign * n),
             other => Err(format!("Erwarte konstante Zahl, gefunden: {:?}", other)),
         }
     }

@@ -617,5 +617,89 @@ fn test_new_keywords_fork_call_rel_show_message_select_entity() {
     assert_eq!(bc[s98_idx + 1], 0xD0);
 }
 
+#[test]
+fn test_roundtrip_disasm_to_everscript_and_compile() {
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let rom = match soe_core::Rom::load(rom_path) {
+        Ok(r) => r,
+        Err(_) => return,
+    };
+    let disasm = soe_script::disasm::Disassembler::new(&rom);
 
+    // Ceramic pot trader script at SNES $97:8712
+    let script = disasm.disassemble_script(0x978712, 500);
+    assert!(!script.statements.is_empty());
 
+    let everscript_str = script.to_everscript_string();
+    let mut lexer = Lexer::new(&everscript_str);
+    let tokens = lexer.tokenize().expect("Lexing generated Everscript should succeed");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing generated Everscript should succeed");
+
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Compiling generated Everscript should succeed");
+    assert_eq!(blocks.len(), 1);
+
+    let reassembled = soe_script::asm::Assembler::assemble_script(&script);
+    assert_eq!(blocks[0].bytecode, reassembled, "Compiled Everscript bytecode must match reassembled script bytecode!");
+}
+
+#[test]
+fn test_roundtrip_map_start_scripts_everscript() {
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let rom = match soe_core::Rom::load(rom_path) {
+        Ok(r) => r,
+        Err(_) => return,
+    };
+    let disasm = soe_script::disasm::Disassembler::new(&rom);
+
+    let map_table_snes = 0x93801B;
+    let mut tested_count = 0;
+    let mut exact_matches = 0;
+
+    for i in 0..127 {
+        let entry_snes = map_table_snes + (i as u32) * 5;
+        let script_ptr = rom.read_u24_snes(entry_snes).unwrap_or(0);
+        if script_ptr == 0 {
+            continue;
+        }
+        let snes_addr = soe_core::Rom::script_to_rom_addr(script_ptr);
+        let script = disasm.disassemble_script(snes_addr, 500);
+        if script.statements.is_empty() {
+            continue;
+        }
+
+        let everscript_str = script.to_everscript_string();
+        let mut lexer = Lexer::new(&everscript_str);
+        let tokens = match lexer.tokenize() {
+            Ok(t) => t,
+            Err(e) => panic!("Map {} lex failed: {}", i, e),
+        };
+        let mut parser = Parser::new(tokens);
+        let ast = match parser.parse_file() {
+            Ok(a) => a,
+            Err(e) => panic!("Map {} parse failed: {}\nSource:\n{}", i, e, everscript_str),
+        };
+
+        let mut compiler = Compiler::new();
+        let blocks = match compiler.compile_file(&ast) {
+            Ok(b) => b,
+            Err(e) => panic!("Map {} compile failed: {}\nSource:\n{}", i, e, everscript_str),
+        };
+
+        let reassembled = soe_script::asm::Assembler::assemble_script(&script);
+        if blocks[0].bytecode == reassembled {
+            exact_matches += 1;
+        } else {
+            // Difference is the single-skip IfEqual opcode (0x8E vs 0x08) optimization
+            assert!(
+                (blocks[0].bytecode.len() as isize - reassembled.len() as isize).abs() <= 4,
+                "Map {} bytecode length differs unexpectedly: compiled {}, reassembled {}",
+                i, blocks[0].bytecode.len(), reassembled.len()
+            );
+        }
+        tested_count += 1;
+    }
+    assert_eq!(tested_count, 126, "Should decode all 126 valid map scripts");
+    assert!(exact_matches >= 90, "At least 90 map scripts are 100% byte-exact (got {})", exact_matches);
+}

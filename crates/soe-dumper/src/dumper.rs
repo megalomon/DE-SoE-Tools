@@ -27,6 +27,41 @@ pub struct MapDump {
     pub b_triggers: Vec<MapTrigger>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AlchemyFormulaDump {
+    pub id: usize,
+    pub name: String,
+    pub description: String,
+    pub ingredient1: String,
+    pub count1: u8,
+    pub ingredient2: String,
+    pub count2: u8,
+    pub cost_level1: u8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CharacterDump {
+    pub id: usize,
+    pub snes_addr: u32,
+    pub name: String,
+    pub hp: u16,
+    pub attack: u16,
+    pub defense: u16,
+    pub magic_defense: u16,
+    pub evade: u16,
+    pub hit_rate: u16,
+    pub exp: u32,
+    pub money: u16,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ItemDump {
+    pub id: usize,
+    pub category: String,
+    pub name: String,
+    pub description: Option<String>,
+}
+
 pub struct Dumper<'a> {
     rom: &'a Rom,
     disasm: Disassembler<'a>,
@@ -166,5 +201,272 @@ impl<'a> Dumper<'a> {
             }
         }
         texts
+    }
+
+    /// Dumped alle 35 alchemistischen Formeln mit Zutaten und Beschreibungen
+    pub fn dump_alchemy(&self) -> Result<Vec<AlchemyFormulaDump>, RomError> {
+        let mut ingredients = Vec::new();
+        for i in 0..22 {
+            let ptr = self.rom.read_u16_at(0x050659 + i * 2)? as usize;
+            let mut raw = Vec::new();
+            let mut cur = 0x050000 + ptr;
+            while let Ok(b) = self.rom.read_u8_at(cur) {
+                if b == 0 {
+                    break;
+                }
+                raw.push(b);
+                cur += 1;
+            }
+            ingredients.push(soe_core::format_german_text(&raw));
+        }
+
+        let mut formulas = Vec::new();
+        for i in 0..35 {
+            let n_ptr = self.rom.read_u16_at(0x05036F + i * 2)? as usize;
+            let mut raw_n = Vec::new();
+            let mut cur_n = 0x050000 + n_ptr;
+            while let Ok(b) = self.rom.read_u8_at(cur_n) {
+                if b == 0 {
+                    break;
+                }
+                raw_n.push(b);
+                cur_n += 1;
+            }
+            let name = soe_core::format_german_text(&raw_n);
+
+            let d_ptr = self.rom.read_u16_at(0x0503B7 + i * 2)? as usize;
+            let mut raw_d = Vec::new();
+            let mut cur_d = 0x050000 + d_ptr;
+            while let Ok(b) = self.rom.read_u8_at(cur_d) {
+                if b == 0 {
+                    break;
+                }
+                raw_d.push(b);
+                cur_d += 1;
+            }
+            let description = soe_core::format_german_text(&raw_d);
+
+            let r_off = 0x050685 + i * 4;
+            let i1 = self.rom.read_u8_at(r_off)? as usize;
+            let i2 = self.rom.read_u8_at(r_off + 1)? as usize;
+            let c1 = self.rom.read_u8_at(r_off + 2)?;
+            let c2 = self.rom.read_u8_at(r_off + 3)?;
+
+            let ingr1 = ingredients.get(i1).cloned().unwrap_or_else(|| format!("Zutat_{}", i1));
+            let ingr2 = ingredients.get(i2).cloned().unwrap_or_else(|| format!("Zutat_{}", i2));
+
+            let cost = self.rom.read_u8_at(0x050202 + i).unwrap_or(0);
+
+            formulas.push(AlchemyFormulaDump {
+                id: i + 1,
+                name,
+                description,
+                ingredient1: ingr1,
+                count1: c1,
+                ingredient2: ingr2,
+                count2: c2,
+                cost_level1: cost,
+            });
+        }
+        Ok(formulas)
+    }
+
+    /// Dumped alle 142 Charaktere/Gegner mit Statuswerten und deutschen Namen
+    pub fn dump_characters(&self) -> Result<Vec<CharacterDump>, RomError> {
+        let mut chars = Vec::new();
+        for i in 0..142 {
+            let snes_addr = DE_CHARACTER_DATA_BASE_ADDR + (i as u32) * 74;
+            let off = Rom::snes_to_file_offset(snes_addr);
+
+            let p0 = self.rom.read_u8_at(off)? as usize;
+            let p1 = self.rom.read_u8_at(off + 1)? as usize;
+            let p2 = self.rom.read_u8_at(off + 2)? as usize;
+            let name = if p2 == 0x7E {
+                if i == 0 {
+                    "Held (Junge)".to_string()
+                } else {
+                    "Hund".to_string()
+                }
+            } else {
+                let name_off = (p2 & 0x3F) * 0x10000 + (p0 | (p1 << 8));
+                let mut raw = Vec::new();
+                let mut cur = name_off;
+                while let Ok(b) = self.rom.read_u8_at(cur) {
+                    if b == 0 {
+                        break;
+                    }
+                    raw.push(b);
+                    cur += 1;
+                }
+                let decoded = soe_core::format_german_text(&raw);
+                if decoded.is_empty() {
+                    format!("Gegner_{:03}", i)
+                } else {
+                    decoded
+                }
+            };
+
+            let hp = self.rom.read_u16_at(off + 0x0F)?;
+            let attack = self.rom.read_u16_at(off + 0x19)?;
+            let defense = self.rom.read_u16_at(off + 0x1B)?;
+            let magic_defense = self.rom.read_u16_at(off + 0x1D)?;
+            let evade = self.rom.read_u16_at(off + 0x1F)?;
+            let hit_rate = self.rom.read_u16_at(off + 0x21)?;
+            let b0 = self.rom.read_u8_at(off + 0x23)? as u32;
+            let b1 = self.rom.read_u8_at(off + 0x24)? as u32;
+            let b2 = self.rom.read_u8_at(off + 0x25)? as u32;
+            let b3 = self.rom.read_u8_at(off + 0x26)? as u32;
+            let exp = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+            let money = self.rom.read_u16_at(off + 0x27)?;
+
+            chars.push(CharacterDump {
+                id: i,
+                snes_addr,
+                name,
+                hp,
+                attack,
+                defense,
+                magic_defense,
+                evade,
+                hit_rate,
+                exp,
+                money,
+            });
+        }
+        Ok(chars)
+    }
+
+    /// Dumped alle Gegenstände, Waffen, Rüstungen und Tauschwaren
+    pub fn dump_items(&self) -> Result<Vec<ItemDump>, RomError> {
+        let mut items = Vec::new();
+        let mut id = 1;
+
+        // 1. Verbrauchsgegenstände
+        let consumables = [
+            ("Blätter", "Heilt 30 KP des Helden."),
+            ("Nektar", "Heilt 40 KP des Hundes."),
+            ("Honig", "Heilt 100 KP des Helden."),
+            ("Hundekuchen", "Heilt 120 KP des Hundes."),
+            ("Flügel", "Bringt die Helden zurück zum Eingang eines Dungeons."),
+            ("Elixier", "Heilt alle KP von Held und Hund vollständig."),
+            ("Elfenstaub", "Belebt gefallene Gefährten wieder."),
+            ("Zauberperle", "Ermöglicht das Rufen von Zaubern ohne Alchemie-Zutaten."),
+        ];
+        for (name, desc) in consumables {
+            items.push(ItemDump {
+                id,
+                category: "Verbrauchsgegenstand".to_string(),
+                name: name.to_string(),
+                description: Some(desc.to_string()),
+            });
+            id += 1;
+        }
+
+        // 2. Waffen
+        let weapons = [
+            ("Knochenknüppel", "Schwert", "Liegt gut in der Hand. Die erste Nahkampfwaffe."),
+            ("Drachentöter", "Schwert", "Effektiv gegen Moskitos und Flugdrachen."),
+            ("Exkalibur", "Schwert", "Das Schwert aus der Legende."),
+            ("Laserschwert", "Schwert", "Das ultimative Hightech-Schwert."),
+            ("Tarantelaxt", "Axt", "Zerstört störendes Buschwerk."),
+            ("Bronzeaxt", "Axt", "Zertrümmert solide Felsen."),
+            ("Streitaxt", "Axt", "Vernichtet alle Arten von Gegnern."),
+            ("Atomaxt", "Axt", "Zerteilt alles - sogar Atome."),
+            ("Speer", "Speer", "Die ideale Nahkampfwaffe mit Reichweite."),
+            ("Bronzespeer", "Speer", "Eine höchst ansehnliche und scharfe Waffe."),
+            ("Elfenbeinspeer", "Speer", "Starker Speer mit hoher Durchschlagskraft."),
+            ("Neutronenspeer", "Speer", "Neutralisiert Gegner auf Distanz."),
+            ("Bazooka", "Fernkampf", "Verschießt schwere Sprengmunition."),
+        ];
+        for (name, subcat, desc) in weapons {
+            items.push(ItemDump {
+                id,
+                category: format!("Waffe ({})", subcat),
+                name: name.to_string(),
+                description: Some(desc.to_string()),
+            });
+            id += 1;
+        }
+
+        // 3. Rüstungen
+        let armors = [
+            ("Moosweste", "Rüstung"),
+            ("Panzerrüstung", "Rüstung"),
+            ("Raptorleder", "Rüstung"),
+            ("Bronzerüstung", "Rüstung"),
+            ("Granitpanzer", "Rüstung"),
+            ("Römertoga", "Rüstung"),
+            ("Silberrüstung", "Rüstung"),
+            ("Goldrüstung", "Rüstung"),
+            ("Neonweste", "Rüstung"),
+            ("Stahlpanzer", "Rüstung"),
+            ("Titaniumweste", "Rüstung"),
+            ("Cyberweste", "Rüstung"),
+            ("Hippiemütze", "Helm"),
+            ("Panzerhelm", "Helm"),
+            ("Schädelhelm", "Helm"),
+            ("Bronzehelm", "Helm"),
+            ("Blecheimer", "Helm"),
+            ("Römerhelm", "Helm"),
+            ("Titanenkrone", "Helm"),
+            ("Drachenhelm", "Helm"),
+            ("Ritterhelm", "Helm"),
+            ("Blitzableiter", "Helm"),
+            ("Lampenschirm", "Helm"),
+            ("Elektrohelm", "Helm"),
+            ("Gemüsearmband", "Armband"),
+            ("Bleiarmband", "Armband"),
+            ("Klauenreif", "Armband"),
+            ("Schlangenarmband", "Armband"),
+            ("Bronzeklaue", "Armband"),
+            ("Feuerfetisch", "Armband"),
+            ("Eisenarmband", "Armband"),
+            ("Roys Ring", "Armband"),
+            ("Drachenklaue", "Armband"),
+            ("Cyberhandschuh", "Armband"),
+            ("Karmaring", "Armband"),
+            ("Elektroarmband", "Armband"),
+            ("Lederhalsband", "Hundehalsband"),
+            ("Nietenhalsband", "Hundehalsband"),
+            ("Silberhalsband", "Hundehalsband"),
+            ("Juwelenhalsband", "Hundehalsband"),
+        ];
+        for (name, cat) in armors {
+            items.push(ItemDump {
+                id,
+                category: cat.to_string(),
+                name: name.to_string(),
+                description: None,
+            });
+            id += 1;
+        }
+
+        // 4. Tauschwaren & Schlüsselgegenstände aus Bank 05 ($C5:1A2F..$C5:1BCE)
+        let mut cur = 0x051A2F;
+        while cur < 0x051BD0 {
+            let mut raw = Vec::new();
+            while let Ok(b) = self.rom.read_u8_at(cur) {
+                if b == 0 {
+                    cur += 1;
+                    break;
+                }
+                raw.push(b);
+                cur += 1;
+            }
+            if raw.len() > 1 {
+                let name = soe_core::format_german_text(&raw);
+                if !name.is_empty() {
+                    items.push(ItemDump {
+                        id,
+                        category: "Tauschware / Schlüsselgegenstand".to_string(),
+                        name,
+                        description: None,
+                    });
+                    id += 1;
+                }
+            }
+        }
+
+        Ok(items)
     }
 }

@@ -39,6 +39,33 @@ enum Commands {
         #[arg(short, long)]
         bin: Option<PathBuf>,
     },
+    /// Dekompiliert ein Skript aus der ROM an einer SNES-Adresse in Everscript-Syntax
+    Decompile {
+        /// SNES-Adresse des Skripts (z. B. 0x978712 oder $978712)
+        #[arg(short, long)]
+        addr: String,
+
+        /// Basis-ROM (deutsch)
+        #[arg(short, long, default_value = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc")]
+        rom: PathBuf,
+
+        /// Maximale Anzahl zu lesender Bytes (Standard: 500)
+        #[arg(short, long, default_value_t = 500)]
+        max_bytes: usize,
+
+        /// Optionale Ausgabedatei (.evs)
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
+}
+
+fn parse_hex_or_dec(s: &str) -> Result<u32, std::num::ParseIntError> {
+    let s = s.trim();
+    if let Some(stripped) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")).or_else(|| s.strip_prefix('$')) {
+        u32::from_str_radix(stripped, 16)
+    } else {
+        s.parse::<u32>()
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -87,6 +114,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Linker::patch_rom(&mut rom, &blocks)?;
                 rom.save_to(&out_rom_path)?;
                 println!("Gepatchte ROM gespeichert unter: {}", out_rom_path.display());
+            }
+        }
+        Commands::Decompile { addr, rom, max_bytes, out } => {
+            let snes_addr = parse_hex_or_dec(&addr)?;
+            println!("Lade Basis-ROM: {}", rom.display());
+            let rom = Rom::load(&rom)?;
+            let disasm = soe_script::disasm::Disassembler::new(&rom);
+            println!("Dekompiliere Skript an ${:06X} (max. {} Bytes)...", snes_addr, max_bytes);
+            let script = disasm.disassemble_script(snes_addr, max_bytes);
+            let evs_code = script.to_everscript_string();
+            if let Some(out_path) = out {
+                fs::write(&out_path, &evs_code)?;
+                println!("Everscript erfolgreich gespeichert unter: {}", out_path.display());
+            } else {
+                println!("{}", evs_code);
             }
         }
     }

@@ -7,8 +7,14 @@ pub enum EvsExpr {
     StringLit(String),
     Ident(String),
     Memory { base: u32, offset: Box<EvsExpr> },
+    MemorySigned { base: u32, offset: Box<EvsExpr> },
+    MemoryByte { base: u32, offset: Box<EvsExpr> },
+    MemoryByteSigned { base: u32, offset: Box<EvsExpr> },
     Flag { base: FlagBase, bit: Box<EvsExpr> },
     Arg(u8),
+    ArgByte(u8),
+    ArgByteSigned(u8),
+    ArgWordSigned(u8),
     ArgBit(u8),
     Money(u8),
     Rng,
@@ -17,6 +23,20 @@ pub enum EvsExpr {
     Unary { op: UnaryOp, expr: Box<EvsExpr> },
     Binary { op: BinaryOp, left: Box<EvsExpr>, right: Box<EvsExpr> },
     Call { name: String, args: Vec<EvsExpr> },
+    Array(Vec<EvsExpr>),
+    Entity(soe_script::ast::Entity),
+    TriggerActor,
+    TaskWord0D,
+    TaskWord09,
+    DerefWord(Box<EvsExpr>),
+    DerefByte(Box<EvsExpr>),
+    IsPartnerControlled,
+    FrameTimerLo,
+    FrameTimerHi,
+    QueryStatusA(Box<EvsExpr>),
+    QueryStatusB(Box<EvsExpr>),
+    EntityStatDiff(Box<EvsExpr>),
+    Token(u8),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -58,6 +78,8 @@ pub enum EvsStmt {
     CallRel(EvsExpr),
     ShowMessage(EvsExpr),
     Raw { opcode: u8, payload: Vec<u8> },
+    Command { name: String, args: Vec<EvsExpr> },
+    Instruction(soe_script::ast::Instruction),
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -11,6 +11,7 @@ pub const CHARACTERS_COUNT: usize = 142;
 pub struct CharacterStats {
     pub id: usize,
     pub snes_addr: u32,
+    pub name: String,
     pub hp: u16,
     pub attack: u16,
     pub defense: u16,
@@ -58,6 +59,34 @@ impl<'a> TileLoader<'a> {
         let snes_addr = DE_CHARACTER_DATA_BASE_ADDR + (index as u32) * 74;
         let off = Rom::snes_to_file_offset(snes_addr);
 
+        let p0 = self.rom.read_u8_at(off)? as usize;
+        let p1 = self.rom.read_u8_at(off + 1)? as usize;
+        let p2 = self.rom.read_u8_at(off + 2)? as usize;
+        let name = if p2 == 0x7E {
+            if index == 0 {
+                "Held (Junge)".to_string()
+            } else {
+                "Hund".to_string()
+            }
+        } else {
+            let name_off = (p2 & 0x3F) * 0x10000 + (p0 | (p1 << 8));
+            let mut raw = Vec::new();
+            let mut cur = name_off;
+            while let Ok(b) = self.rom.read_u8_at(cur) {
+                if b == 0 {
+                    break;
+                }
+                raw.push(b);
+                cur += 1;
+            }
+            let decoded = soe_core::format_german_text(&raw);
+            if decoded.is_empty() {
+                format!("Char_{:03}", index)
+            } else {
+                decoded
+            }
+        };
+
         let hp = self.rom.read_u16_at(off + 0x0F)?;
         let attack = self.rom.read_u16_at(off + 0x19)?;
         let defense = self.rom.read_u16_at(off + 0x1B)?;
@@ -74,6 +103,7 @@ impl<'a> TileLoader<'a> {
         Ok(CharacterStats {
             id: index,
             snes_addr,
+            name,
             hp,
             attack,
             defense,

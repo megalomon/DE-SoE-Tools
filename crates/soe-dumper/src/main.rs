@@ -55,6 +55,24 @@ enum Commands {
         #[arg(short, long, default_value_t = 500)]
         max_bytes: usize,
     },
+    /// Zeigt alle 35 alchemistischen Formeln mit Zutaten und Beschreibungen
+    Alchemy {
+        #[arg(short, long, default_value = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc")]
+        rom: PathBuf,
+    },
+    /// Zeigt alle 142 Charaktere und Gegner der deutschen ROM
+    Characters {
+        #[arg(short, long, default_value = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc")]
+        rom: PathBuf,
+
+        #[arg(short, long, default_value_t = 142)]
+        limit: usize,
+    },
+    /// Zeigt alle Gegenstände, Waffen, Rüstungen und Tauschwaren
+    Items {
+        #[arg(short, long, default_value = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc")]
+        rom: PathBuf,
+    },
 }
 
 fn parse_hex_or_dec(s: &str) -> Result<u32, std::num::ParseIntError> {
@@ -130,10 +148,58 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
 
-            println!("Erfolgreich gedumpt:");
+            println!("Dumpe alchemistische Formeln...");
+            let formulas = dumper.dump_alchemy()?;
+            let mut alchemy_txt = String::new();
+            alchemy_txt.push_str("=== Secret of Evermore (DE) - 35 Alchemistische Formeln ===\n\n");
+            for f in &formulas {
+                alchemy_txt.push_str(&format!(
+                    "[{:2}] {:<16} : {}x {} + {}x {} | Grundkosten: {}\n     Beschreibung: {}\n\n",
+                    f.id, f.name, f.count1, f.ingredient1, f.count2, f.ingredient2, f.cost_level1, f.description
+                ));
+            }
+            fs::write(out_dir.join("alchemy_de.txt"), alchemy_txt)?;
+            println!("35 alchemistische Formeln gespeichert.");
+
+            println!("Dumpe Charaktere und Gegner...");
+            let characters = dumper.dump_characters()?;
+            let mut chars_txt = String::new();
+            chars_txt.push_str("=== Secret of Evermore (DE) - 142 Charaktere & Gegner ===\n\n");
+            chars_txt.push_str(&format!(
+                "{:<4} {:<24} {:<10} {:<6} {:<6} {:<6} {:<6} {:<6} {:<6} {:<8} {:<6}\n",
+                "ID", "Name", "SNES-Adr", "HP", "ATK", "DEF", "M-DEF", "EVA", "HIT", "EXP", "Geld"
+            ));
+            chars_txt.push_str(&format!("{:-<96}\n", ""));
+            for c in &characters {
+                chars_txt.push_str(&format!(
+                    "{:<4} {:<24} ${:<9X} {:<6} {:<6} {:<6} {:<6} {:<6} {:<6} {:<8} {:<6}\n",
+                    c.id, c.name, c.snes_addr, c.hp, c.attack, c.defense, c.magic_defense, c.evade, c.hit_rate, c.exp, c.money
+                ));
+            }
+            fs::write(out_dir.join("characters_de.txt"), chars_txt)?;
+            println!("142 Charaktere/Gegner gespeichert.");
+
+            println!("Dumpe Gegenstände, Waffen & Rüstungen...");
+            let items = dumper.dump_items()?;
+            let mut items_txt = String::new();
+            items_txt.push_str("=== Secret of Evermore (DE) - Gegenstände, Waffen & Rüstungen ===\n\n");
+            for it in &items {
+                if let Some(desc) = &it.description {
+                    items_txt.push_str(&format!("[ID {:3}] [{}] {} - {}\n", it.id, it.category, it.name, desc));
+                } else {
+                    items_txt.push_str(&format!("[ID {:3}] [{}] {}\n", it.id, it.category, it.name));
+                }
+            }
+            fs::write(out_dir.join("items_de.txt"), items_txt)?;
+            println!("{} Gegenstände gespeichert.", items.len());
+
+            println!("\nErfolgreich gedumpt:");
             println!("  Maps: {}", map_count);
             println!("  Step-On Triggers: {}", total_step_on);
             println!("  B-Triggers / NPCs: {}", total_b_triggers);
+            println!("  Alchemie-Formeln: {}", formulas.len());
+            println!("  Charaktere/Gegner: {}", characters.len());
+            println!("  Gegenstände/Waffen: {}", items.len());
             println!("  Zielverzeichnis: {}", out_dir.display());
         }
         Commands::Map { rom, id } => {
@@ -182,6 +248,45 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}", script.to_disassembly_string());
             println!("\n--- Everscript ---");
             println!("{}", script.to_everscript_string());
+        }
+        Commands::Alchemy { rom } => {
+            let rom = Rom::load(&rom)?;
+            let dumper = Dumper::new(&rom);
+            let formulas = dumper.dump_alchemy()?;
+            println!("=== Secret of Evermore (DE) - 35 Alchemistische Formeln ===\n");
+            for f in &formulas {
+                println!("[{:2}] {:<16} : {}x {} + {}x {} | Grundkosten: {}",
+                    f.id, f.name, f.count1, f.ingredient1, f.count2, f.ingredient2, f.cost_level1);
+                println!("     Beschreibung: {}\n", f.description);
+            }
+        }
+        Commands::Characters { rom, limit } => {
+            let rom = Rom::load(&rom)?;
+            let dumper = Dumper::new(&rom);
+            let characters = dumper.dump_characters()?;
+            let count = limit.min(characters.len());
+
+            println!("{:<4} {:<24} {:<10} {:<6} {:<6} {:<6} {:<6} {:<6} {:<6} {:<8} {:<6}",
+                "ID", "Name", "SNES-Adr", "HP", "ATK", "DEF", "M-DEF", "EVA", "HIT", "EXP", "Geld");
+            println!("{:-<96}", "");
+
+            for c in characters.iter().take(count) {
+                println!("{:<4} {:<24} ${:<9X} {:<6} {:<6} {:<6} {:<6} {:<6} {:<6} {:<8} {:<6}",
+                    c.id, c.name, c.snes_addr, c.hp, c.attack, c.defense, c.magic_defense, c.evade, c.hit_rate, c.exp, c.money);
+            }
+        }
+        Commands::Items { rom } => {
+            let rom = Rom::load(&rom)?;
+            let dumper = Dumper::new(&rom);
+            let items = dumper.dump_items()?;
+            println!("=== Secret of Evermore (DE) - Gegenstände, Waffen & Rüstungen ({} Einträge) ===\n", items.len());
+            for it in &items {
+                if let Some(desc) = &it.description {
+                    println!("[ID {:3}] [{}] {} - {}", it.id, it.category, it.name, desc);
+                } else {
+                    println!("[ID {:3}] [{}] {}", it.id, it.category, it.name);
+                }
+            }
         }
     }
 
