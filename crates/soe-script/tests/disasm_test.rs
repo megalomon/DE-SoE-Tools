@@ -75,3 +75,43 @@ fn test_disasm_all_map_start_scripts() {
     assert_eq!(successful_scripts, 126);
     assert_eq!(roundtrip_matches, 126, "All 126 map scripts must roundtrip byte-exact!");
 }
+
+#[test]
+fn test_disasm_opcode_7e_and_money_jump() {
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let mut rom = Rom::load(rom_path).expect("German ROM should load");
+
+    // Test 0x7E: reads exactly 3 expressions (0xB0, 0xB1, 0xB2 = inline 0, 1, 2 with bit 7 set)
+    let test_addr = 0x93E000;
+    let bytes = [0x7E, 0xB0, 0xB1, 0xB2, 0x00];
+    rom.write_bytes_snes(test_addr, &bytes).unwrap();
+
+    // Test IfMoneyGe jump tracking past an End statement
+    let test_addr2 = 0x93E020;
+    let bytes2 = [
+        0x0A, 0xB0, 0x64, 0x00, 0x00, 0x02, 0x00, // IfMoneyGe, offset +2
+        0x00,                                      // End (should not terminate yet because jump target is past it)
+        0x55,                                      // HideText
+        0x00,                                      // End (terminates)
+    ];
+    rom.write_bytes_snes(test_addr2, &bytes2).unwrap();
+
+    let disasm = Disassembler::new(&rom);
+    let script = disasm.disassemble_script(test_addr, 10);
+    assert_eq!(script.statements.len(), 2);
+    assert_eq!(
+        script.statements[0].instruction,
+        soe_script::ast::Instruction::Raw {
+            opcode: 0x7E,
+            payload: vec![0xB0, 0xB1, 0xB2]
+        }
+    );
+    assert_eq!(script.statements[1].instruction, soe_script::ast::Instruction::End);
+
+    let script2 = disasm.disassemble_script(test_addr2, 20);
+    assert_eq!(script2.statements.len(), 4);
+    assert_eq!(script2.statements[1].instruction, soe_script::ast::Instruction::End);
+    assert_eq!(script2.statements[2].instruction, soe_script::ast::Instruction::HideText);
+    assert_eq!(script2.statements[3].instruction, soe_script::ast::Instruction::End);
+}
+

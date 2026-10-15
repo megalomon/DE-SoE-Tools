@@ -56,6 +56,13 @@ impl<'a> Disassembler<'a> {
                         max_jump_target = target;
                     }
                 }
+                Instruction::IfMoneyGe { target_offset, .. }
+                | Instruction::IfMoneyLt { target_offset, .. } => {
+                    let target = (cur_file_off as isize + *target_offset as isize) as usize;
+                    if target > max_jump_target {
+                        max_jump_target = target;
+                    }
+                }
                 _ => {}
             }
 
@@ -350,7 +357,7 @@ impl<'a> Disassembler<'a> {
                 (Instruction::TakeMoney { currency, amount }, true)
             }
             0x7E => {
-                for _ in 0..4 { self.parse_sub(cur_file_off); }
+                for _ in 0..3 { self.parse_sub(cur_file_off); }
                 (self.raw_instruction(opcode, stmt_start, *cur_file_off), true)
             }
             0x7F => {

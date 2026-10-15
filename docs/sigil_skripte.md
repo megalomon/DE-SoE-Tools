@@ -253,7 +253,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x18` | `$8C:DBBA` | Aktiv | addr: u16, val: expr | **`WRITE_RAM_WORD`** – Schreibt 16-Bit-Word in `$7E:2258 + addr`. |
 | `0x19` | `$8C:DBB5` | Aktiv | addr: u16, val: expr | **`WRITE_TEMP_WORD`** – Schreibt 16-Bit-Word in Scratchpad `$7E:2834 + addr`. |
 | `0x1A` | `$8C:DB9C` | Aktiv | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Schreibt 16-Bit-Word in Subroutinen-Argument `arg`. |
-| `0x1B` | `$8C:DB54` | Aktiv | src: u16, dst: u16, len: u16 | **`COPY_RAM_WORDS`** – Kopiert `len` Wörter von `$7E:2258 + src` nach `$7E:2258 + dst` (6 Bytes). |
+| `0x1B` | `$8C:DB54` | Aktiv | w1: u16, w2: u16, b1: u8, b2: u8 | **`COPY_RAM_WORDS` / `SET_RAM_PAIRS_X8`** – Liest 6 Bytes (`w1: u16, w2: u16, b1: u8, b2: u8`) und schreibt `b1*8` nach `$2258+w1` sowie `b2*8` nach `$2258+w2` (6 Bytes; in Tools historisch als 3 Words `src, dst, len` notiert). |
 | `0x1C` | `$8C:DBBA` | *Alias* | addr: u16, val: expr | **`WRITE_RAM_WORD`** – Alias zu Opcode 0x18. |
 | `0x1D` | `$8C:DBB5` | *Alias* | addr: u16, val: expr | **`WRITE_TEMP_WORD`** – Alias zu Opcode 0x19. |
 | `0x1E` | `$8C:DB9C` | *Alias* | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Alias zu Opcode 0x1A. |
