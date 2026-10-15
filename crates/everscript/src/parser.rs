@@ -497,6 +497,30 @@ impl Parser {
             return Ok(EvsStmt::AttachCamera(expr));
         }
 
+        if self.match_token(&Token::Fork) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach fork")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach fork")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::Fork(expr));
+        }
+
+        if self.match_token(&Token::CallRel) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach call_rel")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach call_rel")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::CallRel(expr));
+        }
+
+        if self.match_token(&Token::ShowMessage) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach show_message")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach show_message")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::ShowMessage(expr));
+        }
+
         if self.match_token(&Token::Raw) {
             self.consume(&Token::OpenParen, "Erwarte '(' nach raw")?;
             let opcode = self.parse_number_const()? as u8;
@@ -598,8 +622,11 @@ impl Parser {
                     let amount = args.remove(0);
                     return Ok(EvsStmt::TakeMoney { currency, amount });
                 }
-                "switch_character" if args.len() == 1 => return Ok(EvsStmt::SwitchCharacter(args.remove(0))),
+                "switch_character" | "select_entity" if args.len() == 1 => return Ok(EvsStmt::SwitchCharacter(args.remove(0))),
                 "attach_camera" if args.len() == 1 => return Ok(EvsStmt::AttachCamera(args.remove(0))),
+                "fork" if args.len() == 1 => return Ok(EvsStmt::Fork(args.remove(0))),
+                "call_rel" if args.len() == 1 => return Ok(EvsStmt::CallRel(args.remove(0))),
+                "show_message" | "show_text_alt" if args.len() == 1 => return Ok(EvsStmt::ShowMessage(args.remove(0))),
                 "end" if args.is_empty() => return Ok(EvsStmt::End),
                 "return" if args.is_empty() => return Ok(EvsStmt::Return),
                 "text" | "show_text" if args.len() == 1 => return Ok(EvsStmt::Text(args.remove(0))),

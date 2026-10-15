@@ -102,18 +102,19 @@ Die Ausrüstungsdaten des Spiels werden in **Bank `$C4`** über eine Master-Zeig
 ### 10-Byte-Struktur für Rüstungen, Helme, Armbänder & Halsbänder:
 ```
 +0x00 (2 Bytes): Abwehr-Bonus (Defense)
-+0x02 (2 Bytes): Basiswert / Kaufpreis
++0x02 (2 Bytes): Identisch zu +0x00 (Delta +0 in allen 40 Records; kein Kaufpreis)
 +0x04 (2 Bytes): Zeiger auf deutschen Textnamen in Bank $05
-+0x06 (4 Bytes): Status-/Attributflags & Padding
++0x06 (2 Bytes): Konstante 0x0753 (in allen 40 Records)
++0x08 (2 Bytes): ID-Zähler in 2er-Schritten (0x00A0..0x00EE, kein Padding)
 ```
 
 ### WRAM: Ausgerüstete Gegenstände vs. Kampf-Charge-Register:
 > [!IMPORTANT]
-> Frühere inoffizielle Dokumentationen verwechselten die ausgerüsteten Ringmenü-Slots mit den Kampf-Charge-Registern. Im disassemblierten 65816-Code (`$8F:8262`) gilt:
-> - **Ausgerüstete Rüstung (Held):** **`$7E:2350`** (Item-ID `0` bis `11`)
-> - **Ausgerüsteter Helm (Held):** **`$7E:2352`** (Item-ID `0` bis `11`)
-> - **Ausgerüstetes Armband (Held):** **`$7E:2354`** (Item-ID `0` bis `11`)
-> - **Ausgerüstetes Halsband (Hund):** **`$7E:2356`** (Item-ID `0` bis `3`)
+> Frühere inoffizielle Dokumentationen gaben irrtümlich `$7E:2350..2356` für ausgerüstete Gegenstände an; dieser Bereich wird im ROM jedoch nie referenziert. Die tatsächlichen Ausrüstungs-Speicheradressen im WRAM lauten:
+> - **Ausgerüstete Rüstung (Held):** **`$7E:0AC0`** (Zeiger auf Struktur)
+> - **Ausgerüsteter Helm (Held):** **`$7E:0AC2`** (Zeiger auf Struktur)
+> - **Ausgerüstetes Armband (Held):** **`$7E:0AC4`** (Zeiger auf Struktur)
+> - **Ausgerüstete Waffe (Held):** **`$7E:0ABA`** (Waffenindex in 2er-Schritten)
 > - *Charge-Limit Junge (`$7E:0A52`):* Waffenlevel × `0x400`
 > - *Charge-Bonus Junge (`$7E:0A54`):* Additionsbonus bei `$8F:CC2D`
 > - *Charge-Limit Hund (`$7E:0A9C`):* Aus Hund-Waffenlevel abgeleitet
@@ -123,7 +124,7 @@ Die Ausrüstungsdaten des Spiels werden in **Bank `$C4`** über eine Master-Zeig
 ## 3. Rüstungen (Body Armor)
 
 In der deutschen ROM werden alle 12 Körperrüstungen in Bank `$05` ab Offset `0x0509AE` benannt. Ihre Werte stammen direkt aus der Item-Strukturtabelle bei `$C4:4142` (Stride 10 Bytes):
-Der aktuell ausgerüstete Index des Jungen liegt im WRAM an Adresse **`$7E:2350`** (ID 0..11).
+Der aktuell ausgerüstete Zeiger des Jungen liegt im WRAM an Adresse **`$7E:0AC0`** (Zeiger auf Rüstungsstruktur).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
 | :---: | :--- | :--- | :---: | :---: | :--- |
@@ -145,10 +146,10 @@ Der aktuell ausgerüstete Index des Jungen liegt im WRAM an Adresse **`$7E:2350`
 ## 4. Helme (Helmets)
 
 Die 12 Kopfbedeckungen liegen in Bank `$05` ab Offset `0x050A40`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:41BA` (Stride 10 Bytes):
-Der aktuell ausgerüstete Helm des Jungen liegt im WRAM an Adresse **`$7E:2352`** (ID 0..11).
+Der aktuell ausgerüstete Helm-Zeiger des Jungen liegt im WRAM an Adresse **`$7E:0AC2`** (Zeiger auf Helmstruktur).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
-| :---: | :--- | :--- | :---: | :---: | :--- |
+| :---: | :--- | :--- | :--- | :---: | :--- |
 | `0x00` | **Hippiemütze** | Grass Hat | `0x050A40` | **+2** | Prähistorie (Start) |
 | `0x01` | **Panzerhelm** | Shell Hat | `0x050A4C` | **+3** | Prähistorie (Dschungeldorf) |
 | `0x02` | **Schädelhelm** | Dino Helm | `0x050A57` | **+6** | Prähistorie (Käfersteppe) |
@@ -167,10 +168,10 @@ Der aktuell ausgerüstete Helm des Jungen liegt im WRAM an Adresse **`$7E:2352`*
 ## 5. Armbänder (Bracers / Gloves)
 
 Die 12 Armschutze liegen in Bank `$05` ab Offset `0x050ACE`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:4232` (Stride 10 Bytes):
-Der aktuell ausgerüstete Armschutz des Jungen liegt im WRAM an Adresse **`$7E:2354`** (ID 0..11).
+Der aktuell ausgerüstete Armschutz-Zeiger des Jungen liegt im WRAM an Adresse **`$7E:0AC4`** (Zeiger auf Armschutzstruktur).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
-| :---: | :--- | :--- | :---: | :---: | :--- |
+| :---: | :--- | :--- | :--- | :---: | :--- |
 | `0x00` | **Gemüsearmband** | Vine Bracelet | `0x050ACE` | **+1** | Prähistorie (Start) |
 | `0x01` | **Bleiarmband** | Mammoth Guard | `0x050ADC` | **+2** | Prähistorie (Mammutfriedhof) |
 | `0x02` | **Klauenreif** | Claw Guard | `0x050AE8` | **+5** | Prähistorie (Vulkan) |
@@ -189,7 +190,7 @@ Der aktuell ausgerüstete Armschutz des Jungen liegt im WRAM an Adresse **`$7E:2
 ## 6. Hundehalsbänder (Dog Collars)
 
 Die 4 Halsbänder für den Hund liegen in Bank `$05` ab Offset `0x050B69`. Ihre Werte stammen aus der Item-Strukturtabelle ab `$C4:42AA` (Stride 10 Bytes):
-Das aktuell ausgerüstete Halsband des Hundes liegt im WRAM an Adresse **`$7E:2356`** (ID 0..3).
+Das aktuell ausgerüstete Halsband des Hundes wird im Entity-Datenblock des Hundes verwaltet (WRAM `$7E:2356` wird im ROM nicht referenziert).
 
 | Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | Abwehr (Def) | Epoche / Bereich |
 | :---: | :--- | :--- | :---: | :---: | :--- |

@@ -92,10 +92,10 @@ Die deutschen Texte enthalten spezielle Steuer- und Formatierungsbytes:
 | :---: | :--- | :--- |
 | `0x00` | *Terminator* | Beendet den dekomprimierten Textstring. |
 | `0x0A` | `\n` | Zeilenumbruch innerhalb der Box. |
-| `0x80 lo hi` | **`[Pause:n]`** | Pause/Verzögerung um 16-Bit Frame-Dauer (`lo \| (hi << 8)` Ticks). |
+| `0x80 lo hi` | **`[Pause:n]`** | Pause/Verzögerung um berechnete Frame-Anzahl (`((hi << 8 \| lo) >> 1) & 0x3FFF` Frames). |
 | `0x81` | **`[Boy]`** | Name des Jungen (dynamisch aus Spieler-Eingabe). |
 | `0x82` | **`[Dog]`** | Name des Hundes (dynamisch aus Spieler-Eingabe). |
-| `0x86` | **`[Wait]`** | Wartet auf Bestätigung (A/B-Knopf) des Spielers. |
+| `0x86` | **`[Wait]`** | Wartet auf Bestätigung (A/B-Knopf) des Spielers und leert/schließt anschließend das Fenster. |
 | `0x87` | **`[Clear]`**| Textfenster sofort leeren. |
 | `0x8B` | **`[Marker]`**| Auswahlmarker für eine anwählbare Option (mit Positionsliste). |
 | `0x92` | **`[Center]`**| Zentriert Textzeile im Fenster. |

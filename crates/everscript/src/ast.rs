@@ -54,6 +54,9 @@ pub enum EvsStmt {
     PlayMusic(EvsExpr),
     SwitchCharacter(EvsExpr),
     AttachCamera(EvsExpr),
+    Fork(EvsExpr),
+    CallRel(EvsExpr),
+    ShowMessage(EvsExpr),
     Raw { opcode: u8, payload: Vec<u8> },
 }
 

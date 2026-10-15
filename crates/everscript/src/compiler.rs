@@ -149,31 +149,70 @@ impl Compiler {
                     out.push(0x00);
                 }
                 EvsStmt::Call(expr) => {
-                    let addr = self.eval_expr_const(expr)? as u32;
-                    let instr = sigil::Instruction::Call(addr);
+                    let addr = self.eval_expr_const(expr)?;
+                    if !(0..=0xFFFFFF).contains(&addr) {
+                        return Err(format!("call: Adresse {} übersteigt 24-Bit-Bereich (0..0xFFFFFF)", addr));
+                    }
+                    let instr = sigil::Instruction::Call(addr as u32);
+                    Assembler::assemble_instruction(&instr, out);
+                }
+                EvsStmt::Fork(expr) => {
+                    let addr = self.eval_expr_const(expr)?;
+                    if !(0..=0xFFFFFF).contains(&addr) {
+                        return Err(format!("fork: Adresse {} übersteigt 24-Bit-Bereich (0..0xFFFFFF)", addr));
+                    }
+                    let instr = sigil::Instruction::Fork(addr as u32);
+                    Assembler::assemble_instruction(&instr, out);
+                }
+                EvsStmt::CallRel(expr) => {
+                    let off = self.eval_expr_const(expr)?;
+                    if off < i16::MIN as i64 || off > i16::MAX as i64 {
+                        return Err(format!("call_rel: Versatz {} übersteigt 16-Bit-Bereich (-32768..32767)", off));
+                    }
+                    let instr = sigil::Instruction::CallRelative(off as i16);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::Text(expr) => {
-                    let id = self.eval_expr_const(expr)? as u16;
-                    let instr = sigil::Instruction::ShowText(id);
+                    let id = self.eval_expr_const(expr)?;
+                    if !(0..=65535).contains(&id) {
+                        return Err(format!("text: Text-ID {} übersteigt 16-Bit-Bereich (0..65535)", id));
+                    }
+                    let instr = sigil::Instruction::ShowText(id as u16);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::TextEnd(expr) => {
-                    let id = self.eval_expr_const(expr)? as u16;
-                    let instr = sigil::Instruction::ShowTextEnd(id);
+                    let id = self.eval_expr_const(expr)?;
+                    if !(0..=65535).contains(&id) {
+                        return Err(format!("text_end: Text-ID {} übersteigt 16-Bit-Bereich (0..65535)", id));
+                    }
+                    let instr = sigil::Instruction::ShowTextEnd(id as u16);
+                    Assembler::assemble_instruction(&instr, out);
+                }
+                EvsStmt::ShowMessage(expr) => {
+                    let id = self.eval_expr_const(expr)?;
+                    if !(0..=65535).contains(&id) {
+                        return Err(format!("show_message: Text-ID {} übersteigt 16-Bit-Bereich (0..65535)", id));
+                    }
+                    let instr = sigil::Instruction::ShowMessage(id as u16);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::TextHide => {
                     out.push(0x55);
                 }
                 EvsStmt::GiveJewels(expr) => {
-                    let amount = self.eval_expr_const(expr)? as u32;
-                    let instr = sigil::Instruction::GiveJewels(amount);
+                    let amount = self.eval_expr_const(expr)?;
+                    if !(0..=0xFFFFFF).contains(&amount) {
+                        return Err(format!("give_jewels: Betrag {} übersteigt 24-Bit-Bereich (0..0xFFFFFF)", amount));
+                    }
+                    let instr = sigil::Instruction::GiveJewels(amount as u32);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::GiveMoney { currency, amount } => {
                     let cur = self.compile_expr(currency)?;
                     if let Ok(amt) = self.eval_expr_const(amount) {
+                        if !(0..=0xFFFFFF).contains(&amt) {
+                            return Err(format!("give_money: Betrag {} übersteigt 24-Bit-Bereich (0..0xFFFFFF)", amt));
+                        }
                         let instr = sigil::Instruction::GiveMoney { currency: cur, amount: amt as u32 };
                         Assembler::assemble_instruction(&instr, out);
                     } else {
@@ -185,6 +224,9 @@ impl Compiler {
                 EvsStmt::TakeMoney { currency, amount } => {
                     let cur = self.compile_expr(currency)?;
                     if let Ok(amt) = self.eval_expr_const(amount) {
+                        if !(0..=0xFFFFFF).contains(&amt) {
+                            return Err(format!("take_money: Betrag {} übersteigt 24-Bit-Bereich (0..0xFFFFFF)", amt));
+                        }
                         let instr = sigil::Instruction::TakeMoney { currency: cur, amount: amt as u32 };
                         Assembler::assemble_instruction(&instr, out);
                     } else {
@@ -194,30 +236,40 @@ impl Compiler {
                     }
                 }
                 EvsStmt::Sleep(expr) => {
-                    let frames = self.eval_expr_const(expr)? as u32;
+                    let frames = self.eval_expr_const(expr)?;
+                    if !(0..=65535).contains(&frames) {
+                        return Err(format!("sleep: Dauer {} liegt außerhalb des Bereichs (0..65535)", frames));
+                    }
                     if frames <= 255 {
                         let instr = sigil::Instruction::Sleep(frames as u8);
                         Assembler::assemble_instruction(&instr, out);
-                    } else if frames <= 65535 {
+                    } else {
                         let instr = sigil::Instruction::SleepWord(frames as u16);
                         Assembler::assemble_instruction(&instr, out);
-                    } else {
-                        return Err(format!("Sleep-Dauer {} übersteigt 65535 Frames", frames));
                     }
                 }
                 EvsStmt::LockPlayer(expr) => {
-                    let arg = self.eval_expr_const(expr)? as u8;
-                    let instr = sigil::Instruction::LockPlayer(arg);
+                    let arg = self.eval_expr_const(expr)?;
+                    if !(0..=255).contains(&arg) {
+                        return Err(format!("lock_player: Argument {} übersteigt 8-Bit-Bereich (0..255)", arg));
+                    }
+                    let instr = sigil::Instruction::LockPlayer(arg as u8);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::UnlockPlayer(expr) => {
-                    let arg = self.eval_expr_const(expr)? as u8;
-                    let instr = sigil::Instruction::UnlockPlayer(arg);
+                    let arg = self.eval_expr_const(expr)?;
+                    if !(0..=255).contains(&arg) {
+                        return Err(format!("unlock_player: Argument {} übersteigt 8-Bit-Bereich (0..255)", arg));
+                    }
+                    let instr = sigil::Instruction::UnlockPlayer(arg as u8);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::Skip(expr) => {
-                    let off = self.eval_expr_const(expr)? as i16;
-                    let instr = sigil::Instruction::Skip(off);
+                    let off = self.eval_expr_const(expr)?;
+                    if off < i16::MIN as i64 || off > i16::MAX as i64 {
+                        return Err(format!("skip: Versatz {} übersteigt 16-Bit-Bereich (-32768..32767)", off));
+                    }
+                    let instr = sigil::Instruction::Skip(off as i16);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::FadeIn => {
@@ -227,22 +279,34 @@ impl Compiler {
                     Assembler::assemble_instruction(&sigil::Instruction::FadeOut, out);
                 }
                 EvsStmt::ChangeMap { x, y, map } => {
-                    let x_val = self.eval_expr_const(x)? as u8;
-                    let y_val = self.eval_expr_const(y)? as u8;
-                    let map_val = self.eval_expr_const(map)? as u16;
-                    let instr = sigil::Instruction::ChangeMap { x: x_val, y: y_val, map: map_val };
+                    let x_val = self.eval_expr_const(x)?;
+                    let y_val = self.eval_expr_const(y)?;
+                    let map_val = self.eval_expr_const(map)?;
+                    if !(0..=255).contains(&x_val) || !(0..=255).contains(&y_val) {
+                        return Err(format!("change_map: Koordinaten ({}, {}) übersteigen 8-Bit-Bereich (0..255)", x_val, y_val));
+                    }
+                    if !(0..=65535).contains(&map_val) {
+                        return Err(format!("change_map: Map-ID {} übersteigt 16-Bit-Bereich (0..65535)", map_val));
+                    }
+                    let instr = sigil::Instruction::ChangeMap { x: x_val as u8, y: y_val as u8, map: map_val as u16 };
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::CameraFollow { x, y } => {
-                    let x_val = self.eval_expr_const(x)? as u8;
-                    let y_val = self.eval_expr_const(y)? as u8;
-                    let instr = sigil::Instruction::CameraFollow { x: x_val, y: y_val };
+                    let x_val = self.eval_expr_const(x)?;
+                    let y_val = self.eval_expr_const(y)?;
+                    if !(0..=255).contains(&x_val) || !(0..=255).contains(&y_val) {
+                        return Err(format!("camera_follow: Koordinaten ({}, {}) übersteigen 8-Bit-Bereich (0..255)", x_val, y_val));
+                    }
+                    let instr = sigil::Instruction::CameraFollow { x: x_val as u8, y: y_val as u8 };
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::SetCameraPos { x, y } => {
-                    let x_val = self.eval_expr_const(x)? as u8;
-                    let y_val = self.eval_expr_const(y)? as u8;
-                    let instr = sigil::Instruction::SetCameraPos { x: x_val, y: y_val };
+                    let x_val = self.eval_expr_const(x)?;
+                    let y_val = self.eval_expr_const(y)?;
+                    if !(0..=255).contains(&x_val) || !(0..=255).contains(&y_val) {
+                        return Err(format!("set_camera_pos: Koordinaten ({}, {}) übersteigen 8-Bit-Bereich (0..255)", x_val, y_val));
+                    }
+                    let instr = sigil::Instruction::SetCameraPos { x: x_val as u8, y: y_val as u8 };
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::WaitFrame(expr) => {
@@ -280,16 +344,28 @@ impl Compiler {
                 }
                 EvsStmt::PlaySound { channel, id } => {
                     let ch = match channel {
-                        Some(c) => self.eval_expr_const(c)? as u8,
+                        Some(c) => {
+                            let v = self.eval_expr_const(c)?;
+                            if !(0..=255).contains(&v) {
+                                return Err(format!("play_sound: Kanal {} übersteigt 8-Bit-Bereich (0..255)", v));
+                            }
+                            v as u8
+                        }
                         None => 0,
                     };
-                    let sound_id = self.eval_expr_const(id)? as u8;
-                    let instr = sigil::Instruction::PlaySound { channel: ch, id: sound_id };
+                    let sound_id = self.eval_expr_const(id)?;
+                    if !(0..=255).contains(&sound_id) {
+                        return Err(format!("play_sound: Sound-ID {} übersteigt 8-Bit-Bereich (0..255)", sound_id));
+                    }
+                    let instr = sigil::Instruction::PlaySound { channel: ch, id: sound_id as u8 };
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::PlayMusic(expr) => {
-                    let music_id = self.eval_expr_const(expr)? as u8;
-                    let instr = sigil::Instruction::PlayMusic(music_id);
+                    let music_id = self.eval_expr_const(expr)?;
+                    if !(0..=255).contains(&music_id) {
+                        return Err(format!("play_music: Musik-ID {} übersteigt 8-Bit-Bereich (0..255)", music_id));
+                    }
+                    let instr = sigil::Instruction::PlayMusic(music_id as u8);
                     Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::SwitchCharacter(expr) => {
@@ -459,6 +535,15 @@ impl Compiler {
                 Ok(sigil::Expr::const_val(*n as i32))
             }
             EvsExpr::Ident(id) => {
+                match id.as_str() {
+                    "boy" | "Boy" | "BOY" => return Ok(sigil::Expr::Entity(sigil::Entity::Boy)),
+                    "dog" | "Dog" | "DOG" => return Ok(sigil::Expr::Entity(sigil::Entity::Dog)),
+                    "controlled" | "Controlled" | "CONTROLLED" => return Ok(sigil::Expr::Entity(sigil::Entity::Controlled)),
+                    "non_controlled" | "NonControlled" | "NON_CONTROLLED" => return Ok(sigil::Expr::Entity(sigil::Entity::NonControlled)),
+                    "last_entity" | "LastEntity" => return Ok(sigil::Expr::Entity(sigil::Entity::LastEntity)),
+                    "attached" | "Attached" => return Ok(sigil::Expr::Entity(sigil::Entity::Attached)),
+                    _ => {}
+                }
                 if let Some(val) = self.symbols.get(id) {
                     if *val < -65536 || *val > 65535 {
                         return Err(format!("Symbol '{}' mit Wert {} liegt außerhalb des gültigen Bereichs (-65536..65535)", id, val));

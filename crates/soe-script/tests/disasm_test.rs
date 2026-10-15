@@ -644,5 +644,84 @@ fn test_global_rom_scan_all_roots() {
     assert_eq!(roundtrip_matches, total_scripts_processed, "All processed scripts must match byte-exact on reassembly!");
 }
 
+#[test]
+fn test_signed_unsigned_memory_tokens_and_semantic_tokens() {
+    use soe_script::ast::*;
+    use soe_script::asm::Assembler;
+    use soe_script::disasm::Disassembler;
+    use soe_script::format::format_instruction_with_len;
+
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let mut rom = Rom::load(rom_path).expect("German ROM should load");
+    let test_addr = 0x93FA00;
+
+    let test_exprs = vec![
+        Expr::RamByteSigned(0x0123),
+        Expr::RamByteUnsigned(0x0123),
+        Expr::RamWordSigned(0x0456),
+        Expr::RamWordUnsigned(0x0456),
+        Expr::TempByteSigned(0x0010),
+        Expr::TempByteUnsigned(0x0010),
+        Expr::TempWordSigned(0x0020),
+        Expr::TempWordUnsigned(0x0020),
+        Expr::ArgByteSigned(1),
+        Expr::ArgByteUnsigned(1),
+        Expr::ArgWordSigned(2),
+        Expr::ArgWordUnsigned(2),
+        Expr::TriggerActor,
+        Expr::TaskWord0D,
+        Expr::TaskWord09,
+        Expr::DerefWord(Box::new(Expr::Const { opcode: Some(0x04), val: 0x2258 })),
+        Expr::DerefByte(Box::new(Expr::Const { opcode: Some(0x04), val: 0x2258 })),
+        Expr::IsPartnerControlled,
+        Expr::FrameTimerLo,
+        Expr::FrameTimerHi,
+        Expr::QueryStatusA(Box::new(Expr::Const { opcode: Some(0x35), val: 5 })),
+        Expr::QueryStatusB(Box::new(Expr::Const { opcode: Some(0x36), val: 6 })),
+        Expr::EntityStatDiff(Box::new(Expr::Entity(Entity::Boy))),
+    ];
+
+    for expr in test_exprs {
+        // Wrap in Instruction::SetBrightnessFast (0x91 expr)
+        let instr = Instruction::SetBrightnessFast(expr.clone());
+        let mut bytes = Vec::new();
+        Assembler::assemble_instruction(&instr, &mut bytes);
+        bytes.push(0x00); // End
+
+        rom.write_bytes_snes(test_addr, &bytes).unwrap();
+        let disasm = Disassembler::new(&rom);
+        let script = disasm.disassemble_script(test_addr, 20);
+        println!("Expr {:?}, bytes: {:02X?}, script: {:?}", expr, bytes, script.statements);
+        assert_eq!(script.statements.len(), 2);
+        assert_eq!(script.statements[0].instruction, instr);
+
+        // Reassembly check
+        let reassembled = Assembler::assemble_script(&script);
+        assert_eq!(reassembled, bytes, "Reassembled bytes must be byte-exact for {:?}", expr);
+    }
+
+    // Verify Jump Target calculation with instr_len
+    let if_instr = Instruction::If {
+        cond: Expr::const_val(1),
+        target_offset: 10,
+    };
+    let formatted = format_instruction_with_len(&if_instr, 0x0100, 0x938100, 4);
+    // target = 0x0100 + 4 (instr_len) + 10 = 0x010E
+    assert!(formatted.contains("[010E]"), "Formatted string must calculate target relative to end of instr: {}", formatted);
+
+    // Verify CallRelative avoids 64-bit underflow
+    let call_rel = Instruction::CallRelative(-5);
+    let formatted_cr = format_instruction_with_len(&call_rel, 0x0010, 0x938010, 3);
+    assert!(!formatted_cr.contains("FFFFFFFF"), "Must not contain 64-bit underflow: {}", formatted_cr);
+    assert!(formatted_cr.contains("[000B]"), "Target 0x10 - 5 = 0x0B: {}", formatted_cr);
+
+    // Verify SkipNeg formatting
+    let skip_neg = Instruction::SkipNeg(0x20); // b = 32 -> delta = -224
+    let formatted_sn = format_instruction_with_len(&skip_neg, 0x0200, 0x938200, 2);
+    assert!(formatted_sn.contains("delta -224"), "SkipNeg must show negative delta: {}", formatted_sn);
+    let evs_sn = soe_script::format::format_everscript_instruction(&skip_neg);
+    assert!(evs_sn.contains("skip(-224);"), "Everscript must format negative delta: {}", evs_sn);
+}
+
 
 

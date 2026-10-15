@@ -55,7 +55,7 @@ fn test_compile_section10_pot_trader_dialog() {
     fun pot_trader_dialog() = 0x9782AF {
         lock_player(0x08);
         if (!FLAG[FLAGS.MARKT_EINLASS]) {
-            skip(6);
+            skip(7);
         }
         text(0x0EB8);
         TEMP[0x0069] = dialog_response();
@@ -551,6 +551,70 @@ fn test_duplicate_label_fails() {
     assert!(res.is_err(), "Duplicate label must fail compilation");
     let err_msg = res.unwrap_err();
     assert!(err_msg.contains("Doppelt definiertes Label"));
+}
+
+#[test]
+fn test_operand_range_validation_fails() {
+    let test_cases = [
+        ("fun t() = 0x978000 { text(70000); }", "16-Bit-Bereich"),
+        ("fun t() = 0x978000 { lock_player(300); }", "8-Bit-Bereich"),
+        ("fun t() = 0x978000 { skip(40000); }", "16-Bit-Bereich"),
+        ("fun t() = 0x978000 { give_jewels(0x1000000); }", "24-Bit-Bereich"),
+        ("fun t() = 0x978000 { play_sound(300, 1); }", "8-Bit-Bereich"),
+    ];
+
+    for (src, expected_err) in test_cases {
+        let mut lexer = Lexer::new(src);
+        let tokens = lexer.tokenize().expect("Lexing succeeds");
+        let mut parser = Parser::new(tokens);
+        let ast = parser.parse_file().expect("Parsing succeeds");
+        let mut compiler = Compiler::new();
+        let res = compiler.compile_file(&ast);
+        assert!(res.is_err(), "Expected compilation failure for: {}", src);
+        let err = res.unwrap_err();
+        assert!(
+            err.contains(expected_err),
+            "Expected error containing '{}', got '{}'",
+            expected_err,
+            err
+        );
+    }
+}
+
+#[test]
+fn test_new_keywords_fork_call_rel_show_message_select_entity() {
+    let source = r#"
+    fun test_new_kw() = 0x978000 {
+        fork(0x978100);
+        call_rel(10);
+        show_message(0x0042);
+        select_entity(boy);
+        switch_character(dog);
+        select_entity(controlled);
+        end();
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing succeeds");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing succeeds");
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Compilation must succeed");
+    assert_eq!(blocks.len(), 1);
+    let bc = &blocks[0].bytecode;
+
+    // fork(0x978100) -> 0x07, 0x00, 0x81, 0x97
+    assert_eq!(bc[0], 0x07);
+    // call_rel(10) -> 0xA5, 0x0A (or 0xA6)
+    // show_message(0x0042) -> 0x8C, 0x42, 0x00
+    let sm_idx = bc.iter().position(|&b| b == 0x8C).expect("0x8C show_message present");
+    assert_eq!(bc[sm_idx + 1], 0x42);
+    assert_eq!(bc[sm_idx + 2], 0x00);
+
+    // select_entity(boy) -> 0x98, 0xD0 (0x50 | 0x80)
+    let s98_idx = bc.iter().position(|&b| b == 0x98).expect("0x98 select_entity present");
+    assert_eq!(bc[s98_idx + 1], 0xD0);
 }
 
 

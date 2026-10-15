@@ -76,13 +76,19 @@ pub enum BinaryOp {
 pub enum Expr {
     Const { opcode: Option<u8>, val: i32 },
     Flag { base: FlagBase, bit_index: u16 },
-    RamByte { opcode: u8, addr: u16 },
-    RamWord { opcode: u8, addr: u16 },
-    TempByte { opcode: u8, addr: u16 },
-    TempWord { opcode: u8, addr: u16 },
+    RamByteSigned(u16),
+    RamByteUnsigned(u16),
+    RamWordSigned(u16),
+    RamWordUnsigned(u16),
+    TempByteSigned(u16),
+    TempByteUnsigned(u16),
+    TempWordSigned(u16),
+    TempWordUnsigned(u16),
     ArgBit(u8),
-    ArgByte { opcode: u8, arg: u8 },
-    ArgWord { opcode: u8, arg: u8 },
+    ArgByteSigned(u8),
+    ArgByteUnsigned(u8),
+    ArgWordSigned(u8),
+    ArgWordUnsigned(u8),
     Entity(Entity),
     Rng,
     RngRange(Box<Expr>),
@@ -90,6 +96,17 @@ pub enum Expr {
     Unary { op: UnaryOp, expr: Box<Expr> },
     RawUnary { op: u8, expr: Box<Expr> },
     Binary { op: BinaryOp, left: Box<Expr>, right: Box<Expr> },
+    TriggerActor,                      // 0x2D: Akteur / Trigger-Index an $0341
+    TaskWord0D,                        // 0x2E: Task-Parameter an +0x0D
+    TaskWord09,                        // 0x54: Task Sync-Maske an +0x09
+    DerefWord(Box<Expr>),              // 0x55: Indirektes Word über Zeiger [$02]
+    DerefByte(Box<Expr>),              // 0x56: Indirektes Byte über Zeiger [$02]
+    IsPartnerControlled,               // 0x57: Prüft $0F44 == $0F42
+    FrameTimerLo,                      // 0x58: Frame-Timer Low-Word an $0B19
+    FrameTimerHi,                      // 0x59: Frame-Timer High-Word an $0B1B
+    QueryStatusA(Box<Expr>),           // 0x5A: Statusabfrage via $8E:9FA8
+    QueryStatusB(Box<Expr>),           // 0x5B: Statusabfrage via $8E:9EBE
+    EntityStatDiff(Box<Expr>),         // 0x5C: Entity Status-/HP-Differenz ($2A,Y - $76,Y)
     RawToken(u8),
     Raw(Vec<u8>),
 }
@@ -99,22 +116,22 @@ impl Expr {
         Self::Const { opcode: None, val }
     }
     pub fn ram_byte(addr: u16) -> Self {
-        Self::RamByte { opcode: 0x07, addr }
+        Self::RamByteUnsigned(addr)
     }
     pub fn ram_word(addr: u16) -> Self {
-        Self::RamWord { opcode: 0x09, addr }
+        Self::RamWordUnsigned(addr)
     }
     pub fn temp_byte(addr: u16) -> Self {
-        Self::TempByte { opcode: 0x0C, addr }
+        Self::TempByteUnsigned(addr)
     }
     pub fn temp_word(addr: u16) -> Self {
-        Self::TempWord { opcode: 0x0E, addr }
+        Self::TempWordUnsigned(addr)
     }
     pub fn arg_byte(arg: u8) -> Self {
-        Self::ArgByte { opcode: 0x11, arg }
+        Self::ArgByteUnsigned(arg)
     }
     pub fn arg_word(arg: u8) -> Self {
-        Self::ArgWord { opcode: 0x13, arg }
+        Self::ArgWordUnsigned(arg)
     }
 }
 
@@ -273,6 +290,7 @@ impl Instruction {
                 | Instruction::CameraFollow { .. }
                 | Instruction::ChangeMap { .. }
                 | Instruction::ResetGame
+                | Instruction::EnterMode7Map(_)
         )
     }
 }

@@ -167,7 +167,7 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 if i + 1 < bytes.len() {
                     let lo = bytes[i] as u16;
                     let hi = bytes[i + 1] as u16;
-                    let frames = lo | (hi << 8);
+                    let frames = ((hi << 8 | lo) >> 1) & 0x3FFF;
                     result.push_str(&format!("[Pause:{}]", frames));
                     i += 2;
                 } else {
@@ -176,6 +176,7 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 }
             }
             0x86 => {
+                // Wartet auf Tastendruck (A/B-Taste) und leert DANACH das Fenster
                 result.push_str("[Wait]");
                 i += 1;
             }

@@ -49,8 +49,8 @@ Secret of Evermore führt Skripte nicht blockierend aus, sondern besitzt einen k
    8C:D410: 81 D4  ; Status 2: Bereit (Ready) -> $8C:D481 (Ausführung starten/fortsetzen)
    8C:D412: 1C D4  ; Status 4: Timer-Wait -> $8C:D41C (Wartet auf 32-Bit Frame-Timer $7E:0B19)
    8C:D414: 2F D4  ; Status 6: Task-Sync / Event-Flag-Wait -> $8C:D42F (Prüft und quittiert Bitmaske $0005,Y & $0009,Y)
-   8C:D416: 41 D4  ; Status 8: Dialog-/State-Wait -> $8C:D441 (Wartet auf WRAM-Zustand $7E:2429 == $0005,Y)
-   8C:D418: 6B D4  ; Status 10: Entity-/Animations-Wait -> $8C:D46B (Wartet auf Animations-/Bewegungsende von Entity X = $0005,Y an $1080,X)
+   8C:D416: 41 D4  ; Status 8: Dialog-/State-Wait -> $8C:D441 (Setzt Ausführung fort, sobald WRAM $7E:2429 != $0005,Y via BNE $D475)
+   8C:D418: 6B D4  ; Status 10: Animated-Tile-Wait -> $8C:D46B (Wartet auf animierte Kachelgruppen, vergleicht $1080,X mit $10D0,X)
    8C:D41A: 4A D4  ; Status 12: Scroll-/Position-Wait -> $8C:D44A (Überwacht Scroll-/Positionsregister $BF/$C1)
    ```
 
@@ -73,7 +73,7 @@ Secret of Evermore führt Skripte nicht blockierend aus, sondern besitzt einen k
 ### Verschachtelte Logic-Ticks & Modale Handler (`$8E:E3EF`)
 
 Ein zentraler Architektur-Aspekt von SIGIL ist die Behandlung von modalen Dialogen und Menüs:
-- **28 Handler** (u. a. `0x52 SHOW_TEXT_MODAL`, `0x7E EXCHANGE_MONEY`, `0x7F SHOW_NAMING_SCREEN`, `0x8A OPEN_SHOP_MENU`, `0x8C OPEN_SAVE_MENU`) sowie das Expression-Token `0x2C` (`dialog_response()`) kehren während ihrer Ausführung **nicht sofort zum Scheduler zurück**.
+- **28 Handler** (u. a. `0x52 SHOW_TEXT_MODAL`, `0x7F SHOW_NAMING_SCREEN`, `0x8A OPEN_SHOP_MENU`, `0x8C SHOW_TEXT_ALT`) sowie das Expression-Token `0x2C` (`dialog_response()`) kehren während ihrer Ausführung **nicht sofort zum Scheduler zurück** (im Gegensatz zu `0x7E`, das reine Arithmetik ohne Rekursion ausführt: `nests = false`).
 - Stattdessen rufen sie in einer internen modalen Eingabeschleife rekursiv die Engine-Tick-Routine bei `$8E:E3EF` auf.
 - **Folge:** Der aufrufende Handler blockiert auf dem SNES-Aufrufstack („der Handler kehrt nicht zurück“), während die Game-Engine über verschachtelte Logic-Ticks weitergetrieben wird. Dies erklärt das Verhalten „kein Skript-Fortschritt bei offenem Textfenster“, während Controller-Abfragen und Hintergrund-Animationen aktiv bleiben.
 
@@ -259,13 +259,13 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x1E` | `$8C:DB9C` | *Alias* | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Alias zu Opcode 0x1A. |
 | `0x1F` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x20` | `$8C:DFD9` | Aktiv | x: u8, y: u8 | **`SET_CAMERA_BOUNDS`** – Setzt Kamera-Scrolling-Grenzen (Multiplikation mit 8 in DP $46/$48). |
-| `0x21` | `$8C:DFA2` | Aktiv | x: u8, y: u8 | **`CAMERA_FOLLOW`** – Bindet Kamera-Fokus an Koordinaten (Terminal-Befehl). |
+| `0x21` | `$8C:DFA2` | Aktiv | x: u8, y: u8 | **`CAMERA_FOLLOW`** – Setzt Task-Slots zurück (via `$8C:D2CE`), startet Map-Skript (via `$8F:B33F`) und bindet Kamera-Fokus an Koordinaten (Terminal-Befehl). |
 | `0x22` | `$8C:DF5A` | Aktiv | x: u8, y: u8, map: u16 | **`CHANGE_MAP`** – Teleportiert Spielfigur in neuen Raum `map` an Position `(x, y)` (Terminal-Befehl). |
 | `0x23` | `$8C:E806` | Aktiv | scroll: u16 | **`SET_MAP_SCROLL`** – Manueller Scroll-Offset für Kachelkarten in WRAM `$0E70`. |
 | `0x24` | `$8C:ECB7` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x25` | `$8C:ECB8` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x26` | `$8C:E007` | Aktiv | *keine* | **`FADE_IN`** – Hellt den Bildschirm aus Schwarz auf Normalhelligkeit auf (Helligkeit auf `$0F`). |
-| `0x27` | `$8C:DFF9` | Aktiv | *keine* | **`FADE_OUT`** – Dunkelt den Bildschirm schrittweise bis Schwarz ab (Forced Blanking `$80`). |
+| `0x27` | `$8C:DFF9` | Aktiv | *keine* | **`FADE_OUT`** – Dunkelt den Bildschirm schrittweise bis Schwarz ab (schreibt `$000F` nach `$0B8B` und `$8000` nach `$0B83`, verwendet kein Forced Blanking `$80`). |
 | `0x28` | `$8C:ECB9` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x29` | `$8C:D7B2` | Aktiv | addr: u24 | **`CALL`** – Synchroner Subroutinen-Aufruf (speichert Rückkehr-Link in `+0x0B`). |
 | `0x2A` | `$8C:DF50` | Aktiv | target: entity | **`FREEZE_ENTITY`** – Friert Aktionen und Bewegungen einer Figur ein. |
@@ -277,7 +277,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x30` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_1`** – Spielt Soundeffekt auf Kanal 1 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
 | `0x31` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_2`** – Spielt Soundeffekt auf Kanal 2 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
 | `0x32` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_3`** – Spielt Soundeffekt auf Kanal 3 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
-| `0x33` | `$8C:DABF` | Aktiv | track_id: u8 | **`PLAY_BGM`** – Wechselt Hintergrundmusik (`track_id` ist gerader Byte-Offset `0x02`, `0x04`, `0x5C`, `0x78` etc. in 16-Bit-BGM-Tabelle `$8C:87E0`, Aufruf `$8C:84F1`). |
+| `0x33` | `$8C:DABF` | Aktiv | track_id: u8 | **`PLAY_BGM`** – Wechselt Hintergrundmusik (`track_id` ist gerader Byte-Offset `0x02`, `0x04`, `0x5C`, `0x78` etc. in 16-Bit-BGM-Tabelle `$8C:87E0`, Aufruf `$8C:85E7`). |
 | `0x34` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x35` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x36` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
@@ -352,7 +352,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x7B` | `$8C:E49E` | Aktiv | target: expr, val: expr | **`WRITE_DEREF_BYTE`** – 8-Bit Byte via Zeiger schreiben (`*(u8*)target = val`). |
 | `0x7C` | `$8C:D940` | Aktiv | cur: expr, amt: u24 | **`GIVE_MONEY`** – Addiert 24-Bit-Betrag `amt` zur gewählten Währung `cur`. |
 | `0x7D` | `$8C:D8EA` | Aktiv | cur: expr, amt: u24 | **`TAKE_MONEY`** – Zieht 24-Bit-Betrag `amt` von der gewählten Währung `cur` ab. |
-| `0x7E` | `$8C:D993` | Aktiv | a: expr, b: expr, c: expr, d: expr | **`EXCHANGE_MONEY` / `SCRIPT_CMD_7E`** – Geldwechsel/Arithmetik mit 4 Ausdrücken (`E E E E`). Wertet intern vier Ausdrücke via `$8C:EE44` aus (für Betrag, Quell-/Zielparameter und Konditionen). |
+| `0x7E` | `$8C:D993` | Aktiv | a: expr, b: expr, c: expr, d: expr | **`EXCHANGE_MONEY` / `SCRIPT_CMD_7E`** – Geldwechsel/Arithmetik mit 4 Ausdrücken (`E E E E`). Reine Arithmetik (`nests = false`), wertet intern vier Ausdrücke via `$8C:EE44` aus (Berechnung von Geld-/Währungsumtausch via Hardware-Multiplikation/Division) und kehrt direkt mit `SEC` zurück. |
 | `0x7F` | `$8C:E57B` | Aktiv | target: u16 | **`SHOW_NAMING_SCREEN`** – Öffnet Namenseingabe-Bildschirm (im ROM `target = 3` für Hund). |
 | `0x80` | `$8C:E604` | Aktiv | *keine* | **`SHOW_HUD_ALL`** – Blendet HP- und Ring-Menü-HUD vollständig ein. |
 | `0x81` | `$8C:E60A` | Aktiv | *keine* | **`HIDE_HUD_ALL`** – Blendet gesamtes HUD für Zwischensequenzen aus. |
@@ -366,7 +366,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x89` | `$8C:E6B6` | Aktiv | item: expr, count: expr | **`ADD_SHOP_ITEM`** – Fügt Gegenstand zum Händler-Puffer `$0B97` hinzu (`E E`). |
 | `0x8A` | `$8C:E758` | Aktiv | shop_id: expr | **`OPEN_SHOP_MENU`** – Öffnet Händler-Ringmenü (Expression-Operand via Evaluator `$8C:EE44`). |
 | `0x8B` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x8C` | `$8C:E79B` | Aktiv | point_id: u16 | **`OPEN_SAVE_MENU`** – Öffnet das Speicherbuch-Menü (16-Bit Word Operand). |
+| `0x8C` | `$8C:E79B` | Aktiv | text_id: u16 | **`SHOW_TEXT_ALT` / `SHOW_MESSAGE`** – Zeigt Text/Nachricht mit 16-Bit Text-ID-Operand via `$8C:D0F6` an (kein Speicherbuch-Menü). |
 | `0x8D` | `$8C:E786` | Aktiv | intensity: u8 | **`SCREEN_SHAKE`** – Startet Bildschütteln (`intensity > 0`) oder stoppt es (`0`). |
 | `0x8E` | `$8C:D86C` | Aktiv | a: expr, b: expr, off: i16 | **`IF_EQUAL`** – Verzweigt um `off`, falls Ausdruck `a == b` ist. |
 | `0x8F` | `$8C:D8AB` | Aktiv | a: expr, b: expr, off: i16 | **`IF_NOT_EQUAL`** – Verzweigt um `off`, falls Ausdruck `a != b` ist. |
@@ -378,8 +378,8 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x95` | `$8C:E821` | Aktiv | target: entity, hp: expr | **`SET_ENTITY_HP`** / **`HEAL_SILENT`** – Stille Heilung via `$8F:C03A` (`ADC Entity+$2A` ohne Popup). Hinweis: ROM besitzt keinen Opcode zum absoluten Setzen von HP. |
 | `0x96` | `$8C:E89E` | Aktiv | x: expr, y: expr | **`SET_CAMERA_BASE`** – Verschiebt die Basis-Kamerakoordinaten via `$90A006`. |
 | `0x97` | `$8C:E8B2` | Aktiv | args: expr... (7x) | **`SHAKE_SCREEN_COMPLEX`** – Komplexer Erdbebeneffekt via `$90A370` (Richtung, Frequenz, Amplitude, Dämpfung). |
-| `0x98` | `$8C:E9A2` | Aktiv | target: expr | **`SWITCH_CHARACTER`** – Wechselt aktive Spielfigur zwischen Junge (`0`) und Hund (`1`). |
-| `0x99` | `$8C:EA70` | Aktiv | a, b, c, d, e, f: expr... | **`ENTER_MODE7_MAP`** – Startet Mode-7-Szene (liest 6 Ausdrücke). |
+| `0x98` | `$8C:E9A2` | Aktiv | target: expr | **`SWITCH_CHARACTER` / `SELECT_ENTITY`** – Schaltet aktive Spielfigur um (Entity-Selector-Parameter, z. B. Tokens 0x50, 0x51, 0x53 bzw. Entity-Ausdruck; vergleicht mit `$0F44`, nicht nur 0/1). |
+| `0x99` | `$8C:EA70` | Aktiv | a, b, c, d, e, f: expr... | **`ENTER_MODE7_MAP`** – Startet Mode-7-Szene (liest 6 Ausdrücke; Terminal-Befehl / kein Return). |
 | `0x9A` | `$8C:EAD0` | Aktiv | pitch: expr | **`MODE7_SET_CAMERA_PITCH`** – Setzt Kamera-Neigungswinkel für Mode-7-Flug in Bank `$C4`. |
 | `0x9B` | `$8C:E134` | Aktiv | target: entity | **`ATTACH_CAMERA_TO_ENTITY`** – Koppelt Kamera fest an Figur/NPC. |
 | `0x9C` | `$8C:E142` | Aktiv | target: entity | **`DETACH_CAMERA_FROM_ENTITY`** – Löst Kamera von Figur für statische Kameraszenen. |
@@ -414,12 +414,12 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0xB9` | `$8C:E441` | Aktiv | target: expr, dx: expr, dy: expr | **`TELEPORT_REL`** – Relative Teleportation um berechnete Deltas (`E E E`). |
 | `0xBA` | `$8C:E0DA` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FAST`** – Schneller NPC-Spawn mit festen Byte-Koordinaten. |
 | `0xBB` | `$8C:E868` | Aktiv | target: expr, val: expr | **`DAMAGE_ENTITY_2`** – Sekundärer Schadensbefehl via `$8F:C103` (prüft Statusbit `$1000` an `Entity+$10`, addiert auf `Entity+$76`, setzt Flag `$0018` in `+$12`). |
-| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`LOCK_PLAYER_BOY_FAST`** – Schnelles Sperren der Eingaben für den Jungen (setzt Bit 0 in `$7E:2429` via `$8C:DF15`). Historisch in Community-Docs irrtümlich als `FACE_NORTH` gelistet. |
-| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOY_FAST`** – Schnelles Freigeben der Eingaben für den Jungen (löscht Bit 0 in `$7E:2429` via `$8C:DEBF`). Historisch irrtümlich als `FACE_NORTH_WAIT`. |
-| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`LOCK_PLAYER_DOG_FAST`** – Schnelles Sperren der Eingaben für den Hund (setzt Bit 1 in `$7E:2429` via `$8C:DF15`). Historisch irrtümlich als `FACE_SOUTH`. |
-| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`UNLOCK_PLAYER_DOG_FAST`** – Schnelles Freigeben der Eingaben für den Hund (löscht Bit 1 in `$7E:2429` via `$8C:DEBF`). Historisch irrtümlich als `FACE_SOUTH_WAIT`. |
-| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`LOCK_PLAYER_BOTH_FAST`** – Schnelles Sperren der Eingaben für Junge und Hund (setzt Bits 0 und 1 in `$7E:2429` via `$8C:DF15`). Historisch irrtümlich als `FACE_WEST`. |
-| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOTH_FAST`** – Schnelles Freigeben der Eingaben für Junge und Hund (löscht Bits 0 und 1 in `$7E:2429` via `$8C:DEBF`). Historisch irrtümlich als `FACE_EAST`. |
+| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`LOCK_PLAYER_BOY_FAST`** – Schnelles Sperren der Eingaben für den Jungen (setzt Bit 0 in `$7E:2429` via Branch zu `$8C:DF1A`). Historisch in Community-Docs irrtümlich als `FACE_NORTH` gelistet. |
+| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOY_FAST`** – Schnelles Freigeben der Eingaben für den Jungen (löscht Bit 0 in `$7E:2429` via Branch zu `$8C:DEC4`). Historisch irrtümlich als `FACE_NORTH_WAIT`. |
+| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`LOCK_PLAYER_DOG_FAST`** – Schnelles Sperren der Eingaben für den Hund (setzt Bit 1 in `$7E:2429` via Branch zu `$8C:DF1A`). Historisch irrtümlich als `FACE_SOUTH`. |
+| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`UNLOCK_PLAYER_DOG_FAST`** – Schnelles Freigeben der Eingaben für den Hund (löscht Bit 1 in `$7E:2429` via Branch zu `$8C:DEC4`). Historisch irrtümlich als `FACE_SOUTH_WAIT`. |
+| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`LOCK_PLAYER_BOTH_FAST`** – Schnelles Sperren der Eingaben für Junge und Hund (setzt Bits 0 und 1 in `$7E:2429` via Branch zu `$8C:DF1A`). Historisch irrtümlich als `FACE_WEST`. |
+| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOTH_FAST`** – Schnelles Freigeben der Eingaben für Junge und Hund (löscht Bits 0 und 1 in `$7E:2429` via Branch zu `$8C:DEC4`). Historisch irrtümlich als `FACE_EAST`. |
 | `0xC2` | `$8C:E0C4` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FLAGGED`** – Erzeugt NPC über `$8E:B55A` mit gesetztem `$8000`-Zustandsflag. |
 
 ---
@@ -434,10 +434,10 @@ Im dekodierten Textstrom werden spezielle Steuerbytes interpretiert, die direkt 
 | :---: | :---: | :--- |
 | `0x00` | *Terminator* | Beendet den Textstring. Schließt ggf. das Fenster oder gibt Steuerung an Skript zurück. |
 | `0x0A` | `\n` | Zeilenumbruch innerhalb der Textbox. |
-| `0x80 lo hi` | `[Pause:n]` | **Pause / Frame-Verzögerung:** Hält den Textaufbau für 16-Bit Frame-Zähler (`lo \| (hi << 8)` Ticks) an. |
+| `0x80 lo hi` | `[Pause:n]` | **Pause / Frame-Verzögerung:** Hält den Textaufbau für berechnete Frame-Anzahl (`((hi << 8 \| lo) >> 1) & 0x3FFF` Frames) an. |
 | `0x81` | `[Boy]` | **Junge-Name:** Fügt den vom Spieler gewählten Namen des Jungen ein. |
 | `0x82` | `[Dog]` | **Hund-Name:** Fügt den vom Spieler gewählten Namen des Hundes ein. |
-| `0x86` | `[Wait]` | **Wartet auf Tastendruck:** Hält Textausgabe an, bis A- oder B-Knopf gedrückt wird. |
+| `0x86` | `[Wait]` | **Wartet auf Tastendruck & Leeren:** Hält Textausgabe an, bis A- oder B-Knopf gedrückt wird, und leert/schließt anschließend das Textfenster. |
 | `0x87` | `[Clear]` | **Fenster sofort leeren:** Löscht sofort den gesamten bisherigen Textinhalt des Fensters. |
 | `0x8B` | `[Marker]` | **Auswahlmarker / Menü-Einrückung:** Markiert eine auswählbare Option im Dialog. |
 | `0x92` | `[Center]` | **Zentrierung:** Zentriert Textausgabe im Dialogfenster. |
@@ -538,7 +538,7 @@ enum FLAGS {
 fun pot_trader_dialog() = 0x9782AF {
     lock_player(0x08);
     if (!FLAG[FLAGS.MARKT_EINLASS]) {
-        skip(6);
+        skip(7);
     }
     text(0x0EB8);
     TEMP[0x0069] = dialog_response();

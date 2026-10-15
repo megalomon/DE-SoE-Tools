@@ -187,12 +187,13 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 > Die vollständige Dokumentation aller **Waffen, Rüstungen, Helme, Armbänder, Hundehalsbänder, Verbrauchsgegenstände und Tauschwaren** mit ihren exakten deutschen Ingame-Namen und ROM-Offsets befindet sich im separaten Dokument:  
 > 👉 [**`docs/ausruestung_items.md`**](ausruestung_items.md)
 
-### Ausgerüstete Gegenstände (Ringmenü-Ausrüstung im WRAM)
-- **Ausgerüstete Rüstung (Held):** `$7E:2350` (Item-ID `0` bis `11`, z. B. `0` = Moosweste, `11` = Cyberweste)
-- **Ausgerüsteter Helm (Held):** `$7E:2352` (Item-ID `0` bis `11`, z. B. `0` = Hippiemütze, `11` = Elektrohelm)
-- **Ausgerüstetes Armband (Held):** `$7E:2354` (Item-ID `0` bis `11`, z. B. `0` = Gemüsearmband, `11` = Elektroarmband)
-- **Ausgerüstetes Halsband (Hund):** `$7E:2356` (Item-ID `0` bis `3`, z. B. `0` = Lederhalsband, `3` = Juwelenhalsband)
-- **Ausgerüstete Waffe (Held):** `$7E:235F` / `$7E:2360` (Waffenslot im Ringmenü)
+### Ausgerüstete Gegenstände (Ausrüstung im WRAM)
+> [!NOTE]
+> Frühere inoffizielle Tabellen führten `$7E:2350..2356` auf; diese Adressen werden jedoch im ROM nie referenziert. Die tatsächliche Ausrüstung wird über folgende Adressen verwaltet:
+- **Ausgerüstete Waffe (Held):** `$7E:0ABA` (Waffenindex in 2er-Schritten)
+- **Ausgerüstete Rüstung (Held):** `$7E:0AC0` (16-Bit-Zeiger auf Rüstungsstruktur in Bank `$C4`)
+- **Ausgerüsteter Helm (Held):** `$7E:0AC2` (16-Bit-Zeiger auf Helmstruktur in Bank `$C4`)
+- **Ausgerüstetes Armband (Held):** `$7E:0AC4` (16-Bit-Zeiger auf Armbandstruktur in Bank `$C4`)
 
 ### Heil- & Unterstützungsitems (Zähler 0–99 im WRAM)
 - **Blätter:** `$7E2364` (Zähler 0–99)

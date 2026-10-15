@@ -835,33 +835,57 @@ impl<'a> Disassembler<'a> {
                     let bit_index = self.read_u16(cur_file_off);
                     current_expr = Some(Expr::Flag { base: FlagBase::Temp, bit_index });
                 }
-                0x06 | 0x07 => {
+                0x06 => {
                     let addr = self.read_u16(cur_file_off);
-                    current_expr = Some(Expr::RamByte { opcode: sub, addr });
+                    current_expr = Some(Expr::RamByteSigned(addr));
                 }
-                0x08 | 0x09 => {
+                0x07 => {
                     let addr = self.read_u16(cur_file_off);
-                    current_expr = Some(Expr::RamWord { opcode: sub, addr });
+                    current_expr = Some(Expr::RamByteUnsigned(addr));
                 }
-                0x0B | 0x0C => {
+                0x08 => {
                     let addr = self.read_u16(cur_file_off);
-                    current_expr = Some(Expr::TempByte { opcode: sub, addr });
+                    current_expr = Some(Expr::RamWordSigned(addr));
                 }
-                0x0D | 0x0E => {
+                0x09 => {
                     let addr = self.read_u16(cur_file_off);
-                    current_expr = Some(Expr::TempWord { opcode: sub, addr });
+                    current_expr = Some(Expr::RamWordUnsigned(addr));
+                }
+                0x0B => {
+                    let addr = self.read_u16(cur_file_off);
+                    current_expr = Some(Expr::TempByteSigned(addr));
+                }
+                0x0C => {
+                    let addr = self.read_u16(cur_file_off);
+                    current_expr = Some(Expr::TempByteUnsigned(addr));
+                }
+                0x0D => {
+                    let addr = self.read_u16(cur_file_off);
+                    current_expr = Some(Expr::TempWordSigned(addr));
+                }
+                0x0E => {
+                    let addr = self.read_u16(cur_file_off);
+                    current_expr = Some(Expr::TempWordUnsigned(addr));
                 }
                 0x0F => {
                     let bit = self.read_u8(cur_file_off);
                     current_expr = Some(Expr::ArgBit(bit));
                 }
-                0x10 | 0x11 => {
+                0x10 => {
                     let arg = self.read_u8(cur_file_off);
-                    current_expr = Some(Expr::ArgByte { opcode: sub, arg });
+                    current_expr = Some(Expr::ArgByteSigned(arg));
                 }
-                0x12 | 0x13 => {
+                0x11 => {
                     let arg = self.read_u8(cur_file_off);
-                    current_expr = Some(Expr::ArgWord { opcode: sub, arg });
+                    current_expr = Some(Expr::ArgByteUnsigned(arg));
+                }
+                0x12 => {
+                    let arg = self.read_u8(cur_file_off);
+                    current_expr = Some(Expr::ArgWordSigned(arg));
+                }
+                0x13 => {
+                    let arg = self.read_u8(cur_file_off);
+                    current_expr = Some(Expr::ArgWordUnsigned(arg));
                 }
                 // Unäre Operatoren
                 0x14 => {
@@ -926,15 +950,43 @@ impl<'a> Disassembler<'a> {
                     let param = current_expr.take();
                     current_expr = Some(Expr::DialogResponse(param.map(Box::new)));
                 }
-                0x55 | 0x56 | 0x5A | 0x5B | 0x5C => {
-                    if let Some(e) = current_expr.take() {
-                        current_expr = Some(Expr::RawUnary { op: sub, expr: Box::new(e) });
-                    } else {
-                        current_expr = Some(Expr::RawToken(sub));
-                    }
+                0x2D => {
+                    current_expr = Some(Expr::TriggerActor);
                 }
-                0x2D | 0x2E | 0x54 | 0x57..=0x59 => {
-                    current_expr = Some(Expr::RawToken(sub));
+                0x2E => {
+                    current_expr = Some(Expr::TaskWord0D);
+                }
+                0x54 => {
+                    current_expr = Some(Expr::TaskWord09);
+                }
+                0x55 => {
+                    let e = current_expr.take().unwrap_or_else(|| Expr::const_val(0));
+                    current_expr = Some(Expr::DerefWord(Box::new(e)));
+                }
+                0x56 => {
+                    let e = current_expr.take().unwrap_or_else(|| Expr::const_val(0));
+                    current_expr = Some(Expr::DerefByte(Box::new(e)));
+                }
+                0x57 => {
+                    current_expr = Some(Expr::IsPartnerControlled);
+                }
+                0x58 => {
+                    current_expr = Some(Expr::FrameTimerLo);
+                }
+                0x59 => {
+                    current_expr = Some(Expr::FrameTimerHi);
+                }
+                0x5A => {
+                    let e = current_expr.take().unwrap_or_else(|| Expr::const_val(0));
+                    current_expr = Some(Expr::QueryStatusA(Box::new(e)));
+                }
+                0x5B => {
+                    let e = current_expr.take().unwrap_or_else(|| Expr::const_val(0));
+                    current_expr = Some(Expr::QueryStatusB(Box::new(e)));
+                }
+                0x5C => {
+                    let e = current_expr.take().unwrap_or_else(|| Expr::const_val(0));
+                    current_expr = Some(Expr::EntityStatDiff(Box::new(e)));
                 }
                 0x50..=0x53 => {
                     let ent = Entity::from_u8(sub | 0x80);

@@ -715,6 +715,11 @@ impl Assembler {
     fn emit_sub_expr(expr: &Expr, bytes: &mut Vec<u8>) -> Option<usize> {
         match expr {
             Expr::Const { opcode, val } => {
+                assert!(
+                    (-65536..=65535).contains(val),
+                    "Assembler::assemble_expr: Wert {} liegt außerhalb des gültigen Bereichs (-65536..=65535)",
+                    val
+                );
                 let pos = bytes.len();
                 match opcode {
                     Some(0x01) => {
@@ -772,27 +777,51 @@ impl Assembler {
                 bytes.extend_from_slice(&bit_index.to_le_bytes());
                 Some(pos)
             }
-            Expr::RamByte { opcode, addr } => {
+            Expr::RamByteSigned(addr) => {
                 let pos = bytes.len();
-                bytes.push(*opcode);
+                bytes.push(0x06);
                 bytes.extend_from_slice(&addr.to_le_bytes());
                 Some(pos)
             }
-            Expr::RamWord { opcode, addr } => {
+            Expr::RamByteUnsigned(addr) => {
                 let pos = bytes.len();
-                bytes.push(*opcode);
+                bytes.push(0x07);
                 bytes.extend_from_slice(&addr.to_le_bytes());
                 Some(pos)
             }
-            Expr::TempByte { opcode, addr } => {
+            Expr::RamWordSigned(addr) => {
                 let pos = bytes.len();
-                bytes.push(*opcode);
+                bytes.push(0x08);
                 bytes.extend_from_slice(&addr.to_le_bytes());
                 Some(pos)
             }
-            Expr::TempWord { opcode, addr } => {
+            Expr::RamWordUnsigned(addr) => {
                 let pos = bytes.len();
-                bytes.push(*opcode);
+                bytes.push(0x09);
+                bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
+            }
+            Expr::TempByteSigned(addr) => {
+                let pos = bytes.len();
+                bytes.push(0x0B);
+                bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
+            }
+            Expr::TempByteUnsigned(addr) => {
+                let pos = bytes.len();
+                bytes.push(0x0C);
+                bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
+            }
+            Expr::TempWordSigned(addr) => {
+                let pos = bytes.len();
+                bytes.push(0x0D);
+                bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
+            }
+            Expr::TempWordUnsigned(addr) => {
+                let pos = bytes.len();
+                bytes.push(0x0E);
                 bytes.extend_from_slice(&addr.to_le_bytes());
                 Some(pos)
             }
@@ -802,16 +831,88 @@ impl Assembler {
                 bytes.push(*bit);
                 Some(pos)
             }
-            Expr::ArgByte { opcode, arg } => {
+            Expr::ArgByteSigned(arg) => {
                 let pos = bytes.len();
-                bytes.push(*opcode);
+                bytes.push(0x10);
                 bytes.push(*arg);
                 Some(pos)
             }
-            Expr::ArgWord { opcode, arg } => {
+            Expr::ArgByteUnsigned(arg) => {
                 let pos = bytes.len();
-                bytes.push(*opcode);
+                bytes.push(0x11);
                 bytes.push(*arg);
+                Some(pos)
+            }
+            Expr::ArgWordSigned(arg) => {
+                let pos = bytes.len();
+                bytes.push(0x12);
+                bytes.push(*arg);
+                Some(pos)
+            }
+            Expr::ArgWordUnsigned(arg) => {
+                let pos = bytes.len();
+                bytes.push(0x13);
+                bytes.push(*arg);
+                Some(pos)
+            }
+            Expr::TriggerActor => {
+                let pos = bytes.len();
+                bytes.push(0x2D);
+                Some(pos)
+            }
+            Expr::TaskWord0D => {
+                let pos = bytes.len();
+                bytes.push(0x2E);
+                Some(pos)
+            }
+            Expr::TaskWord09 => {
+                let pos = bytes.len();
+                bytes.push(0x54);
+                Some(pos)
+            }
+            Expr::DerefWord(expr) => {
+                Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
+                bytes.push(0x55);
+                Some(pos)
+            }
+            Expr::DerefByte(expr) => {
+                Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
+                bytes.push(0x56);
+                Some(pos)
+            }
+            Expr::IsPartnerControlled => {
+                let pos = bytes.len();
+                bytes.push(0x57);
+                Some(pos)
+            }
+            Expr::FrameTimerLo => {
+                let pos = bytes.len();
+                bytes.push(0x58);
+                Some(pos)
+            }
+            Expr::FrameTimerHi => {
+                let pos = bytes.len();
+                bytes.push(0x59);
+                Some(pos)
+            }
+            Expr::QueryStatusA(expr) => {
+                Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
+                bytes.push(0x5A);
+                Some(pos)
+            }
+            Expr::QueryStatusB(expr) => {
+                Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
+                bytes.push(0x5B);
+                Some(pos)
+            }
+            Expr::EntityStatDiff(expr) => {
+                Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
+                bytes.push(0x5C);
                 Some(pos)
             }
             Expr::Entity(ent) => {

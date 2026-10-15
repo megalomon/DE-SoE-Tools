@@ -13,7 +13,7 @@ impl Script {
                 .collect::<Vec<_>>()
                 .join(" ");
 
-            let instr_str = format_instruction(&stmt.instruction, stmt.offset, stmt.snes_addr);
+            let instr_str = format_instruction_with_len(&stmt.instruction, stmt.offset, stmt.snes_addr, stmt.raw_bytes.len());
             out.push_str(&format!(
                 "[{:04X}] ${:06X}  {:<16}  {}\n",
                 stmt.offset, stmt.snes_addr, bytes_hex, instr_str
@@ -35,41 +35,51 @@ impl Script {
     }
 }
 
-pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -> String {
+pub fn format_instruction(instr: &Instruction, offset: usize, snes_addr: u32) -> String {
+    let mut buf = Vec::new();
+    crate::asm::Assembler::assemble_instruction(instr, &mut buf);
+    format_instruction_with_len(instr, offset, snes_addr, buf.len())
+}
+
+pub fn format_instruction_with_len(instr: &Instruction, offset: usize, _snes_addr: u32, instr_len: usize) -> String {
     match instr {
         Instruction::End => "END".to_string(),
         Instruction::Return => "RETURN".to_string(),
         Instruction::Skip(jmp) => {
-            let target = (offset as isize + *jmp as isize + 3) as usize;
+            let target = ((offset as isize + instr_len as isize + *jmp as isize) as i64 & 0xFFFF) as usize;
             format!("SKIP {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::SkipNeg(jmp) => {
-            let target = (offset as isize - 256 + (*jmp as u8 as isize)) as usize;
-            format!("SKIP {:+} -> [{:04X}]", jmp, target)
+            let b = *jmp as u8;
+            let delta = (b as isize) - 256;
+            let target = ((offset as isize + delta) as i64 & 0xFFFF) as usize;
+            format!("SKIP_BACK {} (delta {}) -> [{:04X}]", b, delta, target)
         }
         Instruction::Call(rom_addr) => format!("CALL ${:06X}", rom_addr),
         Instruction::Fork(rom_addr) => format!("FORK ${:06X}", rom_addr),
         Instruction::CallRelative(jmp) => {
-            let target = (offset as isize + *jmp as isize) as usize;
+            let target = ((offset as isize + *jmp as isize) as i64 & 0xFFFF) as usize;
             format!("CALL_REL {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::CallRelativeByte(jmp) => {
-            let target = (offset as isize + *jmp as isize) as usize;
+            let target = ((offset as isize + *jmp as isize) as i64 & 0xFFFF) as usize;
             format!("CALL_REL {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::If { cond, target_offset } => {
-            let target = (offset as isize + *target_offset as isize) as usize;
+            let target = ((offset as isize + instr_len as isize + *target_offset as isize) as i64 & 0xFFFF) as usize;
             format!("IF {} SKIP {:+} -> [{:04X}]", format_expr(cond), target_offset, target)
         }
         Instruction::IfNot { cond, target_offset } => {
-            let target = (offset as isize + *target_offset as isize) as usize;
+            let target = ((offset as isize + instr_len as isize + *target_offset as isize) as i64 & 0xFFFF) as usize;
             format!("IF NOT ({}) SKIP {:+} -> [{:04X}]", format_expr(cond), target_offset, target)
         }
         Instruction::IfMoneyGe { currency, amount, target_offset } => {
-            format!("IF MONEY[{}] >= {} SKIP {:+}", format_expr(currency), amount, target_offset)
+            let target = ((offset as isize + instr_len as isize + *target_offset as isize) as i64 & 0xFFFF) as usize;
+            format!("IF MONEY[{}] >= {} SKIP {:+} -> [{:04X}]", format_expr(currency), amount, target_offset, target)
         }
         Instruction::IfMoneyLt { currency, amount, target_offset } => {
-            format!("IF MONEY[{}] < {} SKIP {:+}", format_expr(currency), amount, target_offset)
+            let target = ((offset as isize + instr_len as isize + *target_offset as isize) as i64 & 0xFFFF) as usize;
+            format!("IF MONEY[{}] < {} SKIP {:+} -> [{:04X}]", format_expr(currency), amount, target_offset, target)
         }
         Instruction::SetFlag { base, bit_index, val } => {
             let base_str = match base {
@@ -145,11 +155,11 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::SetEntityPosRel { target, dx, dy } => format!("SET_ENTITY_POS_REL target: ({}) dx: ({}) dy: ({})", format_expr(target), format_expr(dx), format_expr(dy)),
         Instruction::DamageEntity2 { target, val } => format!("DAMAGE_ENTITY_2 target: ({}) val: ({})", format_expr(target), format_expr(val)),
         Instruction::IfEqual { left, right, target_offset } => {
-            let target = (offset as isize + *target_offset as isize) as usize;
+            let target = ((offset as isize + instr_len as isize + *target_offset as isize) as i64 & 0xFFFF) as usize;
             format!("IF {} == {} SKIP {:+} -> [{:04X}]", format_expr(left), format_expr(right), target_offset, target)
         }
         Instruction::IfNotEqual { left, right, target_offset } => {
-            let target = (offset as isize + *target_offset as isize) as usize;
+            let target = ((offset as isize + instr_len as isize + *target_offset as isize) as i64 & 0xFFFF) as usize;
             format!("IF {} != {} SKIP {:+} -> [{:04X}]", format_expr(left), format_expr(right), target_offset, target)
         }
         Instruction::PlayEntityAnim { target, anim, speed } => {
@@ -324,7 +334,11 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::End => "end();".to_string(),
         Instruction::Return => "return;".to_string(),
         Instruction::Skip(jmp) => format!("skip({:+});", jmp),
-        Instruction::SkipNeg(jmp) => format!("skip({:+});", jmp),
+        Instruction::SkipNeg(jmp) => {
+            let b = *jmp as u8;
+            let delta = (b as i16) - 256;
+            format!("skip({});", delta)
+        }
         Instruction::Call(rom_addr) => format!("call(0x{:06X});", rom_addr),
         Instruction::Fork(rom_addr) => format!("fork(0x{:06X});", rom_addr),
         Instruction::CallRelative(jmp) => format!("call_rel({:+});", jmp),
@@ -597,13 +611,30 @@ pub fn format_expr(expr: &Expr) -> String {
             };
             format!("{}[0x{:04X}]", prefix, bit_index)
         }
-        Expr::RamByte { addr, .. } => format!("RAM_BYTE[0x{:04X}]", addr),
-        Expr::RamWord { addr, .. } => format!("RAM[0x{:04X}]", addr),
-        Expr::TempByte { addr, .. } => format!("TEMP_BYTE[0x{:04X}]", addr),
-        Expr::TempWord { addr, .. } => format!("TEMP[0x{:04X}]", addr),
+        Expr::RamByteSigned(addr) => format!("RAM_BYTE_S[0x{:04X}]", addr),
+        Expr::RamByteUnsigned(addr) => format!("RAM_BYTE[0x{:04X}]", addr),
+        Expr::RamWordSigned(addr) => format!("RAM_S[0x{:04X}]", addr),
+        Expr::RamWordUnsigned(addr) => format!("RAM[0x{:04X}]", addr),
+        Expr::TempByteSigned(addr) => format!("TEMP_BYTE_S[0x{:04X}]", addr),
+        Expr::TempByteUnsigned(addr) => format!("TEMP_BYTE[0x{:04X}]", addr),
+        Expr::TempWordSigned(addr) => format!("TEMP_S[0x{:04X}]", addr),
+        Expr::TempWordUnsigned(addr) => format!("TEMP[0x{:04X}]", addr),
         Expr::ArgBit(bit) => format!("ARG_BIT[{}]", bit),
-        Expr::ArgByte { arg, .. } => format!("ARG_BYTE[{}]", arg),
-        Expr::ArgWord { arg, .. } => format!("ARG_WORD[{}]", arg),
+        Expr::ArgByteSigned(arg) => format!("ARG_BYTE_S[{}]", arg),
+        Expr::ArgByteUnsigned(arg) => format!("ARG_BYTE[{}]", arg),
+        Expr::ArgWordSigned(arg) => format!("ARG_WORD_S[{}]", arg),
+        Expr::ArgWordUnsigned(arg) => format!("ARG_WORD[{}]", arg),
+        Expr::TriggerActor => "trigger_actor()".to_string(),
+        Expr::TaskWord0D => "task_word_0d()".to_string(),
+        Expr::TaskWord09 => "task_word_09()".to_string(),
+        Expr::DerefWord(e) => format!("deref_word({})", format_expr(e)),
+        Expr::DerefByte(e) => format!("deref_byte({})", format_expr(e)),
+        Expr::IsPartnerControlled => "is_partner_controlled()".to_string(),
+        Expr::FrameTimerLo => "frame_timer_lo()".to_string(),
+        Expr::FrameTimerHi => "frame_timer_hi()".to_string(),
+        Expr::QueryStatusA(e) => format!("query_status_a({})", format_expr(e)),
+        Expr::QueryStatusB(e) => format!("query_status_b({})", format_expr(e)),
+        Expr::EntityStatDiff(e) => format!("entity_stat_diff({})", format_expr(e)),
         Expr::Entity(ent) => format!("{:?}", ent),
         Expr::Rng => "rnd()".to_string(),
         Expr::RngRange(r) => format!("rnd_range({})", format_expr(r)),
