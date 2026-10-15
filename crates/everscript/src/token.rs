@@ -4,11 +4,13 @@
 pub enum Token {
     // Keywords
     Fun,
+    Def,
     Group,
     Enum,
     If,
     Else,
     While,
+    Goto,
     Return,
     End,
     Call,
@@ -354,11 +356,13 @@ impl<'a> Lexer<'a> {
 
         match s.as_str() {
             "fun" | "function" => Token::Fun,
+            "def" => Token::Def,
             "group" => Token::Group,
             "enum" => Token::Enum,
             "if" => Token::If,
             "else" => Token::Else,
             "while" => Token::While,
+            "goto" => Token::Goto,
             "return" => Token::Return,
             "end" => Token::End,
             "call" => Token::Call,

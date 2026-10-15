@@ -399,4 +399,159 @@ fn test_roundtrip_everscript_compilation() {
     assert_eq!(bc[14], 0x00);
 }
 
+#[test]
+fn test_labels_and_goto_forward_backward() {
+    let source = r#"
+    fun test_labels() = 0x978000 {
+        goto target;
+        RAM[0x0100] = 42;
+    target:
+        sleep(10);
+    loop_start:
+        fade_in();
+        goto loop_start;
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing should succeed");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing should succeed");
+
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Compilation should succeed");
+    let bc = &blocks[0].bytecode;
+
+    // Byte 0..2: goto target (Skip opcode 0x04)
+    assert_eq!(bc[0], 0x04);
+    // RAM[0x0100] = 42 is:
+    // WriteRam: 0x18, 0x00, 0x01, Token 0x02 | 0x80 = 0x82, 42 -> 5 bytes!
+    // So target is at byte 0 + 3 + 5 = 8.
+    // Skip relative offset from (0 + 3) to 8 is +5!
+    let fwd_offset = i16::from_le_bytes([bc[1], bc[2]]);
+    assert_eq!(fwd_offset, 5);
+
+    // Byte 8..9: sleep(10) -> 0xA7, 10 (2 bytes)
+    assert_eq!(bc[8], 0xA7);
+    assert_eq!(bc[9], 10);
+
+    // Byte 10: loop_start -> fade_in() -> 0x26 (1 byte)
+    assert_eq!(bc[10], 0x26);
+
+    // Byte 11..13: goto loop_start -> Skip opcode 0x04
+    assert_eq!(bc[11], 0x04);
+    // Backward jump from (11 + 3 = 14) to 10 is: 10 - 14 = -4!
+    let back_offset = i16::from_le_bytes([bc[12], bc[13]]);
+    assert_eq!(back_offset, -4);
+}
+
+#[test]
+fn test_def_keyword_and_function_calls() {
+    let source = r#"
+    def helper_sub() = 0x978500 {
+        fade_out();
+        end();
+    }
+
+    fun main_entry() = 0x978100 {
+        call(helper_sub);
+        helper_sub();
+        end();
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing should succeed");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing should succeed");
+
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Compilation should succeed");
+    assert_eq!(blocks.len(), 2);
+
+    assert_eq!(blocks[0].name, "helper_sub");
+    assert_eq!(blocks[0].address, Some(0x978500));
+
+    assert_eq!(blocks[1].name, "main_entry");
+    assert_eq!(blocks[1].address, Some(0x978100));
+    let bc = &blocks[1].bytecode;
+
+    // First call(helper_sub) -> 0x29, address 0x978500 in script format (3 bytes)
+    assert_eq!(bc[0], 0x29);
+    // Second helper_sub() -> 0x29, address 0x978500 in script format (3 bytes)
+    assert_eq!(bc[4], 0x29);
+    // end() -> 0x00
+    assert_eq!(bc[8], 0x00);
+}
+
+#[test]
+fn test_goto_inside_if_branch() {
+    let source = r#"
+    fun test_if_goto() = 0x978000 {
+        if (RAM[0x0010] == 1) {
+            goto fast_exit;
+        }
+        show_text(0x0100);
+    fast_exit:
+        end();
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing should succeed");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing should succeed");
+
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Compilation should succeed");
+    let bc = &blocks[0].bytecode;
+
+    // Bytecode must be valid and end with 0x00
+    assert_eq!(*bc.last().unwrap(), 0x00);
+}
+
+#[test]
+fn test_undefined_label_fails() {
+    let source = r#"
+    fun test_bad_label() = 0x978000 {
+        goto non_existent;
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing succeeds");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing succeeds");
+
+    let mut compiler = Compiler::new();
+    let res = compiler.compile_file(&ast);
+    assert!(res.is_err(), "Undefined label must fail compilation");
+    let err_msg = res.unwrap_err();
+    assert!(err_msg.contains("non_existent"));
+}
+
+#[test]
+fn test_duplicate_label_fails() {
+    let source = r#"
+    fun test_dup_label() = 0x978000 {
+    my_label:
+        sleep(1);
+    my_label:
+        end();
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing succeeds");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing succeeds");
+
+    let mut compiler = Compiler::new();
+    let res = compiler.compile_file(&ast);
+    assert!(res.is_err(), "Duplicate label must fail compilation");
+    let err_msg = res.unwrap_err();
+    assert!(err_msg.contains("Doppelt definiertes Label"));
+}
+
+
 

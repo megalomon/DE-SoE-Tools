@@ -274,10 +274,10 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x2D` | `$8C:DEBD` | Aktiv | flags: u8 | **`UNLOCK_PLAYER`** – Hebt Eingabespalte auf und gibt Kontrolle an Spieler zurück. |
 | `0x2E` | `$8C:D62D` | Aktiv | cond: expr | **`WAIT_UNTIL`** – Pausiert den Skript-Task, bis Bedingung `cond` wahr wird. |
 | `0x2F` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x30` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_1`** – Spielt Soundeffekt auf Soundkanal 1 ab. |
-| `0x31` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_2`** – Spielt Soundeffekt auf Soundkanal 2 ab. |
-| `0x32` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_3`** – Spielt Soundeffekt auf Soundkanal 3 ab. |
-| `0x33` | `$8C:DABF` | Aktiv | track_id: u8 | **`PLAY_BGM`** – Wechselt Hintergrundmusik des Raumes über S-SMP. |
+| `0x30` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_1`** – Spielt Soundeffekt auf Kanal 1 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
+| `0x31` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_2`** – Spielt Soundeffekt auf Kanal 2 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
+| `0x32` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_3`** – Spielt Soundeffekt auf Kanal 3 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
+| `0x33` | `$8C:DABF` | Aktiv | track_id: u8 | **`PLAY_BGM`** – Wechselt Hintergrundmusik (`track_id` ist gerader Byte-Offset `0x02`, `0x04`, `0x5C`, `0x78` etc. in 16-Bit-BGM-Tabelle `$8C:87E0`, Aufruf `$8C:84F1`). |
 | `0x34` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x35` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x36` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
@@ -373,9 +373,9 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x90` | `$8C:E02A` | Aktiv | level: expr | **`SET_BRIGHTNESS_EXPR`** – Setzt Bildschirm-Helligkeit (0..15) anhand dynamischen Ausdrucks. |
 | `0x91` | `$8C:E051` | Aktiv | level: expr | **`SET_BRIGHTNESS_ALT`** – Setzt Bildschirm-Helligkeit (0..15) an `$0106`/`$0B8B` anhand dynamischen Ausdrucks. |
 | `0x92` | `$8C:E831` | Aktiv | target: entity, focus: expr | **`SET_ENTITY_TARGET`** – Setzt AI-Kampf- und Verfolgungsfokus an `Entity+$46`. |
-| `0x93` | `$8C:E887` | Aktiv | target: entity, val: expr | **`QUEUE_ENTITY_DAMAGE`** – Trägt Schadenswert in Anzeige-Queue `Entity+$76` ein via `$8FC0C7`. |
-| `0x94` | `$8C:E811` | Aktiv | target: entity, dmg: expr | **`DAMAGE_ENTITY`** – Fügt Entity direkten HP-Schaden zu via `$8FC02F`. |
-| `0x95` | `$8C:E821` | Aktiv | target: entity, heal: expr | **`HEAL_ENTITY`** – Heilt HP der Entity via `$8FC03A`. |
+| `0x93` | `$8C:E887` | Aktiv | target: entity, amount: expr | **`DAMAGE_ENTITY`** – Fügt Entity Schaden zu via `$8F:C0C7` (addiert auf Schadenspuffer `Entity+$76`, setzt Flag `$0008` in `+$12`). |
+| `0x94` | `$8C:E811` | Aktiv | target: entity, amount: expr | **`HEAL_ENTITY`** – Heilt Entity mit grünem Zahlen-Popup via `$8F:C02F` (Popup `$90:D87B`, `ADC Entity+$2A` gedeckelt auf Max-HP). |
+| `0x95` | `$8C:E821` | Aktiv | target: entity, hp: expr | **`SET_ENTITY_HP`** / **`HEAL_SILENT`** – Stille Heilung via `$8F:C03A` (`ADC Entity+$2A` ohne Popup). Hinweis: ROM besitzt keinen Opcode zum absoluten Setzen von HP. |
 | `0x96` | `$8C:E89E` | Aktiv | x: expr, y: expr | **`SET_CAMERA_BASE`** – Verschiebt die Basis-Kamerakoordinaten via `$90A006`. |
 | `0x97` | `$8C:E8B2` | Aktiv | args: expr... (7x) | **`SHAKE_SCREEN_COMPLEX`** – Komplexer Erdbebeneffekt via `$90A370` (Richtung, Frequenz, Amplitude, Dämpfung). |
 | `0x98` | `$8C:E9A2` | Aktiv | target: expr | **`SWITCH_CHARACTER`** – Wechselt aktive Spielfigur zwischen Junge (`0`) und Hund (`1`). |
@@ -413,7 +413,7 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0xB8` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0xB9` | `$8C:E441` | Aktiv | target: expr, dx: expr, dy: expr | **`TELEPORT_REL`** – Relative Teleportation um berechnete Deltas (`E E E`). |
 | `0xBA` | `$8C:E0DA` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FAST`** – Schneller NPC-Spawn mit festen Byte-Koordinaten. |
-| `0xBB` | `$8C:E868` | Aktiv | target: expr, dmg: expr | **`SHOW_DAMAGE_NUM`** – Triggert Schadens- oder Heilungs-Popup über Figur via `$8FC103` (`E E`). |
+| `0xBB` | `$8C:E868` | Aktiv | target: expr, val: expr | **`DAMAGE_ENTITY_2`** – Sekundärer Schadensbefehl via `$8F:C103` (prüft Statusbit `$1000` an `Entity+$10`, addiert auf `Entity+$76`, setzt Flag `$0018` in `+$12`). |
 | `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`FACE_NORTH`** – Dreht Spielfigur/NPC nach oben (Norden). |
 | `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`FACE_NORTH_WAIT`** – Dreht Figur nach oben und wartet auf Animations-Tick. |
 | `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`FACE_SOUTH`** – Dreht Spielfigur/NPC nach unten (Süden). |

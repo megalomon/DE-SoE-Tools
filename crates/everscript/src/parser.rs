@@ -118,7 +118,7 @@ impl Parser {
             return Ok(EvsTopLevel::Enum { name, members });
         }
 
-        if self.match_token(&Token::Fun) {
+        if self.match_token(&Token::Fun) || self.match_token(&Token::Def) {
             let name = match self.advance() {
                 Token::Ident(n) => n,
                 other => return Err(format!("Erwarte Funktionsname, gefunden: {:?}", other)),
@@ -144,6 +144,35 @@ impl Parser {
     }
 
     fn parse_statement(&mut self) -> Result<EvsStmt, String> {
+        // Label definition: label_name:
+        if let Token::Ident(name) = self.peek() {
+            if self.pos + 1 < self.tokens.len() && self.tokens[self.pos + 1] == Token::Colon {
+                let label_name = name.clone();
+                self.advance(); // consume Ident
+                self.advance(); // consume Colon
+                return Ok(EvsStmt::Label(label_name));
+            }
+        }
+
+        // Goto statement: goto label; oder goto(label);
+        if self.match_token(&Token::Goto) {
+            let target = if self.match_token(&Token::OpenParen) {
+                let name = match self.advance() {
+                    Token::Ident(n) => n,
+                    other => return Err(format!("Erwarte Label-Name nach goto(, erhalten: {:?}", other)),
+                };
+                self.consume(&Token::CloseParen, "Erwarte ')' nach goto")?;
+                name
+            } else {
+                match self.advance() {
+                    Token::Ident(n) => n,
+                    other => return Err(format!("Erwarte Label-Name nach goto, erhalten: {:?}", other)),
+                }
+            };
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::Goto(target));
+        }
+
         if self.match_token(&Token::If) {
             self.consume(&Token::OpenParen, "Erwarte '(' nach if")?;
             let cond = self.parse_expr()?;
@@ -208,9 +237,13 @@ impl Parser {
         }
 
         if self.match_token(&Token::Call) {
-            self.consume(&Token::OpenParen, "Erwarte '(' nach call")?;
-            let expr = self.parse_expr()?;
-            self.consume(&Token::CloseParen, "Erwarte ')' nach call-Argument")?;
+            let expr = if self.match_token(&Token::OpenParen) {
+                let expr = self.parse_expr()?;
+                self.consume(&Token::CloseParen, "Erwarte ')' nach call-Argument")?;
+                expr
+            } else {
+                self.parse_expr()?
+            };
             self.match_token(&Token::Semicolon);
             return Ok(EvsStmt::Call(expr));
         }
@@ -574,6 +607,13 @@ impl Parser {
                 "text_hide" | "hide_text" if args.is_empty() => return Ok(EvsStmt::TextHide),
                 "give_jewels" if args.len() == 1 => return Ok(EvsStmt::GiveJewels(args.remove(0))),
                 "sleep" | "sleep_aligned" if args.len() == 1 => return Ok(EvsStmt::Sleep(args.remove(0))),
+                "goto" if args.len() == 1 => {
+                    if let EvsExpr::Ident(name) = args.remove(0) {
+                        return Ok(EvsStmt::Goto(name));
+                    } else {
+                        return Err("goto erfordert einen Label-Bezeichner".to_string());
+                    }
+                }
                 _ => return Ok(EvsStmt::Call(EvsExpr::Call { name, args })),
             }
         } else {

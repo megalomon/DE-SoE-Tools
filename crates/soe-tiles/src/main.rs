@@ -58,7 +58,7 @@ enum Commands {
         #[arg(short, long, default_value_t = 64)]
         count: usize,
 
-        #[arg(short, long, default_value_t = 8)]
+        #[arg(short = 'C', long, default_value_t = 8)]
         columns: u32,
 
         #[arg(short, long, default_value = "sheet.png")]
@@ -137,4 +137,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn test_verify_cli() {
+        Cli::command().debug_assert();
+    }
 }

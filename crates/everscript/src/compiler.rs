@@ -51,6 +51,11 @@ impl Compiler {
 
     fn collect_symbols(&mut self, item: &EvsTopLevel) {
         match item {
+            EvsTopLevel::Function(fun) => {
+                if let Some(addr) = fun.address {
+                    self.symbols.insert(fun.name.clone(), addr as i64);
+                }
+            }
             EvsTopLevel::Enum { name, members } => {
                 for (mem_name, val) in members {
                     self.symbols.insert(format!("{}.{}", name, mem_name), *val);
@@ -96,9 +101,47 @@ impl Compiler {
 
     pub fn compile_statements(&self, statements: &[EvsStmt]) -> Result<Vec<u8>, String> {
         let mut out = Vec::new();
+        let mut label_offsets = HashMap::new();
+        let mut gotos = Vec::new();
 
+        self.compile_statements_inner(statements, &mut out, &mut label_offsets, &mut gotos)?;
+
+        // Phase 2: Auflösen aller gotos zu Labels
+        for (goto_pos, label_name) in gotos {
+            let target_pos = label_offsets.get(&label_name).ok_or_else(|| {
+                format!("Unbekanntes Sprungziel / Label: '{}'", label_name)
+            })?;
+            let rel_offset = (*target_pos as i32) - (goto_pos as i32 + 3);
+            if rel_offset < i16::MIN as i32 || rel_offset > i16::MAX as i32 {
+                return Err(format!("Sprungversatz zu Label '{}' ({}) übersteigt 16-Bit Bereich", label_name, rel_offset));
+            }
+            let bytes = (rel_offset as i16).to_le_bytes();
+            out[goto_pos + 1] = bytes[0];
+            out[goto_pos + 2] = bytes[1];
+        }
+
+        Ok(out)
+    }
+
+    fn compile_statements_inner(
+        &self,
+        statements: &[EvsStmt],
+        out: &mut Vec<u8>,
+        label_offsets: &mut HashMap<String, usize>,
+        gotos: &mut Vec<(usize, String)>,
+    ) -> Result<(), String> {
         for stmt in statements {
             match stmt {
+                EvsStmt::Label(name) => {
+                    if label_offsets.contains_key(name) {
+                        return Err(format!("Doppelt definiertes Label: '{}'", name));
+                    }
+                    label_offsets.insert(name.clone(), out.len());
+                }
+                EvsStmt::Goto(name) => {
+                    gotos.push((out.len(), name.clone()));
+                    Assembler::assemble_instruction(&sigil::Instruction::Skip(0), out);
+                }
                 EvsStmt::End => {
                     out.push(0x00);
                 }
@@ -108,17 +151,17 @@ impl Compiler {
                 EvsStmt::Call(expr) => {
                     let addr = self.eval_expr_const(expr)? as u32;
                     let instr = sigil::Instruction::Call(addr);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::Text(expr) => {
                     let id = self.eval_expr_const(expr)? as u16;
                     let instr = sigil::Instruction::ShowText(id);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::TextEnd(expr) => {
                     let id = self.eval_expr_const(expr)? as u16;
                     let instr = sigil::Instruction::ShowTextEnd(id);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::TextHide => {
                     out.push(0x55);
@@ -126,38 +169,38 @@ impl Compiler {
                 EvsStmt::GiveJewels(expr) => {
                     let amount = self.eval_expr_const(expr)? as u32;
                     let instr = sigil::Instruction::GiveJewels(amount);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::GiveMoney { currency, amount } => {
                     let cur = self.compile_expr(currency)?;
                     if let Ok(amt) = self.eval_expr_const(amount) {
                         let instr = sigil::Instruction::GiveMoney { currency: cur, amount: amt as u32 };
-                        Assembler::assemble_instruction(&instr, &mut out);
+                        Assembler::assemble_instruction(&instr, out);
                     } else {
                         let amt_expr = self.compile_expr(amount)?;
                         let instr = sigil::Instruction::GiveMoneyExpr { currency: cur, amount: amt_expr };
-                        Assembler::assemble_instruction(&instr, &mut out);
+                        Assembler::assemble_instruction(&instr, out);
                     }
                 }
                 EvsStmt::TakeMoney { currency, amount } => {
                     let cur = self.compile_expr(currency)?;
                     if let Ok(amt) = self.eval_expr_const(amount) {
                         let instr = sigil::Instruction::TakeMoney { currency: cur, amount: amt as u32 };
-                        Assembler::assemble_instruction(&instr, &mut out);
+                        Assembler::assemble_instruction(&instr, out);
                     } else {
                         let amt_expr = self.compile_expr(amount)?;
                         let instr = sigil::Instruction::TakeMoneyExpr { currency: cur, amount: amt_expr };
-                        Assembler::assemble_instruction(&instr, &mut out);
+                        Assembler::assemble_instruction(&instr, out);
                     }
                 }
                 EvsStmt::Sleep(expr) => {
                     let frames = self.eval_expr_const(expr)? as u32;
                     if frames <= 255 {
                         let instr = sigil::Instruction::Sleep(frames as u8);
-                        Assembler::assemble_instruction(&instr, &mut out);
+                        Assembler::assemble_instruction(&instr, out);
                     } else if frames <= 65535 {
                         let instr = sigil::Instruction::SleepWord(frames as u16);
-                        Assembler::assemble_instruction(&instr, &mut out);
+                        Assembler::assemble_instruction(&instr, out);
                     } else {
                         return Err(format!("Sleep-Dauer {} übersteigt 65535 Frames", frames));
                     }
@@ -165,75 +208,75 @@ impl Compiler {
                 EvsStmt::LockPlayer(expr) => {
                     let arg = self.eval_expr_const(expr)? as u8;
                     let instr = sigil::Instruction::LockPlayer(arg);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::UnlockPlayer(expr) => {
                     let arg = self.eval_expr_const(expr)? as u8;
                     let instr = sigil::Instruction::UnlockPlayer(arg);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::Skip(expr) => {
                     let off = self.eval_expr_const(expr)? as i16;
                     let instr = sigil::Instruction::Skip(off);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::FadeIn => {
-                    Assembler::assemble_instruction(&sigil::Instruction::FadeIn, &mut out);
+                    Assembler::assemble_instruction(&sigil::Instruction::FadeIn, out);
                 }
                 EvsStmt::FadeOut => {
-                    Assembler::assemble_instruction(&sigil::Instruction::FadeOut, &mut out);
+                    Assembler::assemble_instruction(&sigil::Instruction::FadeOut, out);
                 }
                 EvsStmt::ChangeMap { x, y, map } => {
                     let x_val = self.eval_expr_const(x)? as u8;
                     let y_val = self.eval_expr_const(y)? as u8;
                     let map_val = self.eval_expr_const(map)? as u16;
                     let instr = sigil::Instruction::ChangeMap { x: x_val, y: y_val, map: map_val };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::CameraFollow { x, y } => {
                     let x_val = self.eval_expr_const(x)? as u8;
                     let y_val = self.eval_expr_const(y)? as u8;
                     let instr = sigil::Instruction::CameraFollow { x: x_val, y: y_val };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::SetCameraPos { x, y } => {
                     let x_val = self.eval_expr_const(x)? as u8;
                     let y_val = self.eval_expr_const(y)? as u8;
                     let instr = sigil::Instruction::SetCameraPos { x: x_val, y: y_val };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::WaitFrame(expr) => {
                     let sigil_expr = self.compile_expr(expr)?;
                     let instr = sigil::Instruction::WaitFrame(sigil_expr);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::WaitAnim(expr) => {
                     let sigil_expr = self.compile_expr(expr)?;
                     let instr = sigil::Instruction::WaitAnim(sigil_expr);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::WaitUntil(expr) => {
                     let sigil_expr = self.compile_expr(expr)?;
                     let instr = sigil::Instruction::WaitUntil(sigil_expr);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::DamageEntity { target, amount } => {
                     let target_expr = self.compile_expr(target)?;
                     let amount_expr = self.compile_expr(amount)?;
                     let instr = sigil::Instruction::DamageEntity { target: target_expr, amount: amount_expr };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::HealEntity { target, amount } => {
                     let target_expr = self.compile_expr(target)?;
                     let amount_expr = self.compile_expr(amount)?;
                     let instr = sigil::Instruction::HealEntity { target: target_expr, amount: amount_expr };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::SetEntityHp { target, hp } => {
                     let target_expr = self.compile_expr(target)?;
                     let hp_expr = self.compile_expr(hp)?;
                     let instr = sigil::Instruction::SetEntityHp { target: target_expr, hp: hp_expr };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::PlaySound { channel, id } => {
                     let ch = match channel {
@@ -242,29 +285,29 @@ impl Compiler {
                     };
                     let sound_id = self.eval_expr_const(id)? as u8;
                     let instr = sigil::Instruction::PlaySound { channel: ch, id: sound_id };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::PlayMusic(expr) => {
                     let music_id = self.eval_expr_const(expr)? as u8;
                     let instr = sigil::Instruction::PlayMusic(music_id);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::SwitchCharacter(expr) => {
                     let sigil_expr = self.compile_expr(expr)?;
                     let instr = sigil::Instruction::SwitchCharacter(sigil_expr);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::AttachCamera(expr) => {
                     let sigil_expr = self.compile_expr(expr)?;
                     let instr = sigil::Instruction::AttachCamera(sigil_expr);
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::Raw { opcode, payload } => {
                     let instr = sigil::Instruction::Raw { opcode: *opcode, payload: payload.clone() };
-                    Assembler::assemble_instruction(&instr, &mut out);
+                    Assembler::assemble_instruction(&instr, out);
                 }
                 EvsStmt::Assign { target, value } => {
-                    self.compile_assignment(target, value, &mut out)?;
+                    self.compile_assignment(target, value, out)?;
                 }
                 EvsStmt::If { cond, then_branch, else_branch } => {
                     // Check for single skip optimization: if (...) skip(+n);
@@ -280,7 +323,7 @@ impl Compiler {
                                             amount: amt as u32,
                                             target_offset,
                                         };
-                                        Assembler::assemble_instruction(&instr, &mut out);
+                                        Assembler::assemble_instruction(&instr, out);
                                         continue;
                                     }
                                 }
@@ -294,69 +337,81 @@ impl Compiler {
                                             amount: amt as u32,
                                             target_offset,
                                         };
-                                        Assembler::assemble_instruction(&instr, &mut out);
+                                        Assembler::assemble_instruction(&instr, out);
                                         continue;
                                     }
                                 }
                             }
                             if let EvsExpr::Unary { op: sigil::UnaryOp::Not, expr: inner } = cond {
                                 let sigil_cond = self.compile_expr(inner)?;
-                                Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset }, &mut out);
+                                Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset }, out);
                                 continue;
                             } else {
                                 let sigil_cond = self.compile_expr(cond)?;
-                                Assembler::assemble_instruction(&sigil::Instruction::If { cond: sigil_cond, target_offset }, &mut out);
+                                Assembler::assemble_instruction(&sigil::Instruction::If { cond: sigil_cond, target_offset }, out);
                                 continue;
                             }
                         }
                     }
 
-                    let mut then_bytes = self.compile_statements(then_branch)?;
+                    let sigil_cond = self.compile_expr(cond)?;
+                    Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset: 0 }, out);
+                    let then_start = out.len();
+
+                    self.compile_statements_inner(then_branch, out, label_offsets, gotos)?;
 
                     if let Some(else_branch) = else_branch {
-                        let else_bytes = self.compile_statements(else_branch)?;
-                        // Skip instruction am Ende des then-Blocks
-                        let skip_offset = else_bytes.len() as i16;
-                        let mut skip_instr_bytes = Vec::new();
-                        Assembler::assemble_instruction(&sigil::Instruction::Skip(skip_offset), &mut skip_instr_bytes);
-                        then_bytes.extend(skip_instr_bytes);
+                        let skip_pos = out.len();
+                        Assembler::assemble_instruction(&sigil::Instruction::Skip(0), out);
+                        let then_end = out.len();
 
-                        let if_offset = (then_bytes.len()) as i16;
-                        let sigil_cond = self.compile_expr(cond)?;
-                        Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset: if_offset }, &mut out);
-                        out.extend(then_bytes);
-                        out.extend(else_bytes);
+                        let if_offset = (then_end - then_start) as i16;
+                        let if_bytes = if_offset.to_le_bytes();
+                        out[then_start - 2] = if_bytes[0];
+                        out[then_start - 1] = if_bytes[1];
+
+                        let else_start = out.len();
+                        self.compile_statements_inner(else_branch, out, label_offsets, gotos)?;
+                        let else_end = out.len();
+
+                        let skip_offset = (else_end - else_start) as i16;
+                        let skip_bytes = skip_offset.to_le_bytes();
+                        out[skip_pos + 1] = skip_bytes[0];
+                        out[skip_pos + 2] = skip_bytes[1];
                     } else {
-                        let if_offset = then_bytes.len() as i16;
-                        let sigil_cond = self.compile_expr(cond)?;
-                        Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset: if_offset }, &mut out);
-                        out.extend(then_bytes);
+                        let then_end = out.len();
+                        let if_offset = (then_end - then_start) as i16;
+                        let if_bytes = if_offset.to_le_bytes();
+                        out[then_start - 2] = if_bytes[0];
+                        out[then_start - 1] = if_bytes[1];
                     }
                 }
                 EvsStmt::While { cond, body } => {
-                    let body_bytes = self.compile_statements(body)?;
-                    let loop_start_offset = out.len();
-
+                    let loop_start = out.len();
                     let sigil_cond = self.compile_expr(cond)?;
-                    // Platzhalter für IfNot
-                    let mut cond_bytes = Vec::new();
-                    // Body + Skip(Rücksprung)
-                    let skip_len = 3usize; // 0x04 + 2 bytes
-                    let if_offset = (body_bytes.len() + skip_len) as i16;
-                    Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset: if_offset }, &mut cond_bytes);
+                    Assembler::assemble_instruction(&sigil::Instruction::IfNot { cond: sigil_cond, target_offset: 0 }, out);
+                    let body_start = out.len();
 
-                    out.extend(cond_bytes);
-                    out.extend(body_bytes);
+                    self.compile_statements_inner(body, out, label_offsets, gotos)?;
 
-                    // Rücksprung zum Anfang
-                    let total_loop_len = out.len() - loop_start_offset;
-                    let back_jmp = -(total_loop_len as i16) - 3;
-                    Assembler::assemble_instruction(&sigil::Instruction::Skip(back_jmp), &mut out);
+                    let skip_pos = out.len();
+                    Assembler::assemble_instruction(&sigil::Instruction::Skip(0), out);
+                    let loop_end = out.len();
+
+                    let if_offset = (loop_end - body_start) as i16;
+                    let if_bytes = if_offset.to_le_bytes();
+                    out[body_start - 2] = if_bytes[0];
+                    out[body_start - 1] = if_bytes[1];
+
+                    let back_offset = (loop_start as i32) - (skip_pos as i32 + 3);
+                    let skip_bytes = (back_offset as i16).to_le_bytes();
+                    out[skip_pos + 1] = skip_bytes[0];
+                    out[skip_pos + 2] = skip_bytes[1];
                 }
             }
         }
 
-        Ok(out)
+        Ok(())
     }
 
     fn compile_assignment(&self, target: &EvsExpr, value: &EvsExpr, out: &mut Vec<u8>) -> Result<(), String> {
@@ -470,6 +525,13 @@ impl Compiler {
                     Ok(*val)
                 } else {
                     Err(format!("Unbekanntes konstantes Symbol: '{}'", id))
+                }
+            }
+            EvsExpr::Call { name, args } if args.is_empty() => {
+                if let Some(val) = self.symbols.get(name) {
+                    Ok(*val)
+                } else {
+                    Err(format!("Unbekanntes Funktionssymbol: '{}'", name))
                 }
             }
             EvsExpr::Unary { op: soe_script::ast::UnaryOp::Neg, expr } => {

@@ -193,3 +193,15 @@ fn sanitize_filename(name: &str) -> String {
         .map(|c| if c.is_alphanumeric() || c == '_' || c == '-' { c } else { '_' })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn test_verify_cli() {
+        Cli::command().debug_assert();
+    }
+}
+

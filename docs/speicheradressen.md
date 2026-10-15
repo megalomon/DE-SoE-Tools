@@ -226,6 +226,9 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 | **16×16 Background-Tiles** | `$EF:0000` | `0x2F0000` | 6.708 komprimierte Hintergrund-Tiles |
 | **16×16 Sprite-Parts** | `$EE:0000` | `0x2E0000` | 4.876 Sprite-Parts |
 | **8×8 Sprite-Blöcke** | `$D9:0000` | `0x190000` | 6.282 8×8 Tiles (Banks $D2..$D8) |
+| **Sound-Effekt-Tabelle** | `$8C:8700` | `0x0C8700` | Lookup-Tabelle für SFX-Opcodes `0x30`..`0x32` (`PLAY_SFX_1..3`) |
+| **BGM-Musik-Tabelle** | `$8C:87E0` | `0x0C87E0` | Lookup-Tabelle für BGM-Opcode `0x33` (`PLAY_BGM`, 16-Bit-Word-Einträge) |
 | **Charakter- & Gegnerdaten** | `$8E:B678` | `0x0EB678` | 142 Tabelleneinträge à 74 Bytes |
+
 
 

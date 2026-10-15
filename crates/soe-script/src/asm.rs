@@ -288,6 +288,10 @@ impl Assembler {
                 for e in extra {
                     Self::assemble_expr(e, out);
                 }
+                let ends_with_zero = extra.last().map(|e| matches!(e, Expr::Const { val: 0, .. })).unwrap_or(false);
+                if !ends_with_zero {
+                    Self::assemble_expr(&Expr::const_val(0), out);
+                }
             }
             Instruction::TriggerEntityAction { target, action } => {
                 out.push(0xA9);

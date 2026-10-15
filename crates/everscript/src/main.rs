@@ -93,3 +93,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn test_verify_cli() {
+        Cli::command().debug_assert();
+    }
+}
+

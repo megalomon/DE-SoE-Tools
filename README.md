@@ -75,9 +75,9 @@ Im Gegensatz zur US-ROM gelten für `Secret of Evermore (Germany).sfc` (SHA-1 / 
 | **Text Pointer Table** | `$92:8000` | `0x128000` | 3 Bytes pro Eintrag: `(Offset & 0x7FFF)` + Bank |
 | **Markov Text Decompressor**| `$8C:D147` | `0x0CD147` | Hardwarenahe 65816-Huffman/Markov-Dekomprimierung |
 | **Markov Häufigkeitstabelle**| `$92:A41E` | `0x12A41E` | 14 Nachfolge-Zeichen pro Vorläuferzeichen |
-| **16×16 Map-Tiles Tabelle** | `$EE:0000` | `0x2E0000` | 6.687 komprimierte Hintergrund-Tiles |
-| **16×16 Sprite-Blocks** | `$EC:0000` | `0x2C0000` | 4.854 komprimierte Sprite-Blöcke |
-| **8×8 Sprite-Blocks** | `$D8:0000` | `0x180000` | 6.265 komprimierte 8×8 Tiles |
+| **16×16 Map-Tiles Tabelle** | `$EF:0000` | `0x2F0000` | 6.708 komprimierte Hintergrund-Tiles |
+| **16×16 Sprite-Blocks** | `$EE:0000` | `0x2E0000` | 4.876 Sprite-Parts |
+| **8×8 Sprite-Blocks** | `$D9:0000` | `0x190000` | 6.282 8×8 Tiles (Banks $D2..$D8) |
 | **Gegner- & Charakterdaten**| `$8E:B678` | `0x0EB678` | 142 Tabelleneinträge à 74 Bytes (HP, ATK, DEF etc.) |
 
 ---

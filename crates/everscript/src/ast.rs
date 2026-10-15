@@ -24,6 +24,8 @@ pub enum EvsStmt {
     Assign { target: EvsExpr, value: EvsExpr },
     If { cond: EvsExpr, then_branch: Vec<EvsStmt>, else_branch: Option<Vec<EvsStmt>> },
     While { cond: EvsExpr, body: Vec<EvsStmt> },
+    Label(String),
+    Goto(String),
     Call(EvsExpr),
     Return,
     End,
