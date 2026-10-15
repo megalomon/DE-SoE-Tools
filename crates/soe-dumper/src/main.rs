@@ -83,7 +83,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             fs::create_dir_all(&maps_dir)?;
 
             println!("Dumpe deutsche Dialog-Texte...");
-            let texts = dumper.dump_texts(2500);
+            let texts = dumper.dump_texts(soe_core::text::TOTAL_TEXT_ENTRIES);
             let mut texts_txt = String::new();
             for (idx, text) in &texts {
                 texts_txt.push_str(&format!("[ID {:04X} ({:4})]\n{}\n\n", idx * 3, idx, text));

@@ -95,18 +95,18 @@ impl Assembler {
                 out.extend_from_slice(&addr.to_le_bytes());
                 out.extend_from_slice(&val.to_le_bytes());
             }
-            Instruction::WriteRam { addr, expr } => {
-                out.push(0x18);
+            Instruction::WriteRam { opcode, addr, expr } => {
+                out.push(*opcode);
                 out.extend_from_slice(&addr.to_le_bytes());
                 Self::assemble_expr(expr, out);
             }
-            Instruction::WriteTemp { addr, expr } => {
-                out.push(0x1D);
+            Instruction::WriteTemp { opcode, addr, expr } => {
+                out.push(*opcode);
                 out.extend_from_slice(&addr.to_le_bytes());
                 Self::assemble_expr(expr, out);
             }
-            Instruction::WriteScriptArg { arg, expr } => {
-                out.push(0x1E);
+            Instruction::WriteScriptArg { opcode, arg, expr } => {
+                out.push(*opcode);
                 out.push(*arg);
                 Self::assemble_expr(expr, out);
             }
@@ -137,7 +137,7 @@ impl Assembler {
             }
             Instruction::GiveJewels(amount) => {
                 out.push(0x7C);
-                Self::assemble_expr(&Expr::Const(3), out);
+                Self::assemble_expr(&Expr::const_val(3), out);
                 let b0 = (*amount & 0xFF) as u8;
                 let b1 = ((*amount >> 8) & 0xFF) as u8;
                 let b2 = ((*amount >> 16) & 0xFF) as u8;
@@ -158,89 +158,168 @@ impl Assembler {
         }
     }
 
-    /// Serialisiert einen Ausdruck in eine Sub-Instruktionskette und setzt das Bit 7 auf dem letzten Byte.
+    /// Serialisiert einen Ausdruck in eine Sub-Instruktionskette und setzt das Bit 7 auf dem Opcode-Byte des letzten Tokens.
     pub fn assemble_expr(expr: &Expr, out: &mut Vec<u8>) {
         let mut sub_bytes = Vec::new();
-        Self::emit_sub_expr(expr, &mut sub_bytes);
-        if let Some(last) = sub_bytes.last_mut() {
-            *last |= 0x80;
+        let last_token_pos = Self::emit_sub_expr(expr, &mut sub_bytes);
+        if let Some(pos) = last_token_pos {
+            sub_bytes[pos] |= 0x80;
         }
         out.extend(sub_bytes);
     }
 
-    fn emit_sub_expr(expr: &Expr, bytes: &mut Vec<u8>) {
+    /// Gibt die Byte-Position des Opcode-Bytes des letzten Tokens zurück.
+    fn emit_sub_expr(expr: &Expr, bytes: &mut Vec<u8>) -> Option<usize> {
         match expr {
-            Expr::Const(val) => {
-                if (0..=15).contains(val) {
-                    bytes.push(0x30 + (*val as u8));
-                } else if (16..=31).contains(val) {
-                    bytes.push(0x60 + ((*val - 16) as u8));
-                } else if (*val >= 0) && (*val <= 255) {
-                    bytes.push(0x02);
-                    bytes.push(*val as u8);
-                } else {
-                    bytes.push(0x04);
-                    bytes.extend_from_slice(&val.to_le_bytes());
+            Expr::Const { opcode, val } => {
+                let pos = bytes.len();
+                match opcode {
+                    Some(0x01) => {
+                        bytes.push(0x01);
+                        bytes.push(*val as u8);
+                    }
+                    Some(0x02) => {
+                        bytes.push(0x02);
+                        bytes.push(*val as u8);
+                    }
+                    Some(0x03) => {
+                        bytes.push(0x03);
+                        bytes.extend_from_slice(&val.to_le_bytes());
+                    }
+                    Some(0x04) => {
+                        bytes.push(0x04);
+                        bytes.extend_from_slice(&val.to_le_bytes());
+                    }
+                    Some(tok @ 0x30..=0x3F) | Some(tok @ 0x40..=0x4F) | Some(tok @ 0x60..=0x6F) => {
+                        bytes.push(*tok);
+                    }
+                    _ => {
+                        if (-16..=-1).contains(val) {
+                            bytes.push(0x40 + ((*val + 16) as u8));
+                        } else if (0..=15).contains(val) {
+                            bytes.push(0x30 + (*val as u8));
+                        } else if (16..=31).contains(val) {
+                            bytes.push(0x60 + ((*val - 16) as u8));
+                        } else if (-256..=-1).contains(val) {
+                            bytes.push(0x01);
+                            bytes.push(*val as u8);
+                        } else if (0..=255).contains(val) {
+                            bytes.push(0x02);
+                            bytes.push(*val as u8);
+                        } else if *val < 0 {
+                            bytes.push(0x03);
+                            bytes.extend_from_slice(&val.to_le_bytes());
+                        } else {
+                            bytes.push(0x04);
+                            bytes.extend_from_slice(&val.to_le_bytes());
+                        }
+                    }
                 }
+                Some(pos)
             }
             Expr::Flag { base, bit_index } => {
+                let pos = bytes.len();
                 let op = match base {
                     FlagBase::Ram => 0x05,
                     FlagBase::Temp => 0x0A,
                 };
                 bytes.push(op);
                 bytes.extend_from_slice(&bit_index.to_le_bytes());
+                Some(pos)
             }
-            Expr::RamByte(addr) => {
-                bytes.push(0x07);
+            Expr::RamByte { opcode, addr } => {
+                let pos = bytes.len();
+                bytes.push(*opcode);
                 bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
             }
-            Expr::RamWord(addr) => {
-                bytes.push(0x09);
+            Expr::RamWord { opcode, addr } => {
+                let pos = bytes.len();
+                bytes.push(*opcode);
                 bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
             }
-            Expr::TempByte(addr) => {
-                bytes.push(0x0C);
+            Expr::TempByte { opcode, addr } => {
+                let pos = bytes.len();
+                bytes.push(*opcode);
                 bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
             }
-            Expr::TempWord(addr) => {
-                bytes.push(0x0E);
+            Expr::TempWord { opcode, addr } => {
+                let pos = bytes.len();
+                bytes.push(*opcode);
                 bytes.extend_from_slice(&addr.to_le_bytes());
+                Some(pos)
             }
-            Expr::ArgByte(arg) => {
-                bytes.push(0x11);
+            Expr::ArgBit(bit) => {
+                let pos = bytes.len();
+                bytes.push(0x0F);
+                bytes.push(*bit);
+                Some(pos)
+            }
+            Expr::ArgByte { opcode, arg } => {
+                let pos = bytes.len();
+                bytes.push(*opcode);
                 bytes.push(*arg);
+                Some(pos)
             }
-            Expr::ArgWord(arg) => {
-                bytes.push(0x13);
+            Expr::ArgWord { opcode, arg } => {
+                let pos = bytes.len();
+                bytes.push(*opcode);
                 bytes.push(*arg);
+                Some(pos)
             }
             Expr::Entity(ent) => {
-                bytes.push(ent.to_u8());
+                let pos = bytes.len();
+                bytes.push(ent.to_u8() & 0x7F);
+                Some(pos)
             }
             Expr::Rng => {
+                let pos = bytes.len();
                 bytes.push(0x2A);
+                Some(pos)
             }
             Expr::RngRange(right) => {
                 Self::emit_sub_expr(right, bytes);
+                let pos = bytes.len();
                 bytes.push(0x2B);
+                Some(pos)
             }
-            Expr::DialogResponse => {
+            Expr::DialogResponse(param) => {
+                if let Some(p) = param {
+                    Self::emit_sub_expr(p, bytes);
+                }
+                let pos = bytes.len();
                 bytes.push(0x2C);
+                Some(pos)
+            }
+            Expr::RawToken(tok) => {
+                let pos = bytes.len();
+                bytes.push(*tok);
+                Some(pos)
             }
             Expr::Unary { op, expr } => {
                 Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
                 let b = match op {
                     UnaryOp::Not => 0x14,
                     UnaryOp::BitNot => 0x15,
                     UnaryOp::Neg => 0x16,
                 };
                 bytes.push(b);
+                Some(pos)
+            }
+            Expr::RawUnary { op, expr } => {
+                Self::emit_sub_expr(expr, bytes);
+                let pos = bytes.len();
+                bytes.push(*op);
+                Some(pos)
             }
             Expr::Binary { op, left, right } => {
                 Self::emit_sub_expr(left, bytes);
                 bytes.push(0x29); // Push left
                 Self::emit_sub_expr(right, bytes);
+                let pos = bytes.len();
                 let b = match op {
                     BinaryOp::Mul => 0x17,
                     BinaryOp::Div => 0x18,
@@ -261,9 +340,19 @@ impl Assembler {
                     BinaryOp::And => 0x28,
                 };
                 bytes.push(b);
+                Some(pos)
             }
             Expr::Raw(raw) => {
+                if raw.is_empty() {
+                    return None;
+                }
+                let start = bytes.len();
                 bytes.extend_from_slice(raw);
+                if raw.iter().any(|b| (b & 0x80) != 0) {
+                    None
+                } else {
+                    Some(start)
+                }
             }
         }
     }

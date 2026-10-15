@@ -74,21 +74,48 @@ pub enum BinaryOp {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expr {
-    Const(i16),
+    Const { opcode: Option<u8>, val: i16 },
     Flag { base: FlagBase, bit_index: u16 },
-    RamByte(u16),
-    RamWord(u16),
-    TempByte(u16),
-    TempWord(u16),
-    ArgByte(u8),
-    ArgWord(u8),
+    RamByte { opcode: u8, addr: u16 },
+    RamWord { opcode: u8, addr: u16 },
+    TempByte { opcode: u8, addr: u16 },
+    TempWord { opcode: u8, addr: u16 },
+    ArgBit(u8),
+    ArgByte { opcode: u8, arg: u8 },
+    ArgWord { opcode: u8, arg: u8 },
     Entity(Entity),
     Rng,
     RngRange(Box<Expr>),
-    DialogResponse,
+    DialogResponse(Option<Box<Expr>>),
     Unary { op: UnaryOp, expr: Box<Expr> },
+    RawUnary { op: u8, expr: Box<Expr> },
     Binary { op: BinaryOp, left: Box<Expr>, right: Box<Expr> },
+    RawToken(u8),
     Raw(Vec<u8>),
+}
+
+impl Expr {
+    pub fn const_val(val: i16) -> Self {
+        Self::Const { opcode: None, val }
+    }
+    pub fn ram_byte(addr: u16) -> Self {
+        Self::RamByte { opcode: 0x07, addr }
+    }
+    pub fn ram_word(addr: u16) -> Self {
+        Self::RamWord { opcode: 0x09, addr }
+    }
+    pub fn temp_byte(addr: u16) -> Self {
+        Self::TempByte { opcode: 0x0C, addr }
+    }
+    pub fn temp_word(addr: u16) -> Self {
+        Self::TempWord { opcode: 0x0E, addr }
+    }
+    pub fn arg_byte(arg: u8) -> Self {
+        Self::ArgByte { opcode: 0x11, arg }
+    }
+    pub fn arg_word(arg: u8) -> Self {
+        Self::ArgWord { opcode: 0x13, arg }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -107,9 +134,9 @@ pub enum Instruction {
     IfMoneyLt { currency: Expr, amount: u32, target_offset: i16 },
     SetFlag { base: FlagBase, bit_index: u16, val: Expr },
     SetScriptArgBit { bit_index: u8, val: Expr },
-    WriteRam { addr: u16, expr: Expr },
-    WriteTemp { addr: u16, expr: Expr },
-    WriteScriptArg { arg: u8, expr: Expr },
+    WriteRam { opcode: u8, addr: u16, expr: Expr },
+    WriteTemp { opcode: u8, addr: u16, expr: Expr },
+    WriteScriptArg { opcode: u8, arg: u8, expr: Expr },
     WriteVarFast { addr: u16, val: u16 },
     ShowText(u16),
     ShowTextEnd(u16),

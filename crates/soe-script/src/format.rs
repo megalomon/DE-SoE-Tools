@@ -44,17 +44,17 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
             format!("SKIP {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::SkipNeg(jmp) => {
-            let target = (offset as isize + *jmp as isize + 2) as usize;
+            let target = (offset as isize - 256 + (*jmp as u8 as isize)) as usize;
             format!("SKIP {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::Call(rom_addr) => format!("CALL ${:06X}", rom_addr),
         Instruction::Fork(rom_addr) => format!("FORK ${:06X}", rom_addr),
         Instruction::CallRelative(jmp) => {
-            let target = (offset as isize + *jmp as isize + 3) as usize;
+            let target = (offset as isize + *jmp as isize) as usize;
             format!("CALL_REL {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::CallRelativeByte(jmp) => {
-            let target = (offset as isize + *jmp as isize + 2) as usize;
+            let target = (offset as isize + *jmp as isize) as usize;
             format!("CALL_REL {:+} -> [{:04X}]", jmp, target)
         }
         Instruction::If { cond, target_offset } => {
@@ -84,13 +84,13 @@ pub fn format_instruction(instr: &Instruction, offset: usize, _snes_addr: u32) -
         Instruction::WriteVarFast { addr, val } => {
             format!("RAM[$2258 + 0x{:04X}] = 0x{:04X}", addr, val)
         }
-        Instruction::WriteRam { addr, expr } => {
+        Instruction::WriteRam { addr, expr, .. } => {
             format!("RAM[$2258 + 0x{:04X}] = {}", addr, format_expr(expr))
         }
-        Instruction::WriteTemp { addr, expr } => {
+        Instruction::WriteTemp { addr, expr, .. } => {
             format!("TEMP[$2834 + 0x{:04X}] = {}", addr, format_expr(expr))
         }
-        Instruction::WriteScriptArg { arg, expr } => {
+        Instruction::WriteScriptArg { arg, expr, .. } => {
             format!("ARG[{}] = {}", arg, format_expr(expr))
         }
         Instruction::ShowText(id) => format!("SHOW_TEXT 0x{:04X}", id),
@@ -143,13 +143,13 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
         Instruction::WriteVarFast { addr, val } => {
             format!("$2258[0x{:04X}] = 0x{:04X};", addr, val)
         }
-        Instruction::WriteRam { addr, expr } => {
+        Instruction::WriteRam { addr, expr, .. } => {
             format!("$2258[0x{:04X}] = {};", addr, format_expr(expr))
         }
-        Instruction::WriteTemp { addr, expr } => {
+        Instruction::WriteTemp { addr, expr, .. } => {
             format!("$2834[0x{:04X}] = {};", addr, format_expr(expr))
         }
-        Instruction::WriteScriptArg { arg, expr } => {
+        Instruction::WriteScriptArg { arg, expr, .. } => {
             format!("arg({}) = {};", arg, format_expr(expr))
         }
         Instruction::ShowText(id) => format!("text(0x{:04X});", id),
@@ -173,7 +173,7 @@ pub fn format_everscript_instruction(instr: &Instruction) -> String {
 
 pub fn format_expr(expr: &Expr) -> String {
     match expr {
-        Expr::Const(v) => format!("{}", v),
+        Expr::Const { val, .. } => format!("{}", val),
         Expr::Flag { base, bit_index } => {
             let prefix = match base {
                 FlagBase::Ram => "FLAG",
@@ -181,16 +181,20 @@ pub fn format_expr(expr: &Expr) -> String {
             };
             format!("{}[0x{:04X}]", prefix, bit_index)
         }
-        Expr::RamByte(addr) => format!("RAM_BYTE[0x{:04X}]", addr),
-        Expr::RamWord(addr) => format!("RAM_WORD[0x{:04X}]", addr),
-        Expr::TempByte(addr) => format!("TEMP_BYTE[0x{:04X}]", addr),
-        Expr::TempWord(addr) => format!("TEMP_WORD[0x{:04X}]", addr),
-        Expr::ArgByte(arg) => format!("ARG_BYTE[{}]", arg),
-        Expr::ArgWord(arg) => format!("ARG_WORD[{}]", arg),
+        Expr::RamByte { addr, .. } => format!("RAM_BYTE[0x{:04X}]", addr),
+        Expr::RamWord { addr, .. } => format!("RAM_WORD[0x{:04X}]", addr),
+        Expr::TempByte { addr, .. } => format!("TEMP_BYTE[0x{:04X}]", addr),
+        Expr::TempWord { addr, .. } => format!("TEMP_WORD[0x{:04X}]", addr),
+        Expr::ArgBit(bit) => format!("ARG_BIT[{}]", bit),
+        Expr::ArgByte { arg, .. } => format!("ARG_BYTE[{}]", arg),
+        Expr::ArgWord { arg, .. } => format!("ARG_WORD[{}]", arg),
         Expr::Entity(ent) => format!("{:?}", ent),
         Expr::Rng => "rnd()".to_string(),
         Expr::RngRange(r) => format!("rnd_range({})", format_expr(r)),
-        Expr::DialogResponse => "dialog_response()".to_string(),
+        Expr::DialogResponse(p) => match p {
+            Some(param) => format!("dialog_response({})", format_expr(param)),
+            None => "dialog_response()".to_string(),
+        },
         Expr::Unary { op, expr } => {
             let op_str = match op {
                 UnaryOp::Not => "!",
@@ -199,6 +203,7 @@ pub fn format_expr(expr: &Expr) -> String {
             };
             format!("{}{}", op_str, format_expr(expr))
         }
+        Expr::RawUnary { op, expr } => format!("UNARY_0x{:02X}({})", op, format_expr(expr)),
         Expr::Binary { op, left, right } => {
             let op_str = match op {
                 BinaryOp::Add => "+",
@@ -221,6 +226,7 @@ pub fn format_expr(expr: &Expr) -> String {
             };
             format!("({} {} {})", format_expr(left), op_str, format_expr(right))
         }
+        Expr::RawToken(tok) => format!("TOKEN(0x{:02X})", tok),
         Expr::Raw(r) => format!("RAW({:?})", r),
     }
 }

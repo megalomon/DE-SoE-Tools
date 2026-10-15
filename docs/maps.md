@@ -19,14 +19,15 @@ An der adressierten SNES-Adresse des Raumes liegt der Map-Header mit folgendem B
 
 | Offset | Länge | Datentyp | Beschreibung |
 | :---: | :---: | :--- | :--- |
-| `+0x00` | 1 Byte | `u8` | Tileset / Hintergrundgrafik-Index |
-| `+0x01` | 1 Byte | `u8` | Farbpaletten-Index |
-| `+0x02` | 3 Bytes | `u24` | SNES-Zeiger auf die komprimierten Tilemap-Ebenendaten |
-| `+0x05` | 8 Bytes | `bytes` | Layer-, Scroll- und Dimensionseinstellungen |
-| `+0x0D` | 2 Bytes | `u16` | **Länge der Step-On-Trigger-Tabelle** (`m_len`, Vielfaches von 6) |
-| `+0x0F` | `m_len` | `Array` | Liste aller Step-On-Trigger (Raumwechsel, Fallen, Trittplatten) |
-| `+0x0F + m_len` | 2 Bytes | `u16` | **Länge der B-Trigger-Tabelle** (`b_len`, Vielfaches von 6) |
-| `+0x11 + m_len` | `b_len` | `Array` | Liste aller B-Trigger (B-Button Interaktionen, NPCs, Kisten, Töpfe) |
+| `+0x00` | 2 Bytes | `u16` | Zellversatz (X/Y-Scrollbasis) |
+| `+0x02` | 2 Bytes | `u16` | Raumabmessungen (Breite / Höhe in Tiles) |
+| `+0x04` | 4 Bytes | `bytes` | PPU-Layer- & Farbmathematik-Konfiguration |
+| `+0x08` | 1 Byte | `u8` | Map-Handler-Index |
+| `+0x09` | 4 Bytes | `bytes` | Reserviert / Engine-Flags |
+| `+0x0D` | 2 Bytes | `u16` | **Länge der Liste 1: Step-On-Trigger** (`m_len`, Vielfaches von 6) |
+| `+0x0F` | `m_len` | `Array` | Liste 1: Step-On-Trigger (Raumwechsel, Fallen, Trittplatten) |
+| `+0x0F + m_len` | 2 Bytes | `u16` | **Länge der Liste 2: B-Knopf-Trigger** (`b_len`, Vielfaches von 6) |
+| `+0x11 + m_len` | `b_len` | `Array` | Liste 2: B-Knopf-Interaktionen (Geprüft bei `$8F:AC35` bei gedrücktem B vor der Figur) |
 
 ### Aufbau eines Trigger-Eintrags (6 Bytes)
 

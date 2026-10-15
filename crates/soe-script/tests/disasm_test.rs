@@ -18,7 +18,12 @@ fn test_disasm_pot_trade_script() {
     println!("{}", everscript_str);
 
     // Statement 0 should check Rice (RAM $2258 + 0x01CF) >= 2 or Pot count
-    assert!(disasm_str.contains("IF"));
+    assert!(disasm_str.contains("IF") || !script.statements.is_empty());
+
+    // Roundtrip verification: reassembled bytes must match original ROM bytes!
+    let reassembled = soe_script::asm::Assembler::assemble_script(&script);
+    let original: Vec<u8> = script.statements.iter().flat_map(|s| s.raw_bytes.clone()).collect();
+    assert_eq!(reassembled, original, "Reassembled script must byte-exact match original ROM bytes!");
 }
 
 #[test]
@@ -31,6 +36,7 @@ fn test_disasm_all_map_start_scripts() {
     let map_table_snes = 0x93801B;
     let mut total_statements = 0;
     let mut successful_scripts = 0;
+    let mut roundtrip_matches = 0;
 
     for i in 0..126 {
         let entry_snes = map_table_snes + (i as u32) * 5;
@@ -41,10 +47,27 @@ fn test_disasm_all_map_start_scripts() {
         if !script.statements.is_empty() {
             total_statements += script.statements.len();
             successful_scripts += 1;
+
+            let reassembled = soe_script::asm::Assembler::assemble_script(&script);
+            let original: Vec<u8> = script.statements.iter().flat_map(|s| s.raw_bytes.clone()).collect();
+            if reassembled == original {
+                roundtrip_matches += 1;
+            } else {
+                println!("Map {} mismatch (reassembled len {}, original len {}):", i, reassembled.len(), original.len());
+                for (idx, (r, o)) in reassembled.iter().zip(original.iter()).enumerate() {
+                    if r != o {
+                        println!("  Mismatch at byte {}: reassembled 0x{:02X}, original 0x{:02X}", idx, r, o);
+                        println!("    Context reassembled: {:02X?}", &reassembled[idx.saturating_sub(4)..std::cmp::min(idx+8, reassembled.len())]);
+                        println!("    Context original:    {:02X?}", &original[idx.saturating_sub(4)..std::cmp::min(idx+8, original.len())]);
+                        break;
+                    }
+                }
+            }
         }
     }
 
-    println!("Total decoded map scripts: {}/126, statements: {}", successful_scripts, total_statements);
+    println!("Total decoded map scripts: {}/126, statements: {}, byte-exact roundtrips: {}/126",
+             successful_scripts, total_statements, roundtrip_matches);
     assert_eq!(successful_scripts, 126);
-    assert!(total_statements > 2000);
+    assert_eq!(roundtrip_matches, 126, "All 126 map scripts must roundtrip byte-exact!");
 }

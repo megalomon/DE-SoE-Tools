@@ -11,9 +11,9 @@ pub const DE_MAP_LIST_ADDR: u32 = 0xA0FDE5;
 pub const MAX_MAPS: usize = 127;
 
 /// Grafik- und Tile-Pointer-Tabellen im deutschen ROM
-pub const DE_MAP_TILES_PTR_TABLE: u32 = 0xEE0000;
-pub const DE_SPRITE_BLOCKS_16_PTR_TABLE: u32 = 0xEC0000;
-pub const DE_SPRITE_BLOCKS_8_PTR_TABLE: u32 = 0xD80000;
+pub const DE_MAP_TILES_PTR_TABLE: u32 = 0xEF0000;
+pub const DE_SPRITE_BLOCKS_16_PTR_TABLE: u32 = 0xEE0000;
+pub const DE_SPRITE_BLOCKS_8_PTR_TABLE: u32 = 0xD90000;
 pub const DE_SPRITE_INFO_START_ADDR: u32 = 0xCA0003;
 pub const DE_CHARACTER_DATA_BASE_ADDR: u32 = 0x8EB678;
 

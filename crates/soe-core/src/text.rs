@@ -3,6 +3,7 @@ use crate::rom::{Rom, RomError};
 
 pub const TEXT_POINTER_TABLE_OFFSET: usize = 0x128000;
 pub const MARKOV_TABLE_OFFSET: usize = 0x12A41E;
+pub const TOTAL_TEXT_ENTRIES: usize = 3082;
 
 pub struct TextDecoder<'a> {
     rom: &'a Rom,
@@ -13,8 +14,11 @@ impl<'a> TextDecoder<'a> {
         Self { rom }
     }
 
-    /// Dekodiert einen Text-Eintrag anhand seines Index (0..ca. 2500)
+    /// Dekodiert einen Text-Eintrag anhand seines Index (0..3081)
     pub fn decode_entry(&self, entry_index: usize) -> Result<String, RomError> {
+        if entry_index >= TOTAL_TEXT_ENTRIES {
+            return Err(RomError::OutOfBounds(entry_index));
+        }
         let ptr_offset = TEXT_POINTER_TABLE_OFFSET + entry_index * 3;
         let b0 = self.rom.read_u8_at(ptr_offset)?;
         let b1 = self.rom.read_u8_at(ptr_offset + 1)?;
@@ -150,6 +154,34 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 result.push('\n');
                 i += 1;
             }
+            0x81 => {
+                result.push_str("[Boy]");
+                i += 1;
+            }
+            0x82 => {
+                result.push_str("[Dog]");
+                i += 1;
+            }
+            0x86 => {
+                result.push_str("[Delay]");
+                i += 1;
+            }
+            0x87 => {
+                result.push_str("[Choice]");
+                i += 1;
+            }
+            0x8B => {
+                result.push_str("[Marker]");
+                i += 1;
+            }
+            0x92 => {
+                result.push_str("[Center]");
+                i += 1;
+            }
+            0x93 => {
+                result.push_str("[Speaker]");
+                i += 1;
+            }
             0x96 => {
                 result.push_str("[Box]");
                 i += 1;
@@ -158,12 +190,8 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 result.push_str("[Page]");
                 i += 1;
             }
-            0x87 => {
-                result.push_str("[Choice]");
-                i += 1;
-            }
-            0x86 => {
-                result.push_str("[Delay]");
+            0xA1..=0xA8 => {
+                result.push_str(&format!("[Val{}]", b - 0xA0));
                 i += 1;
             }
             0x80 => {
@@ -196,15 +224,15 @@ pub fn format_german_text(bytes: &[u8]) -> String {
                 result.push('ß');
                 i += 1;
             }
-            0xC4 => {
+            0xCB => {
                 result.push('Ä');
                 i += 1;
             }
-            0xD6 | 0xDB => {
+            0xDB => {
                 result.push('Ö');
                 i += 1;
             }
-            0xDC => {
+            0xDF => {
                 result.push('Ü');
                 i += 1;
             }

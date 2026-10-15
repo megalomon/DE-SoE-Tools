@@ -196,10 +196,10 @@ impl Compiler {
                 let off_val = self.eval_expr_const(offset)? as u16;
                 let sigil_val = self.compile_expr(value)?;
                 if *base == 0x2258 || *base == 0x7E2258 {
-                    let instr = sigil::Instruction::WriteRam { addr: off_val, expr: sigil_val };
+                    let instr = sigil::Instruction::WriteRam { opcode: 0x18, addr: off_val, expr: sigil_val };
                     Assembler::assemble_instruction(&instr, out);
                 } else if *base == 0x2834 || *base == 0x7E2834 {
-                    let instr = sigil::Instruction::WriteTemp { addr: off_val, expr: sigil_val };
+                    let instr = sigil::Instruction::WriteTemp { opcode: 0x19, addr: off_val, expr: sigil_val };
                     Assembler::assemble_instruction(&instr, out);
                 } else {
                     return Err(format!("Nicht unterstützte Basisadresse: 0x{:06X}", base));
@@ -218,7 +218,7 @@ impl Compiler {
             }
             EvsExpr::Arg(arg) => {
                 let sigil_val = self.compile_expr(value)?;
-                let instr = sigil::Instruction::WriteScriptArg { arg: *arg, expr: sigil_val };
+                let instr = sigil::Instruction::WriteScriptArg { opcode: 0x1E, arg: *arg, expr: sigil_val };
                 Assembler::assemble_instruction(&instr, out);
             }
             _ => return Err(format!("Ungültiges Zuweisungsziel: {:?}", target)),
@@ -228,10 +228,10 @@ impl Compiler {
 
     pub fn compile_expr(&self, expr: &EvsExpr) -> Result<sigil::Expr, String> {
         match expr {
-            EvsExpr::Number(n) => Ok(sigil::Expr::Const(*n as i16)),
+            EvsExpr::Number(n) => Ok(sigil::Expr::const_val(*n as i16)),
             EvsExpr::Ident(id) => {
                 if let Some(val) = self.symbols.get(id) {
-                    Ok(sigil::Expr::Const(*val as i16))
+                    Ok(sigil::Expr::const_val(*val as i16))
                 } else {
                     Err(format!("Unbekanntes Symbol: '{}'", id))
                 }
@@ -243,18 +243,19 @@ impl Compiler {
             EvsExpr::Memory { base, offset } => {
                 let off_val = self.eval_expr_const(offset)? as u16;
                 if *base == 0x2258 || *base == 0x7E2258 {
-                    Ok(sigil::Expr::RamWord(off_val))
+                    Ok(sigil::Expr::ram_word(off_val))
                 } else {
-                    Ok(sigil::Expr::TempWord(off_val))
+                    Ok(sigil::Expr::temp_word(off_val))
                 }
             }
-            EvsExpr::Arg(a) => Ok(sigil::Expr::ArgWord(*a)),
+            EvsExpr::Arg(a) => Ok(sigil::Expr::arg_word(*a)),
+            EvsExpr::ArgBit(b) => Ok(sigil::Expr::ArgBit(*b)),
             EvsExpr::Rng => Ok(sigil::Expr::Rng),
             EvsExpr::RngRange(r) => {
                 let sub = self.compile_expr(r)?;
                 Ok(sigil::Expr::RngRange(Box::new(sub)))
             }
-            EvsExpr::DialogResponse => Ok(sigil::Expr::DialogResponse),
+            EvsExpr::DialogResponse => Ok(sigil::Expr::DialogResponse(None)),
             EvsExpr::Unary { op, expr } => {
                 let sub = self.compile_expr(expr)?;
                 Ok(sigil::Expr::Unary { op: *op, expr: Box::new(sub) })

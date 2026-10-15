@@ -2,9 +2,9 @@
 use serde::{Deserialize, Serialize};
 use soe_core::{constants::*, gfx, Rom, RomError};
 
-pub const MAP_TILES_COUNT: usize = 6687;
-pub const SPRITE_BLOCKS_16_COUNT: usize = 4854;
-pub const SPRITE_BLOCKS_8_COUNT: usize = 6265;
+pub const MAP_TILES_COUNT: usize = 6708;
+pub const SPRITE_BLOCKS_16_COUNT: usize = 4876;
+pub const SPRITE_BLOCKS_8_COUNT: usize = 6282;
 pub const CHARACTERS_COUNT: usize = 142;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

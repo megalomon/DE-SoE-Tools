@@ -40,7 +40,7 @@ Secret of Evermore besitzt 4 Zeitzonen mit jeweils eigener Währung. Alle Beträ
   - `0x06`: Goldmünzen
   - `0x09`: Kreditkarten
 
-*(Routine zur Währungsänderung im deutschen ROM: `$8C:D940` – `ADC $000AC6, X`).*
+*(Handler von Opcode 7C (GIVE_MONEY) im deutschen ROM: `$8C:D940` – `ADC $000AC6, X`).*
 
 ---
 
@@ -150,10 +150,10 @@ Die Anzahlen aller 22 Zutaten werden ab Basisadresse `$7E2370` im 2-Byte-Abstand
 
 | Eigenschaft | Junge | Hund | Format / Typ |
 | :--- | :--- | :--- | :--- |
-| **Aktuelle Lebenspunkte (HP)** | `$7E4EB3` *(bzw. `$7E0834`)* | `$7E4EBD` | 16-Bit Little-Endian |
-| **Maximale Lebenspunkte (Max HP)** | `$7E0A35` | `$7E0A7F` | 16-Bit Little-Endian |
-| **Charakter-Level** | `$7E0A50` | `$7E0A9A` | 16-Bit Little-Endian |
-| **Erfahrungspunkte (EXP)** | `$7E0A4E` – `$7E0A4F` | `$7E0A98` – `$7E0A99` | 16-Bit Little-Endian |
+| **Aktuelle Lebenspunkte (HP)** | `$7E:4EB3` (Entity `+0x2A`, Held `$4E89`) | `$7E:4F61` (Entity `+0x2A`, Hund `$4F37`) | 16-Bit Little-Endian |
+| **Maximale Lebenspunkte (Max HP)** | `$7E:0A35` | `$7E:0A7F` | 16-Bit Little-Endian (Begrenzung auf 999 bei `$8F:83A6`, kopiert nach `$4F61` bei `$8F:84FC`) |
+| **Charakter-Level** | `$7E:0A50` | `$7E:0A9A` | 16-Bit Little-Endian (`$8F:832D` nutzt `$0A50`×2 als Wachstumsindex) |
+| **Erfahrungspunkte (EXP)** | `$7E:0A49` – `$7E:0A4C` | `$7E:0A93` – `$7E:0A96` | 32-Bit Little-Endian |
 
 ---
 
@@ -195,11 +195,11 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 - **Flügel:** `$7E236C` (Zähler 0–99)
 - **Elixier:** `$7E236E` (Zähler 0–99)
 
-### Ausgerüstete Gegenstände (WRAM-Slots)
-- **Rüstung Junge:** `$7E0A52`
-- **Helm Junge:** `$7E0A54`
-- **Armband Junge:** `$7E0A56`
-- **Halsband Hund:** `$7E0A9C`
+### Kampf- und Charge-Register
+- **Charge-Limit Junge:** `$7E:0A52` (`$8F:8262` schreibt Waffenlevel × `0x400`)
+- **Charge-Bonus Junge:** `$7E:0A54` (wird bei `$8F:CC2D` zum Charge addiert)
+- **Hund Waffenlevel:** `$7E:0B07` (Low = EXP, High = Level 1..3, gesteigert bei `$8F:9787`)
+- **Charge-Limit Hund:** `$7E:0A9C` (abgeleitet aus Hund-Waffenlevel)
 
 ---
 
@@ -207,16 +207,16 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 
 | Bereich / Struktur | SNES-Adresse | Datei-Offset (PC) | Format & Hinweise |
 | :--- | :--- | :--- | :--- |
-| **Map-List Zeigertabelle** | `$A0:FDE5` | `0x20FDE5` | 127 Maps mit Tilemaps, Paletten & Skriptzeigern |
-| **Skript-Startadresse** | `$93:8000` | `0x138000` | Start der SIGIL-Bytecode-Bank |
-| **Opcode-Sprungtabelle** | `$8C:ECBE` | `0x0CECBE` | Primäre Sprungtabelle für Skriptbefehle |
-| **Sub-Opcode-Sprungtabelle** | `$8C:F442` | `0x0CF442` | Sekundäre Sprungtabelle (Trigger & mathematische Befehle) |
-| **Dialogtext-Zeigertabelle** | `$92:8000` | `0x128000` | 3 Bytes pro Eintrag: `Offset & 0x7FFF` + Bank |
-| **Markov-Dekomprimierer** | `$8C:D147` | `0x0CD147` | Hardware-Dekomprimierung für deutsche Texte |
+| **Map-List Zeigertabelle** | `$A0:FDE5` | `0x20FDE5` | 127 Maps (je 4 Bytes, 4. Byte = 0 für IDs 0..126) |
+| **Skript-Startadresse** | `$93:8000` | `0x138000` | Start der SIGIL-Bytecode-Banken ($93..$9C) |
+| **Opcode-Sprungtabelle** | `$8C:ECBE` | `0x0CECBE` | 195 Einträge (168 aktive Handler, 27 STP-Traps) |
+| **Ausdrucks-Sprungtabelle** | `$8C:F442` | `0x0CF442` | Tabelle für Ausdrucks-Evaluator ($8C:EE44) |
+| **Dialogtext-Zeigertabelle** | `$92:8000` | `0x128000` | Exakt 3082 Einträge (endet an Markov-Tabelle `$92:A41E`) |
+| **Markov-Dekomprimierer** | `$8C:D147` | `0x0CD147` | Huffman/Markov-Dekomprimierung für deutsche Texte |
 | **Markov-Häufigkeitstabelle**| `$92:A41E` | `0x12A41E` | 14 Nachfolger-Zeichen pro Vorläufer-Char |
-| **16×16 Background-Tiles** | `$EE:0000` | `0x2E0000` | 6.687 komprimierte Hintergrund-Tiles |
-| **16×16 Sprite-Blöcke** | `$EC:0000` | `0x2C0000` | 4.854 komprimierte Sprite-Blöcke |
-| **8×8 Sprite-Blöcke** | `$D8:0000` | `0x180000` | 6.265 komprimierte 8×8 Tiles |
+| **16×16 Background-Tiles** | `$EF:0000` | `0x2F0000` | 6.708 komprimierte Hintergrund-Tiles |
+| **16×16 Sprite-Parts** | `$EE:0000` | `0x2E0000` | 4.876 Sprite-Parts |
+| **8×8 Sprite-Blöcke** | `$D9:0000` | `0x190000` | 6.282 8×8 Tiles (Banks $D2..$D8) |
 | **Charakter- & Gegnerdaten** | `$8E:B678` | `0x0EB678` | 142 Tabelleneinträge à 74 Bytes |
 
 

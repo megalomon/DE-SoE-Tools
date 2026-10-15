@@ -8,9 +8,9 @@ In *Secret of Evermore* werden sämtliche Spieltexte (Dialoge, Item-Texte, Menü
 
 - **Basisadresse der Zeigertabelle:** `$92:8000` (`0x128000`)
 - **Eintragsgröße:** 3 Bytes (`b0`, `b1`, `b2`)
-- **Gesamtzahl Dialoge:** ca. 2.500 Einträge
+- **Gesamtzahl Dialoge:** **3.082** Einträge (Index `0`..`3081`, endet exakt am Beginn der Markov-Tabelle `$92:A41E`)
 
-### 65816-Adressberechnung (aus Routine `$8C:D0C0`):
+### 65816-Adressberechnung (aus Routine `$8C:D0B8`):
 
 Für eine gegebene Text-ID $T$:
 ```
@@ -90,19 +90,23 @@ Die deutschen Texte enthalten spezielle Steuer- und Formatierungsbytes:
 
 | Byte | Steuerzeichen | Bedeutung / Funktion im Spiel |
 | :---: | :--- | :--- |
-| `0x96` | **`[Box]`** | Öffnet das grafische Textfenster. |
-| `0x97` | **`[Page]`** | Beginnt eine neue Textseite (löscht vorherigen Inhalt). |
+| `0x0A` | `\n` | Zeilenumbruch innerhalb der Box. |
+| `0x81` | **`[Boy]`** | Name des Jungen (dynamisch aus Spieler-Eingabe). |
+| `0x82` | **`[Dog]`** | Name des Hundes (dynamisch aus Spieler-Eingabe). |
 | `0x86` | **`[Delay]`** | Wartet auf Bestätigung (A-Knopf) des Spielers. |
 | `0x87` | **`[Choice]`**| Markiert ein interaktives Auswahlfenster (z. B. Händler / Fragen). |
-| `0x8B` | **`[Option]`**| Einrückung für eine anwählbare Option (z. B. „Alles klar!“ / „Nein!“). |
-| `0x80 = 0x80` | **`[Newline]`** | Manueller Zeilenumbruch innerhalb der Box. |
-| `0xA2` | **`[Var]`** | Platzhalter für eine dynamische Spielvariable (z. B. Item-Name oder Zahl). |
+| `0x8B` | **`[Marker]`**| Auswahlmarker für eine anwählbare Option (mit Positionsliste). |
+| `0x92` | **`[Center]`**| Zentriert Textzeile im Fenster. |
+| `0x93` | **`[Speaker]`**| Sprechername / Sprecherporträt. |
+| `0x96` | **`[Box]`** | Öffnet das grafische Textfenster / leert Inhalt. |
+| `0x97` | **`[Page]`** | Beginnt eine neue Textseite (wartet auf Bestätigung). |
+| `0xA1..0xA8` | **`[Val1..8]`** | Dynamische Spielvariablen und Zahlenwerte aus `$7E:2535+`. |
 
 ### Deutsche Sonderzeichen-Codierung
 - `0xE3`: `ä`
 - `0xEF`: `ö`
 - `0xF3`: `ü`
 - `0xC6`: `ß`
-- `0xC3`: `Ä`
-- `0xCF`: `Ö`
-- `0xD3`: `Ü`
+- `0xCB`: `Ä`
+- `0xDB`: `Ö`
+- `0xDF`: `Ü`

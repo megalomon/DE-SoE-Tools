@@ -10,9 +10,9 @@ In der **deutschen PAL-Version** existieren genau **35 Zauberformeln**, deren Na
 
 Jede gelernte Zauberformel kann im Spiel bis auf **Level 9** gesteigert werden (Anzeige im Menü z. B. `Level 3:54` oder `Level 9:00`). Im WRAM belegt jede Formel zwei 16-Bit-Speicherstellen:
 
-- **XP-Zähler (Low-Byte):** Liegt im Bereich **`$7E2F52` bis `$7E2F96`** (Schritte von 2 Bytes). Zählt von `0x0000` bis `0x00FF` hoch.
-- **Level-Stufe (High-Byte):** Liegt im Bereich **`$7E2F98` bis `$7E2FDC`** (Schritte von 2 Bytes). Speichert das Level von `0` (nicht gelernt) bis `9` (Maximum).
-- **Level-Up Routine:** Liegt im deutschen ROM bei `$91:CC6C`. Wenn ein Zauber eingesetzt wird, steigt sein XP-Wert. Bei Erreichen von 256 XP wird das Level um 1 erhöht (`INC $2F98, X`), der XP-Wert genullt (`STZ $2F52, X`) und eine Fanfare abgespielt.
+- **XP-Zähler (Low-Word):** Liegt im Bereich **`$7E:2F52` bis `$7E:2F96`** (`$2F52 + 2 * formel_id`).
+- **Level-Stufe (High-Word):** Liegt im Bereich **`$7E:2F98` bis `$7E:2FDC`** (`$2F98 + 2 * formel_id`). Speichert das Level von `0` (nicht gelernt) bis `9` (Maximum).
+- **Level-Up Routine:** Der Zauber-Handler addiert `C5:0202[level]` auf `$2F52`. Bei Erreichen von $\ge 100$ (`CMP #$0064`) wird das Level um 1 erhöht (bei `$91:CC6C`), auf maximal Level 9 begrenzt (`CMP #$000A`) und der XP-Wert mit `TDC / STA` genullt.
 
 ### Aktive Ringmenü-Slots
 Der Junge kann bis zu 9 Zauber gleichzeitig im Ringmenü ausrüsten. Die zugewiesenen Zauber-IDs (0 bis 34) liegen an folgenden Byte-Adressen:
@@ -68,32 +68,32 @@ Die folgende Tabelle enthält die **exakten deutschen Ingame-Namen** (aus der RO
 
 ## 3. Alle 22 Alchemie-Zutaten (WRAM-Inventar)
 
-Die Anzahlen aller Zutaten liegen als 1-Byte-Werte (`0` bis `99` / `0x63`) ab WRAM-Adresse `$7E2370`:
+Die Zutatenmengen im Inventar liegen als 1-Byte-Werte (`0` bis `99` / `0x63`) und werden von der Zauberroutine direkt über `$7E:22FF + Zutaten-ID` gelesen und abgezogen (`$91:CCD0`, `$91:CCFD`):
 
-| Zutat (DE-ROM Name) | Interner Index | WRAM-Adresse | Max-Menge | US-Entsprechung |
+| Zutat (DE-ROM Name) | Interner Index | WRAM-Adresse (`$7E:22FF + ID`) | Max-Menge | US-Entsprechung |
 | :--- | :---: | :--- | :---: | :--- |
-| **Wachs** | `0x00` | `$7E2398` | 99 | Wax |
-| **Wasser** | `0x01` | `$7E2396` | 99 | Water |
-| **Essig** | `0x02` | `$7E2394` | 99 | Vinegar |
-| **Wurzel** | `0x03` | `$7E2392` | 99 | Root |
-| **Öl** | `0x04` | `$7E2390` | 99 | Oil |
-| **Pilz** | `0x05` | `$7E238E` | 99 | Mushroom |
-| **Pfeffer** | `0x06` | `$7E238C` | 99 | Mud Pepper |
-| **Mondstein** | `0x07` | `$7E238A` | 99 | Meteorite |
-| **Kalkstein** | `0x08` | `$7E2388` | 99 | Limestone |
-| **Eisenerz** | `0x09` | `$7E2386` | 99 | Iron |
-| **Dynamit** | `0x0A` | `$7E2382` | 99 | Gunpowder |
-| **Schmierfett** | `0x0B` | `$7E2380` | 99 | Grease |
-| **Feder** | `0x0C` | `$7E237E` | 99 | Feather |
-| **Äthanol** | `0x0D` | `$7E237C` | 99 | Ethanol |
-| **Trockeneis** | `0x0E` | `$7E237A` | 99 | Dry Ice |
-| **Kristall** | `0x0F` | `$7E2378` | 99 | Crystal |
-| **Lehm** | `0x10` | `$7E2376` | 99 | Clay |
-| **Schwefel** | `0x11` | `$7E2374` | 99 | Brimstone |
-| **Knochenteil** | `0x12` | `$7E2372` | 99 | Bone |
-| **Asche** | `0x13` | `$7E2370` | 99 | Ash |
-| **Arnitamin** | `0x14` | `$7E2384` | 99 | Atlas Medallion |
-| **Eichel** | `0x15` | `$7E239A` | 99 | Acorn |
+| **Wachs** | `0x00` | `$7E:22FF` | 99 | Wax |
+| **Wasser** | `0x01` | `$7E:2300` | 99 | Water |
+| **Essig** | `0x02` | `$7E:2301` | 99 | Vinegar |
+| **Wurzel** | `0x03` | `$7E:2302` | 99 | Root |
+| **Öl** | `0x04` | `$7E:2303` | 99 | Oil |
+| **Pilz** | `0x05` | `$7E:2304` | 99 | Mushroom |
+| **Pfeffer** | `0x06` | `$7E:2305` | 99 | Mud Pepper |
+| **Mondstein** | `0x07` | `$7E:2306` | 99 | Meteorite |
+| **Kalkstein** | `0x08` | `$7E:2307` | 99 | Limestone |
+| **Eisenerz** | `0x09` | `$7E:2308` | 99 | Iron |
+| **Dynamit** | `0x0A` | `$7E:2309` | 99 | Gunpowder |
+| **Schmierfett** | `0x0B` | `$7E:230A` | 99 | Grease |
+| **Feder** | `0x0C` | `$7E:230B` | 99 | Feather |
+| **Äthanol** | `0x0D` | `$7E:230C` | 99 | Ethanol |
+| **Trockeneis** | `0x0E` | `$7E:230D` | 99 | Dry Ice |
+| **Kristall** | `0x0F` | `$7E:230E` | 99 | Crystal |
+| **Lehm** | `0x10` | `$7E:230F` | 99 | Clay |
+| **Schwefel** | `0x11` | `$7E:2310` | 99 | Brimstone |
+| **Knochenteil** | `0x12` | `$7E:2311` | 99 | Bone |
+| **Asche** | `0x13` | `$7E:2312` | 99 | Ash |
+| **Arnitamin** | `0x14` | `$7E:2313` | 99 | Atlas Medallion |
+| **Eichel** | `0x15` | `$7E:2314` | 99 | Acorn |
 
 ---
 
@@ -168,7 +168,7 @@ Gegner und Bosse verwenden ein eigenständiges Magiesystem. Im Binärcode werden
 | — | **Reinkarnation** | `0x0514B4` | `$C5:14B4` | `$5BF2` | Wiederbelebungseffekt (z. B. Phönix/Bosse) |
 
 ### Kampf-Laufschrift-Tabelle (Battle HUD Spell Banner)
-Wenn im Gefecht ein Zauber gewirkt wird, lädt die SNES-Routine bei `$CD:D511` (`LDA $C5062B, X`) den anzuzeigenden Namen aus einer 23 Einträge umfassenden Zeigertabelle bei `$C5:062B` (`0x05062B`):
+Wenn im Gefecht ein Zauber gewirkt wird, lädt die SNES-Routine bei `$8C:D511` (`LDA $C5062B, X`, auch `$8C:D563`, `$8C:D5C1` im `9E/AC`-Handler) den anzuzeigenden Namen aus einer 23 Einträge umfassenden Zeigertabelle bei `$C5:062B` (`0x05062B`):
 - Enthält die animierten Spielerzauber (*Säureregen*, *Hitzeblitz*, *Höllenfaust*, *Energiesog*, *Supersog*, *Bienenattacke*, *Hagelsturm*, *Explosion*, *Säuresturm*, *Nitro*, *Unterbrechung*, *Feuerball*, *Heilaura*, *Krafthauch*, *Heilkraft*, *Frischzellen*, *Fegefeuer*, *Kraftfeld*).
 - Enthält direkt integriert die 5 aktiven Kampf-Gegnerzauber:
   - `0x14D9`: **Konfusion**

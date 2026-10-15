@@ -264,8 +264,8 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x23` | `$8C:E806` | Aktiv | scroll: u16 | **`SET_MAP_SCROLL`** – Manueller Scroll-Offset für Kachelkarten in WRAM `$0E70`. |
 | `0x24` | `$8C:ECB7` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x25` | `$8C:ECB8` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x26` | `$8C:E007` | Aktiv | *keine* | **`FADE_FROM_BLACK`** – Hellt den Bildschirm aus Schwarz wieder auf Normalhelligkeit auf. |
-| `0x27` | `$8C:DFF9` | Aktiv | *keine* | **`FADE_TO_BLACK`** – Dunkelt den Bildschirm schrittweise bis Schwarz ab. |
+| `0x26` | `$8C:E007` | Aktiv | *keine* | **`FADE_TO_BLACK`** – Dunkelt den Bildschirm schrittweise bis Schwarz ab. |
+| `0x27` | `$8C:DFF9` | Aktiv | *keine* | **`FADE_FROM_BLACK`** – Hellt den Bildschirm aus Schwarz wieder auf Normalhelligkeit auf. |
 | `0x28` | `$8C:ECB9` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x29` | `$8C:D7B2` | Aktiv | addr: u24 | **`CALL`** – Synchroner Subroutinen-Aufruf (speichert Rückkehr-Link in `+0x0B`). |
 | `0x2A` | `$8C:DF50` | Aktiv | target: entity | **`FREEZE_ENTITY`** – Friert Aktionen und Bewegungen einer Figur ein. |
@@ -386,8 +386,8 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 | `0x9D` | `$8C:DE71` | Aktiv | target: entity, x: expr, y: expr | **`MOVE_ENTITY_ABS_EXPR`** – Absolute Bewegung zu dynamisch berechneten Zielkoordinaten. |
 | `0x9E` | `$8C:D4B5` | Aktiv | target: entity, spell: expr, level: expr | **`CAST_ALCHEMY`** – Löst Alchemiezauber aus (löscht Hund-Inaktiv-Filter `$3BC1`). |
 | `0x9F` | `$8C:E9B1` | Aktiv | *keine* | **`SHOW_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts im Bildschirm ein. |
-| `0xA0` | `$8C:EA29` | Aktiv | *keine* | **`UPDATE_CURRENCY_HUD`** – Aktualisiert Ziffern der Währungsanzeige via `$8CB2F2`. |
-| `0xA1` | `$8C:EA60` | Aktiv | *keine* | **`HIDE_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts aus via `$8CB1AC`. |
+| `0xA0` | `$8C:EA29` | Aktiv | *keine* | **`HIDE_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts aus via `$8CB1AC`. |
+| `0xA1` | `$8C:EA60` | Aktiv | *keine* | **`UPDATE_CURRENCY_HUD`** – Aktualisiert Ziffern der Währungsanzeige via `$8CB2F2`. |
 | `0xA2` | `$8C:E09B` | Aktiv | type: u16, x: expr, y: expr | **`SPAWN_NPC`** – Erzeugt neues Sprite auf der Map über Tabelle `$8E:B55A`. |
 | `0xA3` | `$8C:D789` | Aktiv | idx: u8 | **`CALL_INDEXED_BYTE`** – Subroutinenaufruf über 8-Bit-Offset in Sprungtabelle `$93:8000`. |
 | `0xA4` | `$8C:D77E` | Aktiv | idx: u16 | **`CALL_INDEXED_WORD`** – Subroutinenaufruf über 16-Bit-Offset in Sprungtabelle `$93:8000`. |
@@ -435,21 +435,25 @@ Im dekodierten Textstrom werden spezielle Steuerbytes interpretiert, die direkt 
 | `0x00` | *Terminator* | Beendet den Textstring. Schließt ggf. das Fenster oder gibt Steuerung an Skript zurück. |
 | `0x0A` | `\n` | Zeilenumbruch innerhalb der Textbox. |
 | `0x80` | `<S ...>` | **Dynamischer Variablen-Block:** Liest RAM-Werte aus und setzt Namen (Junge, Hund), Item-Namen oder Zahlen ein. |
+| `0x81` | `[Boy]` | **Junge-Name:** Fügt den vom Spieler gewählten Namen des Jungen ein. |
+| `0x82` | `[Dog]` | **Hund-Name:** Fügt den vom Spieler gewählten Namen des Hundes ein. |
 | `0x86` | `[Delay]` | **Timed Pause:** Hält den Textaufbau für eine feste Frame-Anzahl an. |
 | `0x87` | `[Choice]` | **Dialog-Auswahlmenü:** Öffnet interaktives Auswahlfenster. Die Spielerwahl wird im Register gespeichert und via Sub-Opcode `0x2C` (`dialog_response()`) abgefragt. |
-| `0x97` | `[Box]` | **Textfenster öffnen / leeren:** Initialisiert die Textbox zu Beginn eines Dialogabschnitts. |
-| `0x96` | `[Page]` | **Seitenumbruch:** Hält den Text an und wartet auf Druck der A- oder B-Taste des Spielers, bevor weitergeblättert wird. |
-| `0xA2` | `[Var]` | **Dynamischer Variablen-Ersatz:** Fügt Item-Namen, Zahlen oder Geldbeträge ein. |
-| `0x8B` | `[Option]` | **Menü-Einrückung:** Markiert eine auswählbare Option im Dialog. |
+| `0x8B` | `[Marker]` | **Auswahlmarker / Menü-Einrückung:** Markiert eine auswählbare Option im Dialog. |
+| `0x92` | `[Center]` | **Zentrierung:** Zentriert Textausgabe im Dialogfenster. |
+| `0x93` | `[Speaker]` | **Sprecher:** Zeigt Sprechername oder Sprecherporträt an. |
+| `0x96` | `[Box]` | **Textfenster öffnen / leeren:** Initialisiert die Textbox zu Beginn eines Dialogabschnitts. |
+| `0x97` | `[Page]` | **Seitenumbruch:** Hält den Text an und wartet auf Tastendruck des Spielers, bevor weitergeblättert wird. |
+| `0xA1..0xA8` | `[Val1..8]` | **Dynamischer Variablen-Ersatz:** Fügt Zahlen aus `$7E:2535+` ein. |
 
 ### Deutsche Sonderzeichen im Zeichensatz
 - `0xE3` = `ä`
 - `0xEF` = `ö`
 - `0xF3` = `ü`
 - `0xC6` = `ß`
-- `0xC4` = `Ä`
-- `0xD6` = `Ö`
-- `0xDC` = `Ü`
+- `0xCB` = `Ä`
+- `0xDB` = `Ö`
+- `0xDF` = `Ü`
 
 ---
 
