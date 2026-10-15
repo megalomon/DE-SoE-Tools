@@ -27,6 +27,10 @@ impl Compiler {
         // Standard-Symbole & Konstanten
         symbols.insert("True".to_string(), 1);
         symbols.insert("False".to_string(), 0);
+        symbols.insert("BOY".to_string(), 0xD0);
+        symbols.insert("Boy".to_string(), 0xD0);
+        symbols.insert("DOG".to_string(), 0xD1);
+        symbols.insert("Dog".to_string(), 0xD1);
         Self { symbols }
     }
 
@@ -149,6 +153,16 @@ impl Compiler {
                 EvsStmt::Skip(expr) => {
                     let off = self.eval_expr_const(expr)? as i16;
                     let instr = sigil::Instruction::Skip(off);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::SwitchCharacter(expr) => {
+                    let sigil_expr = self.compile_expr(expr)?;
+                    let instr = sigil::Instruction::SwitchCharacter(sigil_expr);
+                    Assembler::assemble_instruction(&instr, &mut out);
+                }
+                EvsStmt::AttachCamera(expr) => {
+                    let sigil_expr = self.compile_expr(expr)?;
+                    let instr = sigil::Instruction::AttachCamera(sigil_expr);
                     Assembler::assemble_instruction(&instr, &mut out);
                 }
                 EvsStmt::Raw { opcode, payload } => {
@@ -282,6 +296,15 @@ impl Compiler {
             }
             EvsExpr::DialogResponse => Ok(sigil::Expr::DialogResponse(None)),
             EvsExpr::Unary { op, expr } => {
+                if *op == soe_script::ast::UnaryOp::Neg {
+                    if let Ok(val) = self.eval_expr_const(expr) {
+                        let folded = -val;
+                        if folded < -65536 || folded > 65535 {
+                            return Err(format!("Konstante {} liegt außerhalb des gültigen Bereichs (-65536..65535)", folded));
+                        }
+                        return Ok(sigil::Expr::const_val(folded as i32));
+                    }
+                }
                 let sub = self.compile_expr(expr)?;
                 Ok(sigil::Expr::Unary { op: *op, expr: Box::new(sub) })
             }
@@ -303,6 +326,10 @@ impl Compiler {
                 } else {
                     Err(format!("Unbekanntes konstantes Symbol: '{}'", id))
                 }
+            }
+            EvsExpr::Unary { op: soe_script::ast::UnaryOp::Neg, expr } => {
+                let v = self.eval_expr_const(expr)?;
+                Ok(-v)
             }
             EvsExpr::Binary { op, left, right } => {
                 let l = self.eval_expr_const(left)?;

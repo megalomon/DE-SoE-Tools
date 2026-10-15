@@ -270,6 +270,22 @@ impl Parser {
             return Ok(EvsStmt::Skip(expr));
         }
 
+        if self.match_token(&Token::SwitchCharacter) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach switch_character")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach switch_character")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::SwitchCharacter(expr));
+        }
+
+        if self.match_token(&Token::AttachCamera) {
+            self.consume(&Token::OpenParen, "Erwarte '(' nach attach_camera")?;
+            let expr = self.parse_expr()?;
+            self.consume(&Token::CloseParen, "Erwarte ')' nach attach_camera")?;
+            self.match_token(&Token::Semicolon);
+            return Ok(EvsStmt::AttachCamera(expr));
+        }
+
         if self.match_token(&Token::Raw) {
             self.consume(&Token::OpenParen, "Erwarte '(' nach raw")?;
             let opcode = self.parse_number_const()? as u8;
@@ -301,6 +317,8 @@ impl Parser {
                 "lock_player" if args.len() == 1 => return Ok(EvsStmt::LockPlayer(args.remove(0))),
                 "unlock_player" if args.len() == 1 => return Ok(EvsStmt::UnlockPlayer(args.remove(0))),
                 "skip" if args.len() == 1 => return Ok(EvsStmt::Skip(args.remove(0))),
+                "switch_character" if args.len() == 1 => return Ok(EvsStmt::SwitchCharacter(args.remove(0))),
+                "attach_camera" if args.len() == 1 => return Ok(EvsStmt::AttachCamera(args.remove(0))),
                 "end" if args.is_empty() => return Ok(EvsStmt::End),
                 "return" if args.is_empty() => return Ok(EvsStmt::Return),
                 "text" if args.len() == 1 => return Ok(EvsStmt::Text(args.remove(0))),
@@ -434,6 +452,11 @@ impl Parser {
             return Ok(EvsExpr::Unary { op: UnaryOp::BitNot, expr: Box::new(expr) });
         }
         if self.match_token(&Token::Minus) {
+            if let Token::Number(n) = self.peek() {
+                let val = -*n;
+                self.advance();
+                return Ok(EvsExpr::Number(val));
+            }
             let expr = self.parse_unary()?;
             return Ok(EvsExpr::Unary { op: UnaryOp::Neg, expr: Box::new(expr) });
         }

@@ -28,6 +28,8 @@ pub enum Token {
     LockPlayer,
     UnlockPlayer,
     Skip,
+    SwitchCharacter,
+    AttachCamera,
     Temp,
     Ram,
 
@@ -360,6 +362,8 @@ impl<'a> Lexer<'a> {
             "lock_player" => Token::LockPlayer,
             "unlock_player" => Token::UnlockPlayer,
             "skip" => Token::Skip,
+            "switch_character" => Token::SwitchCharacter,
+            "attach_camera" => Token::AttachCamera,
             "TEMP" => Token::Temp,
             "RAM" => Token::Ram,
             _ => Token::Ident(s),

@@ -210,7 +210,7 @@ done:
 | :---: | :--- | :--- |
 | `0x2A` | **`rand()`** | Liefert 16-Bit Pseudozufallszahl aus RNG-Register. |
 | `0x2B` | **`rand(max)`** | Liefert Zufallszahl im Intervall `[0, max - 1]`. |
-| `0x2C` | **`dialog_response()`**| Liefert Spieler-Auswahl im `[Choice]`-Dialogmenü (`0`, `1`, etc.). |
+| `0x2C` | **`dialog_response()`**| Liefert Spieler-Auswahl im `[Marker]`-Dialogmenü (`0`, `1`, etc.). |
 | `0x50` / `0xD0`| **`PLAYER_BOY`** | Adressiert den Jungen als Entity-Ziel. |
 | `0x51` / `0xD1`| **`PLAYER_DOG`** | Adressiert den Hund als Entity-Ziel. |
 | `0x52` / `0xD2`| **`CONTROLLED`** | Adressiert die aktuell vom Spieler gelenkte Spielfigur. |

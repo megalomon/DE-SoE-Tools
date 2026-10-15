@@ -339,22 +339,20 @@ impl Assembler {
                         bytes.push(*tok);
                     }
                     _ => {
-                        if (-16..=-1).contains(val) {
-                            bytes.push(0x40 + ((*val + 16) as u8));
-                        } else if (0..=15).contains(val) {
-                            bytes.push(0x30 + (*val as u8));
-                        } else if (16..=31).contains(val) {
-                            bytes.push(0x60 + ((*val - 16) as u8));
-                        } else if (-256..=-1).contains(val) {
+                        if (-256..=-1).contains(val) {
                             bytes.push(0x01);
                             bytes.push((*val + 256) as u8);
-                        } else if (0..=255).contains(val) {
-                            bytes.push(0x02);
-                            bytes.push(*val as u8);
                         } else if *val < 0 {
                             bytes.push(0x03);
                             let w = (*val as u32 & 0xFFFF) as u16;
                             bytes.extend_from_slice(&w.to_le_bytes());
+                        } else if (0..=15).contains(val) {
+                            bytes.push(0x30 + (*val as u8));
+                        } else if (16..=31).contains(val) {
+                            bytes.push(0x60 + ((*val - 16) as u8));
+                        } else if (0..=255).contains(val) {
+                            bytes.push(0x02);
+                            bytes.push(*val as u8);
                         } else {
                             bytes.push(0x04);
                             let w = (*val as u32 & 0xFFFF) as u16;

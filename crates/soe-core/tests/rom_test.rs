@@ -25,3 +25,20 @@ fn test_load_german_rom() {
     let back_to_rom = Rom::script_to_rom_addr(script_addr);
     assert_eq!(rom_addr, back_to_rom);
 }
+
+#[test]
+fn test_decode_all_text_entries() {
+    let rom_path = "/data/data/com.termux/files/home/dev/soeTAS/rom/Secret of Evermore (Germany).sfc";
+    let rom = Rom::load(rom_path).expect("German ROM should load successfully");
+    let decoder = TextDecoder::new(&rom);
+
+    for i in 0..TOTAL_TEXT_ENTRIES {
+        let res = decoder.decode_entry(i);
+        assert!(res.is_ok(), "Failed to decode text entry {}: {:?}", i, res.err());
+    }
+
+    // Index 3082 and beyond must return OutOfBounds
+    assert!(decoder.decode_entry(TOTAL_TEXT_ENTRIES).is_err());
+    assert!(decoder.decode_entry(TOTAL_TEXT_ENTRIES + 1).is_err());
+}
+

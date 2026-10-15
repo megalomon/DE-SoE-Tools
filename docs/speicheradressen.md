@@ -111,38 +111,38 @@ Die Bazooka steigt nicht im Level auf, sondern verwendet drei verschiedene Munit
 - **XP-Bereich (Low-Byte):** `$7E2F52` bis `$7E2F96` (Schritte von 2 Bytes)
 - **Level-Bereich (High-Byte):** `$7E2F98` bis `$7E2FDC` (Schritte von 2 Bytes, Stufen `0` bis `9`)
 - **Aktive Ringmenü-Slots (9 Zauber):** `$7E0ADA` (Slot 0) bis `$7E0AD2` (Slot 8)
-- **Alle 22 Zutaten (Zähler 0–99):** `$7E2370` bis `$7E239A` (z. B. Asche `$7E2370`, Wachs `$7E2398`, Wasser `$7E2396`, Essig `$7E2394`, Wurzel `$7E2392`)
+- **Alle 22 Zutaten (Zähler 0–99):** `$7E:22FF` bis `$7E:2314` (direkt über `$7E:22FF + ID` in `$91:CCD0` adressiert; z. B. Wachs `$7E:22FF`, Wasser `$7E:2300`, Essig `$7E:2301`, Wurzel `$7E:2302`, Eichel `$7E:2314`)
 
 ---
 
 ## 5. WRAM: Alchemie-Zutaten
 
-Die Anzahlen aller 22 Zutaten werden ab Basisadresse `$7E2370` im 2-Byte-Abstand gespeichert (jeweils 1 Byte Zähler, `0` bis `99` / `0x63`):
+Die Anzahlen aller 22 Zutaten werden ab Basisadresse `$7E:22FF` als 1-Byte-Werte (`0` bis `99` / `0x63`) gespeichert und von der Zauberroutine direkt über `$7E:22FF + Zutaten-ID` gelesen und abgezogen (`$91:CCD0`, `$91:CCFD`):
 
-| Zutat (DE-ROM Name) | WRAM-Adresse | Wertebereich | US-Entsprechung |
-| :--- | :--- | :--- | :--- |
-| **Asche** | `$7E2370` | `0` – `99` | Ash |
-| **Knochenteil** | `$7E2372` | `0` – `99` | Bone |
-| **Schwefel** | `$7E2374` | `0` – `99` | Brimstone |
-| **Lehm** | `$7E2376` | `0` – `99` | Clay |
-| **Kristall** | `$7E2378` | `0` – `99` | Crystal |
-| **Trockeneis** | `$7E237A` | `0` – `99` | Dry Ice |
-| **Äthanol** | `$7E237C` | `0` – `99` | Ethanol |
-| **Feder** | `$7E237E` | `0` – `99` | Feather |
-| **Schmierfett** | `$7E2380` | `0` – `99` | Grease |
-| **Dynamit** | `$7E2382` | `0` – `99` | Gunpowder |
-| **Arnitamin** | `$7E2384` | `0` – `99` | Atlas Medallion |
-| **Eisenerz** | `$7E2386` | `0` – `99` | Iron |
-| **Kalkstein** | `$7E2388` | `0` – `99` | Limestone |
-| **Mondstein** | `$7E238A` | `0` – `99` | Meteorite |
-| **Pfeffer** | `$7E238C` | `0` – `99` | Mud Pepper |
-| **Pilz** | `$7E238E` | `0` – `99` | Mushroom |
-| **Öl** | `$7E2390` | `0` – `99` | Oil |
-| **Wurzel** | `$7E2392` | `0` – `99` | Root |
-| **Essig** | `$7E2394` | `0` – `99` | Vinegar |
-| **Wasser** | `$7E2396` | `0` – `99` | Water |
-| **Wachs** | `$7E2398` | `0` – `99` | Wax |
-| **Eichel** | `$7E239A` | `0` – `99` | Acorn |
+| Zutat (DE-ROM Name) | Interner Index | WRAM-Adresse (`$7E:22FF + ID`) | Wertebereich | US-Entsprechung |
+| :--- | :---: | :--- | :---: | :--- |
+| **Wachs** | `0x00` | `$7E:22FF` | `0` – `99` | Wax |
+| **Wasser** | `0x01` | `$7E:2300` | `0` – `99` | Water |
+| **Essig** | `0x02` | `$7E:2301` | `0` – `99` | Vinegar |
+| **Wurzel** | `0x03` | `$7E:2302` | `0` – `99` | Root |
+| **Öl** | `0x04` | `$7E:2303` | `0` – `99` | Oil |
+| **Pilz** | `0x05` | `$7E:2304` | `0` – `99` | Mushroom |
+| **Pfeffer** | `0x06` | `$7E:2305` | `0` – `99` | Mud Pepper |
+| **Mondstein** | `0x07` | `$7E:2306` | `0` – `99` | Meteorite |
+| **Kalkstein** | `0x08` | `$7E:2307` | `0` – `99` | Limestone |
+| **Eisenerz** | `0x09` | `$7E:2308` | `0` – `99` | Iron |
+| **Dynamit** | `0x0A` | `$7E:2309` | `0` – `99` | Gunpowder |
+| **Schmierfett** | `0x0B` | `$7E:230A` | `0` – `99` | Grease |
+| **Feder** | `0x0C` | `$7E:230B` | `0` – `99` | Feather |
+| **Äthanol** | `0x0D` | `$7E:230C` | `0` – `99` | Ethanol |
+| **Trockeneis** | `0x0E` | `$7E:230D` | `0` – `99` | Dry Ice |
+| **Kristall** | `0x0F` | `$7E:230E` | `0` – `99` | Crystal |
+| **Lehm** | `0x10` | `$7E:230F` | `0` – `99` | Clay |
+| **Schwefel** | `0x11` | `$7E:2310` | `0` – `99` | Brimstone |
+| **Knochenteil** | `0x12` | `$7E:2311` | `0` – `99` | Bone |
+| **Asche** | `0x13` | `$7E:2312` | `0` – `99` | Ash |
+| **Arnitamin** | `0x14` | `$7E:2313` | `0` – `99` | Atlas Medallion |
+| **Eichel** | `0x15` | `$7E:2314` | `0` – `99` | Acorn |
 
 ---
 

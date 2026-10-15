@@ -136,3 +136,87 @@ fn test_constants_range() {
     assert!(res.is_err(), "70000 must fail compilation");
 }
 
+#[test]
+fn test_negative_constants() {
+    let source = r#"
+    fun test_neg() = 0x978000 {
+        TEMP[0x0010] = -100;
+        TEMP[0x0012] = -500;
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing should succeed");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing should succeed");
+
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Negative constants must compile");
+    let bc = &blocks[0].bytecode;
+
+    // Statement 1: TEMP[0x0010] = -100 -> 0x19, 0x10, 0x00, Token 0x01 | 0x80 = 0x81, (-100 + 256) = 156 = 0x9C
+    assert_eq!(bc[0], 0x19);
+    assert_eq!(bc[1], 0x10);
+    assert_eq!(bc[2], 0x00);
+    assert_eq!(bc[3], 0x81); // Token 0x01 | 0x80
+    assert_eq!(bc[4], 156);
+
+    // Statement 2: TEMP[0x0012] = -500 -> 0x19, 0x12, 0x00, Token 0x03 | 0x80 = 0x83, (-500 as u16) = 0xFE0C
+    assert_eq!(bc[5], 0x19);
+    assert_eq!(bc[6], 0x12);
+    assert_eq!(bc[7], 0x00);
+    assert_eq!(bc[8], 0x83); // Token 0x03 | 0x80
+    assert_eq!(bc[9], 0x0C);
+    assert_eq!(bc[10], 0xFE);
+
+    // Verify -70000 fails compilation (< -65536)
+    let bad_source = r#"
+    fun test_bad_neg() = 0x978000 {
+        TEMP[0x0010] = -70000;
+    }
+    "#;
+    let mut lexer = Lexer::new(bad_source);
+    let tokens = lexer.tokenize().expect("Lexing succeeds");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing succeeds");
+    let mut compiler = Compiler::new();
+    let res = compiler.compile_file(&ast);
+    assert!(res.is_err(), "-70000 must fail compilation (< -65536)");
+}
+
+#[test]
+fn test_switch_character_and_attach_camera() {
+    let source = r#"
+    fun test_actors() = 0x978000 {
+        switch_character(0);
+        attach_camera(0);
+        call(0x978294);
+        return;
+    }
+    "#;
+
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().expect("Lexing should succeed");
+    let mut parser = Parser::new(tokens);
+    let ast = parser.parse_file().expect("Parsing should succeed");
+
+    let mut compiler = Compiler::new();
+    let blocks = compiler.compile_file(&ast).expect("Compilation must succeed");
+    let bc = &blocks[0].bytecode;
+
+    // switch_character(0) -> 0x98, expr 0 with end bit -> 0x30 | 0x80 = 0xB0
+    assert_eq!(bc[0], 0x98);
+    assert_eq!(bc[1], 0xB0);
+
+    // attach_camera(0) -> 0x9B, expr 0 with end bit -> 0x30 | 0x80 = 0xB0
+    assert_eq!(bc[2], 0x9B);
+    assert_eq!(bc[3], 0xB0);
+
+    // call(0x978294) -> opcode 0x29, script_addr u16
+    assert_eq!(bc[4], 0x29);
+
+    // return -> opcode 0x00
+    assert_eq!(*bc.last().unwrap(), 0x00);
+}
+
+

@@ -147,7 +147,7 @@ impl<'a> Dumper<'a> {
         }))
     }
 
-    /// Dumped alle deutschen Dialog-Texte (0..ca. 2500)
+    /// Dumped alle deutschen Dialog-Texte (0..3082)
     pub fn dump_texts(&self, limit: usize) -> Vec<(usize, String)> {
         let decoder = TextDecoder::new(self.rom);
         let mut texts = Vec::new();

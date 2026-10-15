@@ -35,6 +35,8 @@ pub enum EvsStmt {
     LockPlayer(EvsExpr),
     UnlockPlayer(EvsExpr),
     Skip(EvsExpr),
+    SwitchCharacter(EvsExpr),
+    AttachCamera(EvsExpr),
     Raw { opcode: u8, payload: Vec<u8> },
 }
 
