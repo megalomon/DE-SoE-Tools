@@ -24,45 +24,45 @@ Der Junge kann bis zu 9 Zauber gleichzeitig im Ringmenü ausrüsten. Die zugewie
 
 ## 2. Alle 35 Zauberformeln (Deutsche ROM)
 
-Die folgende Tabelle enthält die **exakten deutschen Ingame-Namen**, die US-Bezeichnungen, die Speicheradressen und die benötigten Zutatenmengen (ausgelesen aus der ROM-Tabelle bei `$C5:0685` / `0x050685`):
+Die folgende Tabelle enthält die **exakten deutschen Ingame-Namen** (aus der ROM-Zeigertabelle bei `$C5:036F`), die US-Bezeichnungen, Speicheradressen, Rezepturen (aus `$C5:0685`) und originalen Ingame-Wirkungsbeschreibungen (aus `$C5:03B7`):
 
-| ID | Deutscher Name (ROM) | US-Originalname | XP-Adresse | Level-Adresse | Benötigte Zutaten (Rezept) |
-| :---: | :--- | :--- | :---: | :---: | :--- |
-| **0** | **Säuresturm** | Acid Rain | `$7E2F52` | `$7E2F98` | 1× Arnitamin, 3× Wasser |
-| **1** | **Kraftmeierei** | Atlas | `$7E2F54` | `$7E2F9A` | 1× Arnitamin, 1× Asche |
-| **2** | **Zauberwand** | Barrier | `$7E2F56` | `$7E2F9C` | 1× Kalkstein, 2× Knochenteil |
-| **3** | **Lehmgranaten** | Call Up | `$7E2F58` | `$7E2F9E` | 1× Mondstein, 1× Trockeneis |
-| **4** | **Verätzung** | Corrosion | `$7E2F5A` | `$7E2FA0` | 1× Pilz, 3× Wasser |
-| **5** | **Höllenfaust** | Crush | `$7E2F5C` | `$7E2FA2` | 1× Kalkstein, 1× Wachs |
-| **6** | **Heilaura** | Cure | `$7E2F5E` | `$7E2FA4` | 2× Wurzel, 1× Öl |
-| **7** | **Energieschild** | Defend | `$7E2F60` | `$7E2FA6` | 1× Lehm, 1× Arnitamin |
-| **8** | **Supersog** | Double Drain | `$7E2F62` | `$7E2FA8` | 2× Äthanol, 2× Essig |
-| **9** | **Energiesog** | Drain | `$7E2F64` | `$7E2FAA` | 1× Äthanol, 2× Wurzel |
-| **10** | **Kosmokraft** | Energize | `$7E2F66` | `$7E2FAC` | 1× Kristall, 1× Eisenerz |
-| **11** | **Flucht** | Escape | `$7E2F68` | `$7E2FAE` | 1× Wachs, 1× Essig |
-| **12** | **Explosion** | Explosion | `$7E2F6A` | `$7E2FB0` | 2× Äthanol, 1× Arnitamin |
-| **13** | **Feuerball** | Fireball | `$7E2F6C` | `$7E2FB2` | 1× Schwefel, 2× Arnitamin |
-| **14** | **Hadesgranaten** | Fire Power | `$7E2F6E` | `$7E2FB4` | 1× Feder, 1× Schwefel |
-| **15** | **Hitzeblitz** | Flash | `$7E2F70` | `$7E2FB6` | 1× Wachs, 2× Öl |
-| **16** | **Kraftfeld** | Force Field | `$7E2F72` | `$7E2FB8` | 1× Schmierfett, 1× Eisenerz |
-| **17** | **Schlammbombe** | Hard Ball | `$7E2F74` | `$7E2FBA` | 1× Kristall, 1× Lehm |
-| **18** | **Krafthauch** | Heal | `$7E2F76` | `$7E2FBC` | 1× Wurzel, 1× Wasser |
-| **19** | **Lanzenattacke** | Lance | `$7E2F78` | `$7E2FBE` | 1× Eisenerz, 1× Eichel |
-| **20** | **Laserinferno** | Laser | `$7E2F7A` | `$7E2FC0` | 1× Kristall, 1× Schwefel |
-| **21** | **Telekinese** | Levitate | `$7E2F7C` | `$7E2FC2` | 1× Wasser, 1× Pfeffer |
-| **22** | **Hagelsturm** | Lightning Storm | `$7E2F7E` | `$7E2FC4` | 1× Eisenerz, 2× Arnitamin |
-| **23** | **Heilkraft** | Miracle Cure | `$7E2F80` | `$7E2FC6` | 2× Wurzel, 1× Essig |
-| **24** | **Nitro** | Nitro | `$7E2F82` | `$7E2FC8` | 1× Dynamit, 2× Schmierfett |
-| **25** | **Frischzellen** | One Up | `$7E2F84` | `$7E2FCA` | 1× Feder, 1× Wurzel |
-| **26** | **Zauberspiegel** | Reflect | `$7E2F86` | `$7E2FCC` | 2× Schmierfett, 1× Eisenerz |
-| **27** | **Etappenkraft** | Regrowth | `$7E2F88` | `$7E2FCE` | 1× Eichel, 2× Wasser |
-| **28** | **Zauberbrücke** | Revealer | `$7E2F8A` | `$7E2FD0` | 2× Arnitamin, 1× Wachs |
-| **29** | **Hundeleben** | Revive | `$7E2F8C` | `$7E2FD2` | 3× Wurzel, 1× Knochenteil |
-| **30** | **Fegefeuer** | Slow Burn | `$7E2F8E` | `$7E2FD4` | 1× Eisenerz, 1× Schwefel |
-| **31** | **Turboantrieb** | Speed | `$7E2F90` | `$7E2FD6` | 1× Wachs, 2× Wasser |
-| **32** | **Splitter** | Sting | `$7E2F92` | `$7E2FD8` | 2× Wasser, 1× Essig |
-| **33** | **Unterbrechung** | Stop | `$7E2F94` | `$7E2FDA` | 2× Wachs, 1× Kristall |
-| **34** | **Gigakraft** | Super Heal | `$7E2F96` | `$7E2FDC` | 2× Äthanol, 1× Eichel |
+| ID | Deutscher Name (ROM) | US-Originalname | XP-Adresse | Level-Adresse | Benötigte Zutaten (Rezept) | Ingame-Wirkung (ROM) |
+| :---: | :--- | :--- | :---: | :---: | :--- | :--- |
+| **0** | **Säureregen** | Acid Rain | `$7E2F52` | `$7E2F98` | 1× Arnitamin, 3× Wasser | *Gegner werden verätzt.* |
+| **1** | **Arnold** | Atlas | `$7E2F54` | `$7E2F9A` | 1× Arnitamin, 1× Asche | *Held wird zu Arnold.* |
+| **2** | **Superschild** | Barrier | `$7E2F56` | `$7E2F9C` | 1× Kalkstein, 2× Knochenteil | *Held hat einen Schutzmantel.* |
+| **3** | **Zauberperlen** | Call Up | `$7E2F58` | `$7E2F9E` | 1× Mondstein, 1× Trockeneis | *Füllt Zauberperlenvorrat auf.* |
+| **4** | **Säuresturm** | Corrosion | `$7E2F5A` | `$7E2FA0` | 1× Pilz, 3× Wasser | *Ätzender Regenschauer.* |
+| **5** | **Höllenfaust** | Crush | `$7E2F5C` | `$7E2FA2` | 1× Kalkstein, 1× Wachs | *Riesenfaust zermalmt Gegner.* |
+| **6** | **Heilaura** | Cure | `$7E2F5E` | `$7E2FA4` | 2× Wurzel, 1× Öl | *Heilt alle Krankheiten.* |
+| **7** | **Energieschild** | Defend | `$7E2F60` | `$7E2FA6` | 1× Lehm, 1× Arnitamin | *Steigert die Verteidigungskraft.* |
+| **8** | **Supersog** | Double Drain | `$7E2F62` | `$7E2FA8` | 2× Äthanol, 2× Essig | *Stiehlt Gegnern viel KP.* |
+| **9** | **Energiesog** | Drain | `$7E2F64` | `$7E2FAA` | 1× Äthanol, 2× Wurzel | *Stiehlt Gegnern einige KP.* |
+| **10** | **Kosmokraft** | Energize | `$7E2F66` | `$7E2FAC` | 1× Kristall, 1× Eisenerz | *Held attackiert mit Kosmokraft.* |
+| **11** | **Flucht** | Escape | `$7E2F68` | `$7E2FAE` | 1× Wachs, 1× Essig | *Ermöglicht Flucht aus Verliesen.* |
+| **12** | **Explosion** | Explosion | `$7E2F6A` | `$7E2FB0` | 2× Äthanol, 1× Arnitamin | *Zerstört Hindernisse.* |
+| **13** | **Feuerball** | Fireball | `$7E2F6C` | `$7E2FB2` | 1× Schwefel, 2× Arnitamin | *Ziel wird durch Feuer zerstört.* |
+| **14** | **Hadesgranaten** | Fire Power | `$7E2F6E` | `$7E2FB4` | 1× Feder, 1× Schwefel | *Gegner werden zerstört.* |
+| **15** | **Hitzeblitz** | Flash | `$7E2F70` | `$7E2FB6` | 1× Wachs, 2× Öl | *Kleine Feuerbälle.* |
+| **16** | **Kraftfeld** | Force Field | `$7E2F72` | `$7E2FB8` | 1× Schmierfett, 1× Eisenerz | *Schützt den Helden vor Attacken.* |
+| **17** | **Schlammbombe** | Hard Ball | `$7E2F74` | `$7E2FBA` | 1× Kristall, 1× Lehm | *Gegner werden vollgeschlammt.* |
+| **18** | **Krafthauch** | Heal | `$7E2F76` | `$7E2FBC` | 1× Wurzel, 1× Wasser | *Füllt einige KP auf.* |
+| **19** | **Lanzenattacke** | Lance | `$7E2F78` | `$7E2FBE` | 1× Eisenerz, 1× Eichel | *Eine Lanze trifft den Gegner.* |
+| **20** | **Laserinferno** | Laser | `$7E2F7A` | `$7E2FC0` | 1× Kristall, 1× Schwefel | *Halbiert die KP des Gegners.* |
+| **21** | **Telekinese** | Levitate | `$7E2F7C` | `$7E2FC2` | 1× Wasser, 1× Pfeffer | *Räumt Felsen aus dem Weg.* |
+| **22** | **Hagelsturm** | Lightning Storm | `$7E2F7E` | `$7E2FC4` | 1× Eisenerz, 2× Arnitamin | *Elektrische Blitze.* |
+| **23** | **Heilkraft** | Miracle Cure | `$7E2F80` | `$7E2FC6` | 2× Wurzel, 1× Essig | *Heilt und kräftigt in einem.* |
+| **24** | **Nitro** | Nitro | `$7E2F82` | `$7E2FC8` | 1× Dynamit, 2× Schmierfett | *Große Explosion.* |
+| **25** | **Frischzellen** | One Up | `$7E2F84` | `$7E2FCA` | 1× Feder, 1× Wurzel | *Füllt die KP des Zieles auf.* |
+| **26** | **Zauberspiegel** | Reflect | `$7E2F86` | `$7E2FCC` | 2× Schmierfett, 1× Eisenerz | *Reflektiert Zaubersprüche.* |
+| **27** | **Etappenkraft** | Regrowth | `$7E2F88` | `$7E2FCE` | 1× Eichel, 2× Wasser | *Erhöht stufenweise die KP.* |
+| **28** | **Zauberbrücke** | Revealer | `$7E2F8A` | `$7E2FD0` | 2× Arnitamin, 1× Wachs | *Läßt unsichtbare Wege erscheinen.* |
+| **29** | **Hundeleben** | Revive | `$7E2F8C` | `$7E2FD2` | 3× Wurzel, 1× Knochenteil | *Weckt den Hund wieder auf.* |
+| **30** | **Fegefeuer** | Slow Burn | `$7E2F8E` | `$7E2FD4` | 1× Eisenerz, 1× Schwefel | *Vermindert stufenweise die KP.* |
+| **31** | **Turboantrieb** | Speed | `$7E2F90` | `$7E2FD6` | 1× Wachs, 2× Wasser | *Erhöht Beweglichkeit des Zieles.* |
+| **32** | **Bienenattacke** | Sting | `$7E2F92` | `$7E2FD8` | 2× Wasser, 1× Essig | *Bienen attackieren die Gegner.* |
+| **33** | **Unterbrechung** | Stop | `$7E2F94` | `$7E2FDA` | 2× Wachs, 1× Kristall | *Stoppt die Attacken der Gegner.* |
+| **34** | **Gigakraft** | Super Heal | `$7E2F96` | `$7E2FDC` | 2× Äthanol, 1× Eichel | *Füllt KP von Held & Hund auf.* |
 
 ---
 
