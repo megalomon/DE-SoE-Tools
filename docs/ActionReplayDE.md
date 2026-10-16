@@ -636,11 +636,18 @@
 
 ## 8. Bewegung & Physik (Durch Wände gehen / Walk Through Walls)
 
-### Durch Wände, Hindernisse und Barrieren gehen (No-Clip)
+### Durch Wände, Hindernisse und Barrieren gehen (1-Zeilen-Code)
 ```text
-8FAE7070
+8FAE1880
 ```
-*(Hebelt die Kollisionsprüfung an `$8F:AE70` aus; erlaubt freies Bewegen durch solide Kacheln, Wände, Bäume und Felsen).*
+*(Hebelt die primäre Kollisionsverzweigung an `$8F:AE18` von `BCS` auf `BRA` um; die Bewegungsroutine übernimmt sofort die Zielkoordinaten und ignoriert jede Blockade).*
+
+### Durch Wände gehen (Globale Kollisionsroutine deaktivieren, 2 Zeilen)
+```text
+8FAEF938
+8FAEFA6B
+```
+*(Patched die zentrale Kollisionsfunktion `$8F:AEF9` auf `SEC; RTL`; im Evermore-Bewegungssystem signalisiert Carry=1 freie Bewegung).*
 
 
 
