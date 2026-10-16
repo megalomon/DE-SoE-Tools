@@ -479,5 +479,159 @@
 7E2FDC09
 ```
 
+---
+
+## 7. Waffen & Waffenlevel
+
+### Alle Waffen & Hund auf Level 3 (Maximum 3:00)
+```text
+7E0ADE03
+7E0AE003
+7E0AE203
+7E0AE403
+7E0AE603
+7E0AE803
+7E0AEA03
+7E0AEC03
+7E0AEE03
+7E0AF003
+7E0AF203
+7E0AF403
+7E0AF603
+7E0AF801
+7E0B0803
+```
+
+---
+
+### Alle Waffen-Erfahrungspunkte (XP) auf 0% zurücksetzen (sauberes 3:00)
+```text
+7E0ADD00
+7E0ADF00
+7E0AE100
+7E0AE300
+7E0AE500
+7E0AE700
+7E0AE900
+7E0AEB00
+7E0AED00
+7E0AEF00
+7E0AF100
+7E0AF300
+7E0AF500
+7E0B0700
+```
+
+---
+
+### Einzelne Waffen: Level-Stufen (1, 2, 3) & Freischaltung
+
+#### Faustkampf (Fäuste)
+* **Level 1 (1:00):** `7E0ADE01` *(XP 0%: `7E0ADD00` | XP 99%: `7E0ADDFF`)*
+* **Level 2 (2:00):** `7E0ADE02` *(XP 0%: `7E0ADD00` | XP 99%: `7E0ADDFF`)*
+* **Level 3 (3:00 Max):** `7E0ADE03` *(XP 0%: `7E0ADD00`)*
+
+#### Knochenknüppel (Schwert 1)
+* **Level 1 (1:00):** `7E0AE001` *(XP 0%: `7E0ADF00` | XP 99%: `7E0ADFFF`)*
+* **Level 2 (2:00):** `7E0AE002` *(XP 0%: `7E0ADF00` | XP 99%: `7E0ADFFF`)*
+* **Level 3 (3:00 Max):** `7E0AE003` *(XP 0%: `7E0ADF00`)*
+* **Entfernen / Sperren:** `7E0AE000`
+
+#### Drachentöter (Schwert 2)
+* **Level 1 (1:00):** `7E0AE201` *(XP 0%: `7E0AE100` | XP 99%: `7E0AE1FF`)*
+* **Level 2 (2:00):** `7E0AE202` *(XP 0%: `7E0AE100` | XP 99%: `7E0AE1FF`)*
+* **Level 3 (3:00 Max):** `7E0AE203` *(XP 0%: `7E0AE100`)*
+* **Entfernen / Sperren:** `7E0AE200`
+
+#### Exkalibur (Schwert 3)
+* **Level 1 (1:00):** `7E0AE401` *(XP 0%: `7E0AE300` | XP 99%: `7E0AE3FF`)*
+* **Level 2 (2:00):** `7E0AE402` *(XP 0%: `7E0AE300` | XP 99%: `7E0AE3FF`)*
+* **Level 3 (3:00 Max):** `7E0AE403` *(XP 0%: `7E0AE300`)*
+* **Entfernen / Sperren:** `7E0AE400`
+
+#### Laserschwert (Schwert 4)
+* **Level 1 (1:00):** `7E0AE601` *(XP 0%: `7E0AE500` | XP 99%: `7E0AE5FF`)*
+* **Level 2 (2:00):** `7E0AE602` *(XP 0%: `7E0AE500` | XP 99%: `7E0AE5FF`)*
+* **Level 3 (3:00 Max):** `7E0AE603` *(XP 0%: `7E0AE500`)*
+* **Entfernen / Sperren:** `7E0AE600`
+
+#### Tarantelaxt (Axt 1)
+* **Level 1 (1:00):** `7E0AE801` *(XP 0%: `7E0AE700` | XP 99%: `7E0AE7FF`)*
+* **Level 2 (2:00):** `7E0AE802` *(XP 0%: `7E0AE700` | XP 99%: `7E0AE7FF`)*
+* **Level 3 (3:00 Max):** `7E0AE803` *(XP 0%: `7E0AE700`)*
+* **Entfernen / Sperren:** `7E0AE800`
+
+#### Bronzeaxt (Axt 2)
+* **Level 1 (1:00):** `7E0AEA01` *(XP 0%: `7E0AE900` | XP 99%: `7E0AE9FF`)*
+* **Level 2 (2:00):** `7E0AEA02` *(XP 0%: `7E0AE900` | XP 99%: `7E0AE9FF`)*
+* **Level 3 (3:00 Max):** `7E0AEA03` *(XP 0%: `7E0AE900`)*
+* **Entfernen / Sperren:** `7E0AEA00`
+
+#### Streitaxt (Axt 3)
+* **Level 1 (1:00):** `7E0AEC01` *(XP 0%: `7E0AEB00` | XP 99%: `7E0AEBFF`)*
+* **Level 2 (2:00):** `7E0AEC02` *(XP 0%: `7E0AEB00` | XP 99%: `7E0AEBFF`)*
+* **Level 3 (3:00 Max):** `7E0AEC03` *(XP 0%: `7E0AEB00`)*
+* **Entfernen / Sperren:** `7E0AEC00`
+
+#### Atomaxt (Axt 4)
+* **Level 1 (1:00):** `7E0AEE01` *(XP 0%: `7E0AED00` | XP 99%: `7E0AEDFF`)*
+* **Level 2 (2:00):** `7E0AEE02` *(XP 0%: `7E0AED00` | XP 99%: `7E0AEDFF`)*
+* **Level 3 (3:00 Max):** `7E0AEE03` *(XP 0%: `7E0AED00`)*
+* **Entfernen / Sperren:** `7E0AEE00`
+
+#### Speer (Lanze 1)
+* **Level 1 (1:00):** `7E0AF001` *(XP 0%: `7E0AEF00` | XP 99%: `7E0AEFFF`)*
+* **Level 2 (2:00):** `7E0AF002` *(XP 0%: `7E0AEF00` | XP 99%: `7E0AEFFF`)*
+* **Level 3 (3:00 Max):** `7E0AF003` *(XP 0%: `7E0AEF00`)*
+* **Entfernen / Sperren:** `7E0AF000`
+
+#### Bronzespeer (Lanze 2)
+* **Level 1 (1:00):** `7E0AF201` *(XP 0%: `7E0AF100` | XP 99%: `7E0AF1FF`)*
+* **Level 2 (2:00):** `7E0AF202` *(XP 0%: `7E0AF100` | XP 99%: `7E0AF1FF`)*
+* **Level 3 (3:00 Max):** `7E0AF203` *(XP 0%: `7E0AF100`)*
+* **Entfernen / Sperren:** `7E0AF200`
+
+#### Elfenbeinspeer (Lanze 3)
+* **Level 1 (1:00):** `7E0AF401` *(XP 0%: `7E0AF300` | XP 99%: `7E0AF3FF`)*
+* **Level 2 (2:00):** `7E0AF402` *(XP 0%: `7E0AF300` | XP 99%: `7E0AF3FF`)*
+* **Level 3 (3:00 Max):** `7E0AF403` *(XP 0%: `7E0AF300`)*
+* **Entfernen / Sperren:** `7E0AF400`
+
+#### Neutronenspeer (Lanze 4)
+* **Level 1 (1:00):** `7E0AF601` *(XP 0%: `7E0AF500` | XP 99%: `7E0AF5FF`)*
+* **Level 2 (2:00):** `7E0AF602` *(XP 0%: `7E0AF500` | XP 99%: `7E0AF5FF`)*
+* **Level 3 (3:00 Max):** `7E0AF603` *(XP 0%: `7E0AF500`)*
+* **Entfernen / Sperren:** `7E0AF600`
+
+#### Bazooka (Fernkampf)
+* **Freischalten / Ausrüstbar:** `7E0AF801`
+* **Entfernen / Sperren:** `7E0AF800`
+
+#### Hund (Angriff / Biss)
+* **Level 1 (1:00):** `7E0B0801` *(XP 0%: `7E0B0700` | XP 99%: `7E0B07FF`)*
+* **Level 2 (2:00):** `7E0B0802` *(XP 0%: `7E0B0700` | XP 99%: `7E0B07FF`)*
+* **Level 3 (3:00 Max):** `7E0B0803` *(XP 0%: `7E0B0700`)*
+
+---
+
+### Waffe direkt anlegen (Held-Ausrüstung)
+*Waffenindex an `$7E0ABA` (in 2er-Schritten):*
+
+* **Faustkampf:** `7E0ABA00`
+* **Knochenknüppel:** `7E0ABA02`
+* **Drachentöter:** `7E0ABA04`
+* **Exkalibur:** `7E0ABA06`
+* **Laserschwert:** `7E0ABA08`
+* **Tarantelaxt:** `7E0ABA0A`
+* **Bronzeaxt:** `7E0ABA0C`
+* **Streitaxt:** `7E0ABA0E`
+* **Atomaxt:** `7E0ABA10`
+* **Speer:** `7E0ABA12`
+* **Bronzespeer:** `7E0ABA14`
+* **Elfenbeinspeer:** `7E0ABA16`
+* **Neutronenspeer:** `7E0ABA18`
+* **Bazooka:** `7E0ABA1A`
+
+
 
 
