@@ -55,9 +55,9 @@ Wird ein Boss besiegt, setzt die Skript-Engine das entsprechende Flag auf `1`. D
 
 ---
 
-## 3. Markt von Allelachema & Tauschgeschäfte
+## 3. Markt-Tauschgeschäfte & Permanente Relikte
 
-Der Markt von Allelachema basiert auf einem komplexen System aus Tausch-Flags, die verhindern, dass einmalige Schlüsselgegenstände mehrfach gekauft oder getauscht werden:
+Auf den Märkten von Allelachema und Gotika/Terrorfels basiert der Handel auf einmaligen Tausch- und Relikt-Flags (ROM-Tabellen `$8C:BF91` / `$8C:BFB9`):
 
 | Flag-ID | WRAM-Adresse | Bit & Maske | Gegenstand / Tausch-Event | Beschreibung |
 | :---: | :---: | :---: | :--- | :--- |
@@ -65,14 +65,20 @@ Der Markt von Allelachema basiert auf einem komplexen System aus Tausch-Flags, d
 | **`0x004A`** | `$7E2261` | Bit 2 (`0x04`) | **Bestes Stück 1** | Töpfer hat erstes Hauptangebot verkauft. |
 | **`0x004B`** | `$7E2261` | Bit 3 (`0x08`) | **Bestes Stück 2** | Händler-Angebot erschöpft. |
 | **`0x004C`** | `$7E2261` | Bit 4 (`0x10`) | **Bestes Stück 3** | Händler-Angebot erschöpft. |
+| **`0x004D`** | **`$7E2261`** | **Bit 5 (`0x20`)** | **Armor Ultra** | `1` = Rüstungsverstärkung im Besitz. |
 | **`0x004E`** | **`$7E2261`** | **Bit 6 (`0x40`)** | **Chocobo-Ei** | `1` = Chocobo-Ei vom Töpfer erhalten/getauscht. |
-| **`0x0050`** | `$7E2262` | Bit 0 (`0x01`) | **Gewürzhandel abgeschlossen** | Händler-Transaktion beendet. |
+| **`0x004F`** | **`$7E2261`** | **Bit 7 (`0x80`)** | **Insektengift** | `1` = Hält Moskitos und Spinnen ab. |
+| **`0x0050`** | **`$7E2262`** | **Bit 0 (`0x01`)** | **Jadereif** | `1` = Trefferwahrscheinlichkeit erhöht. |
+| **`0x0051`** | **`$7E2262`** | **Bit 1 (`0x02`)** | **Jaguarring** | `1` = Sprint-Funktion (A-Taste) freigeschaltet. |
 | **`0x0052`** | **`$7E2262`** | **Bit 2 (`0x04`)** | **Mythenschärpe** (Magic Gourd) | `1` = Tausch gegen Chocobo-Ei abgeschlossen. |
-| **`0x0056`** | `$7E2262` | Bit 6 (`0x40`) | **Armor Ultra** | `1` = Armor Ultra im Tausch erhalten. |
-| **`0x005B`** | `$7E2263` | Bit 3 (`0x08`) | **Jadereif** | `1` = Jadereif gekauft / im Besitz. |
-| **`0x005C`** | `$7E2263` | Bit 4 (`0x10`) | **Sonnenstein** | `1` = Sonnenstein gekauft / im Besitz. |
-| **`0x005D`** | `$7E2263` | Bit 5 (`0x20`) | **Rubin-Herz** | `1` = Wertvollstes Tauschstück erhalten. |
-| **`0x005F`** | `$7E2263` | Bit 7 (`0x80`) | **Moxastab** | `1` = Moxastab gekauft / im Besitz. |
+| **`0x0053`** | **`$7E2262`** | **Bit 3 (`0x08`)** | **Moxastab** | `1` = Heilkräfte und Items effektiver. |
+| **`0x0054`** | **`$7E2262`** | **Bit 4 (`0x10`)** | **Orakelknochen** | `1` = Auf Gotika-Markt gekauft; schaltet Geheimweg frei. |
+| **`0x0055`** | **`$7E2262`** | **Bit 5 (`0x20`)** | **Rubinherz** | `1` = Reduziert Chance auf gegnerische Volltreffer. |
+| **`0x0056`** | **`$7E2262`** | **Bit 6 (`0x40`)** | **Schleifstab** | `1` = Verstärkt alle Schwerter im Besitz. |
+| **`0x0057`** | **`$7E2262`** | **Bit 7 (`0x80`)** | **Lebenszepter** | `1` = Erhöht Abwehrfähigkeiten. |
+| **`0x0058`** | **`$7E2263`** | **Bit 0 (`0x01`)** | **Sonnenstein** | `1` = Erhöht körperliche Stärke. |
+| **`0x0059`** | **`$7E2263`** | **Bit 1 (`0x02`)** | **Teufelskutte** | `1` = Auf Gotika-Markt erworben; erhöht Ausweichen. |
+| **`0x005A`** | **`$7E2263`** | **Bit 2 (`0x04`)** | **Drachenmünze** | `1` = Erhöht magische Abwehrkräfte. |
 | **`0x019D`** | `$7E228B` | Bit 5 (`0x20`) | **Amulett des Karon** | `1` = Amulett zur Oasenüberquerung gekauft. |
 | **`0x019E`** | `$7E228B` | Bit 6 (`0x40`) | **Perlenhändler** | `1` = Perlen für 12 Juwelen erworben. |
 
@@ -89,8 +95,12 @@ Der Markt von Allelachema basiert auf einem komplexen System aus Tausch-Flags, d
 | **`0x0038`** | `$7E225F` | Bit 0 (`0x01`) | Große Flut in Prähistorie überstanden. |
 | **`0x0039`** | `$7E225F` | Bit 1 (`0x02`) | Telekinese-Formel (Levitate) erhalten. |
 | **`0x003D`** | `$7E225F` | Bit 5 (`0x20`) | Hund in Allelachema wiedergefunden (neue Gestalt). |
+| **`0x0060`** | `$7E2264` | Bit 0 (`0x01`) | Diamantenauge (erstes Götzendiamantenauge) im Besitz. |
+| **`0x0061`** | `$7E2264` | Bit 1 (`0x02`) | Diamantenaugen (beide Diamantenaugen vereint) im Besitz. |
 | **`0x0062`** | `$7E2264` | Bit 2 (`0x04`) | Ventil für die Vulkanmaschine gefunden. |
 | **`0x0063`** | `$7E2264` | Bit 3 (`0x08`) | Wagenrad für die Vulkanmaschine gefunden. |
+| **`0x0064`** | `$7E2264` | Bit 4 (`0x10`) | Königsschlüssel (Schloss Terrorfels) im Besitz. |
+| **`0x0065`** | `$7E2264` | Bit 5 (`0x20`) | Energie (Reaktor-Energiekern Assitopia) im Besitz. |
 | **`0x0183`** | `$7E2288` | Bit 3 (`0x08`) | Alchemie-Meister in Gotika freigeschaltet. |
 | **`0x0406`** | `$7E22D8` | Bit 6 (`0x40`) | Erstes Diamantauge (Auge des Rimsala) geborgen. |
 

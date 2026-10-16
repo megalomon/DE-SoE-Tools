@@ -89,15 +89,20 @@ Jede normale Waffe und auch der Hund belegen **2 Bytes (16-Bit Word)** im WRAM a
 
 ---
 
-## 3. WRAM: Bazooka-Munition
+## 3. WRAM: Bazooka-Munition & Waffen-Spezialregister
 
-Die Bazooka steigt nicht im Level auf, sondern verwendet drei verschiedene Munitionsarten:
+Die Bazooka steigt nicht im Level auf, sondern verschießt drei Munitionsarten. Ihre Munitionszähler liegen im WRAM im Block ab **`$7E:2345`** (gelesen in `$8E:9A34`, `$8F:8460`):
 
-| Munitionsart (DE-ROM Name) | WRAM-Adresse | Wertebereich | Max |
-| :--- | :--- | :--- | :---: |
-| **Donnergranaten** (Thunder Ball) | `$7E0B09` | `0x00` – `0x63` | 99 |
-| **Plasmaraketen** (Particle Bomb) | `$7E0B0A` | `0x00` – `0x63` | 99 |
-| **Cyberbomben** (Cryo-Blast) | `$7E0B0B` | `0x00` – `0x63` | 99 |
+| Munitionsart / Register | WRAM-Adresse | Wertebereich | Beschreibung |
+| :--- | :---: | :---: | :--- |
+| **Donnergranaten** (Thunder Ball) | **`$7E:2345`** | `0` – `99` (`0x63`) | Munition für Standard-Fernkampf (200 Atk) |
+| **Plasmaraketen** (Particle Bomb) | **`$7E:2346`** | `0` – `99` (`0x63`) | Mittlere Explosivmunition (350 Atk) |
+| **Cyberbomben** (Cryo-Blast) | **`$7E:2347`** | `0` – `99` (`0x63`) | Stärkste High-Tech-Munition (800 Atk) |
+| **Aktive Währung** | **`$7E:2348`** | `0`, `3`, `6`, `9` | Offset der aktuellen Epochenwährung in `$7E:0AC6` |
+| **Ausgewählte Munitionsart** | **`$7E:2349`** | `0`, `1`, `2` | Aktiver Feuermodus: `0`=Donner, `1`=Plasma, `2`=Cyber |
+
+> [!NOTE]
+> Frühere inoffizielle Tabellen nannten `$7E:0B09..0B0B` als Munition. Der ROM-Code bei `$8D:861B` belegt jedoch, dass `$7E:0B09` und `$7E:0B0B` Menü-Aufladelimits für den Angriffs-Balken sind, während die echten Munitionszähler bei `$7E:2345..2347` liegen.
 
 ---
 
@@ -205,12 +210,16 @@ Story-Fortschritte, Händler-Tauschgeschäfte und Truhen werden in einem Bitfiel
 - **Ausgerüstetes Armband (Held):** `$7E:0AC4` (16-Bit-Zeiger auf Armbandstruktur in Bank `$C4`)
 
 ### Heil- & Unterstützungsitems (Zähler 0–99 im WRAM)
-- **Blätter:** `$7E2364` (Zähler 0–99)
-- **Nektar:** `$7E2366` (Zähler 0–99)
-- **Honig:** `$7E2368` (Zähler 0–99)
-- **Hundekuchen:** `$7E236A` (Zähler 0–99)
-- **Flügel:** `$7E236C` (Zähler 0–99)
-- **Elixier:** `$7E236E` (Zähler 0–99)
+> [!NOTE]
+> Ältere Dokumente führten fälschlicherweise `$7E:2364..236E` auf. Die 8 Verbrauchsgegenstände liegen in Wahrheit unmittelbar anschließend an die Alchemie-Zutaten (`$7E:22FF..2314`) als 1-Byte-Werte ab **`$7E:2315`** (gelesen über `$7E:2315 + ID` in `$8E:8CDD`, `$8E:9B97`, `$8E:A818`):
+- **Blätter:** **`$7E:2315`** (Zähler 0–99, Heilt 40 KP)
+- **Nektar:** **`$7E:2316`** (Zähler 0–99, Heilt 120 KP)
+- **Honig:** **`$7E:2317`** (Zähler 0–99, Heilt 300 KP)
+- **Hundekuchen:** **`$7E:2318`** (Zähler 0–99, Volle Hund-KP)
+- **Flügel:** **`$7E:2319`** (Zähler 0–99, Flucht zum Eingang)
+- **Elixier:** **`$7E:231A`** (Zähler 0–99, Volle Held- & Hund-KP)
+- **Elfenstaub:** **`$7E:231B`** (Zähler 0–99, Heilt Statusveränderungen)
+- **Zauberperle:** **`$7E:231C`** (Zähler 0–99, Vorfahrenmagie)
 
 ### Kampf- und Charge-Register
 > [!NOTE]

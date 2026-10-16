@@ -203,79 +203,84 @@ Das aktuell ausgerüstete Halsband des Hundes wird im Entity-Datenblock des Hund
 
 ## 7. Verbrauchsgegenstände (Consumables)
 
-Die Verbrauchsitems liegen in Bank `$05` ab Offset `0x0519E8`. Im WRAM werden ihre Mengen (jeweils `0` bis `99`) in einem 2-Byte-Abstand gespeichert:
+Die Verbrauchsitems liegen in Bank `$05` ab Offset `0x0519E8`. Im WRAM werden ihre Mengen (jeweils `0` bis `99`) unmittelbar anschließend an die Alchemie-Zutaten (`$7E:22FF` bis `$7E:2314`) als fortlaufende 1-Byte-Werte ab Basisadresse **`$7E:2315`** gespeichert (adressiert über `$7E:2315 + ID` in `$8E:8CDD`, `$8E:9B97`, `$8E:A818`):
 
-| Deutscher Name (ROM) | US-Originalname | ROM-Offset | WRAM-Adresse | Funktion / Wirkung |
-| :--- | :--- | :---: | :---: | :--- |
-| **Blätter** | Petals | `0x0519E8` | `$7E2364` | Heilt 40 KP bei Held oder Hund |
-| **Nektar** | Nectar | `0x0519F0` | `$7E2366` | Heilt 120 KP |
-| **Honig** | Honey | `0x0519F7` | `$7E2368` | Heilt 300 KP |
-| **Hundekuchen** | Dog Biscuit | `0x0519FD` | `$7E236A` | Füllt die KP des Hundes komplett auf |
-| **Flügel** | Wings | `0x051A09` | `$7E236C` | Teleportiert sofort zum Raumeingang (Flucht) |
-| **Elixier** | Essence | `0x051A10` | `$7E236E` | Füllt alle KP von Held und Hund vollständig auf |
-| **Elfenstaub** | Pixie Dust | `0x051A18` | — | Entfernt Statusveränderungen (Gift, Lähmung) |
-| **Zauberperle** | Call Bead | `0x051A23` | — | Aktiviert mächtige Zaubersprüche der Vorfahren |
+| Index | Deutscher Name (ROM) | US-Originalname | ROM-Offset | WRAM-Adresse (`$7E:2315 + ID`) | Funktion / Wirkung |
+| :---: | :--- | :--- | :---: | :---: | :--- |
+| `0x00` | **Blätter** | Petals | `0x0519E8` | **`$7E:2315`** | Heilt 40 KP bei Held oder Hund (Tabelle `$C5:0106`) |
+| `0x01` | **Nektar** | Nectar | `0x0519F0` | **`$7E:2316`** | Heilt 120 KP (Tabelle `$C5:0108`) |
+| `0x02` | **Honig** | Honey | `0x0519F7` | **`$7E:2317`** | Heilt 300 KP (Tabelle `$C5:010A`) |
+| `0x03` | **Hundekuchen** | Dog Biscuit | `0x0519FD` | **`$7E:2318`** | Füllt die KP des Hundes komplett auf |
+| `0x04` | **Flügel** | Wings | `0x051A09` | **`$7E:2319`** | Teleportiert sofort zum Raumeingang (Flucht) |
+| `0x05` | **Elixier** | Essence | `0x051A10` | **`$7E:231A`** | Füllt alle KP von Held und Hund vollständig auf |
+| `0x06` | **Elfenstaub** | Pixie Dust | `0x051A18` | **`$7E:231B`** | Entfernt Statusveränderungen (Gift, Lähmung) |
+| `0x07` | **Zauberperle** | Call Bead | `0x051A23` | **`$7E:231C`** | Aktiviert mächtige Zaubersprüche der Vorfahren |
 
 ---
 
-## 8. Tauschwaren auf dem Basar von Allelachema (Trade Goods)
+## 8. Tauschwaren auf dem Basar (Trade Goods)
 
-Auf dem großen Markt von **Allelachema** (Nobilia) tauscht der Held Güter in komplexen Tauschketten. Im WRAM werden die Stückzahlen der Waren in der 16-Bit-Variablen-Tabelle ab `$7E2258` verwaltet:
+Auf den Märkten von **Allelachema** (Nobilia) und **Terrorfels** (Gotika) tauscht der Held Waren in komplexen Tauschketten. Die Namenstabelle liegt im ROM bei **`$8C:BFE3`** (`0x0CBFE3`). Im WRAM werden die Stückzahlen der 12 Waren in der 16-Bit-Variablen-Tabelle ab `$7E:2258` als 16-Bit Little-Endian Words im Bereich **`$7E:2519` bis `$7E:252F`** verwaltet:
 
-| Tauschware (ROM) | US-Originalname | ROM-Offset | WRAM-Adresse | Basar-Verwendung |
-| :--- | :--- | :---: | :---: | :--- |
-| **Keramiktopf** | Ceramic Pot | `0x051A65` | `$7E251B` | Basisware; Startpunkt der Tauschketten |
-| **Perle** | Bead | `0x051A5F` | `$7E251D` | Universelle Handelswährung auf dem Basar |
-| **Gewürz** | Spice | `0x051AB4` | `$7E251F` | Wichtiges Gewürz für Schakalfiguren und Seide |
-| **Schakalfigur** | Golden Jackal | `0x051A76` | `$7E2521` | Wertvolle Reliktfigur für Großtausche |
-| **Juwelenskarabäus** | Jeweled Scarab | `0x051A83` | `$7E2523` | Edelstein-Käfer für permanente Relikte |
-| **Kalksteintafel** | Limestone Tablet | `0x051A94` | `$7E2525` | Schrifttafel für Amulette und Spezialgüter |
-| **Huhn** | Chicken | `0x051A71` | `$7E2527` | Federvieh für seltene Tauschgeschäfte |
-| **Reis** | Rice | `0x051AAF` | `$7E2529` | Nahrungsmittel; Schlüssel für Töpferwaren |
-| **Rosenwasser** | Perfume | `0x051AA3` | `$7E252B` | Wohlriechendes Duftwasser für Marktstände |
-| **Silberlöffel** | Spoon | `0x051ABB` | `$7E252D` | Besteck für Händler im oberen Marktbereich |
-| **Seide** | Silk | `0x051AC8` | `$7E252F` | Kostbarer Stoff für Rüstungs-Upgrades |
-| **Eintrittskarte** | Ticket | `0x051ACE` | `$7E2531` | Eintrittskarte für die Allelachema-Arena |
+| Index | Tauschware (ROM) | US-Originalname | ROM-Offset | WRAM-Adresse | Offset zu `$7E:2258` | Typische Verwendung / Markt |
+| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
+| `0x00` | **Perle** | Bead | `0x051A5F` | **`$7E:2519`** | `+0x02C1` | Universelle Handelswährung auf dem Basar |
+| `0x01` | **Keramiktopf** | Ceramic Pot | `0x051A65` | **`$7E:251B`** | `+0x02C3` | Basisware; Startpunkt der Tauschketten |
+| `0x02` | **Huhn** | Chicken | `0x051A71` | **`$7E:251D`** | `+0x02C5` | Federvieh für seltene Tauschgeschäfte |
+| `0x03` | **Schakalfigur** | Golden Jackal | `0x051A76` | **`$7E:251F`** | `+0x02C7` | Wertvolle Reliktfigur für Großtausche & Orakelknochen |
+| `0x04` | **Juwelenskarabäus** | Jeweled Scarab | `0x051A83` | **`$7E:2521`** | `+0x02C9` | Edelstein-Käfer für permanente Relikte & Orakelknochen |
+| `0x05` | **Kalksteintafel** | Limestone Tablet | `0x051A94` | **`$7E:2523`** | `+0x02CB` | Schrifttafel für Amulette und Spezialgüter |
+| `0x06` | **Rosenwasser** | Perfume | `0x051AA3` | **`$7E:2525`** | `+0x02CD` | Wohlriechendes Duftwasser für Marktstände |
+| `0x07` | **Reis** | Rice | `0x051AAF` | **`$7E:2527`** | `+0x02CF` | Nahrungsmittel; Schlüssel für Töpferwaren |
+| `0x08` | **Gewürz** | Spice | `0x051AB4` | **`$7E:2529`** | `+0x02D1` | Wichtiges Gewürz für Schakalfiguren und Seide |
+| `0x09` | **Silberlöffel** | Spoon | `0x051ABB` | **`$7E:252B`** | `+0x02D3` | Besteck für Händler im oberen Marktbereich |
+| `0x0A` | **Seide** | Silk | `0x051AC8` | **`$7E:252D`** | `+0x02D5` | Kostbarer Stoff für Rüstungs-Upgrades |
+| `0x0B` | **Eintrittskarte** | Ticket | `0x051ACE` | **`$7E:252F`** | `+0x02D7` | Eintrittskarte für Dr. Meinholds Freakshow |
+
+> [!NOTE]
+> Nicht alle Tauschwaren und Relikte werden in Allelachema gehandelt. Der **Orakelknochen** (`FLAG[0x0054]`) und die **Teufelskutte** (`FLAG[0x0059]`) werden exklusiv auf dem Markt in **Terrorfels / Gotika** (Map `0x7B` / `0x4E`) angeboten! Für den Orakelknochen verlangt der Händler dort 1 Schakalfigur (`$7E:251F`) und 1 Juwelenskarabäus (`$7E:2521`).
 
 ---
 
 ## 9. Permanente Relikte & Charms (Markt-Artefakte)
 
-Auf dem Basar von Allelachema können 14 permanente Artefakte ertauscht werden, die dem Helden passive Statusboni verleihen. Ihr Besitz wird im **Event-Flag Bitfield** ab `$7E2258` gespeichert:
+Auf den Märkten können 14 permanente Artefakte erworben bzw. ertauscht werden, die passive Boni verleihen. Die Menüprüfung der 14 Relikte erfolgt in der ROM-Routine **`$8C:C760`** über die Tabellen **`$8C:BF91`** (WRAM-Adresse), **`$8C:BFB9`** (Bitmaske) und **`$8C:C793`** (Beschreibungs-Pointer in Bank `$C5`):
 
-| Relikt (ROM-Name) | Event-Flag | ROM-Offset | Ingame-Beschreibung (ROM) |
-| :--- | :---: | :---: | :--- |
-| **Armor Ultra** | `0x0056` | `0x051ADD` | *Ultra Armor erhöht die Stärke Deiner Rüstung.* |
-| **Chocobo Ei** | `0x004E` | `0x051AE9` | *Das Chocobo Ei erhöht die KP's derer, die es besitzen.* |
-| **Insektengift** | `0x0058` | `0x051AF4` | *Wehrt Moskitos und Spinnen ab.* |
-| **Jadereif** | `0x005B` | `0x051B01` | *Erhöht Deine Fähigkeit, ein bestimmtes Ziel zu treffen.* |
-| **Jaguarring** | `0x004F` | `0x051B0A` | *Trage den Ring und drücke A, um wie ein Jaguar zu rennen.* |
-| **Mythenschärpe** | `0x0052` | `0x051B15` | *Die Kräfte dieses Gegenstandes sind unbekannt.* |
-| **Moxastab** | `0x005F` | `0x051B23` | *Deine Heilkräfte und Gegenstände werden durch den Stab effektiver.* |
-| **Orakelknochen** | `0x0051` | `0x051B2C` | *Bringt einige Leute dazu, Dir mehr zu erzählen.* |
-| **Rubinherz** | `0x005D` | `0x051B3A` | *Reduziert die Chancen der Gegner, Dir einen schweren Treffer zuzufügen.* |
-| **Schleifstab** | `0x005E` | `0x051B44` | *Erhöht die Kräfte aller Schwertwaffen in Deinem Besitz.* |
-| **Lebenszepter** | `0x0050` | `0x051B50` | *Erhöht Deine Fähigkeiten, Dich gegen Angriffe der Gegner zu erwehren.* |
-| **Sonnenstein** | `0x005C` | `0x051B5D` | *Erhöht Deine körperliche Stärke.* |
-| **Teufelskutte** | `0x0054` | `0x051B69` | *Erhöht Deine Fähigkeit, Angriffen auszuweichen.* |
-| **Drachenmünze** | `0x0059` | `0x051B76` | *Erhöht die magischen Abwehrkräfte des Besitzers.* |
+| Idx | Relikt (ROM-Name) | Event-Flag | WRAM-Adresse | Bitmaske | Name-Offset | Beschreibungs-Offset | Ingame-Beschreibung (ROM) |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| `0` | **Armor Ultra** | **`0x004D`** | `$7E:2261` | `0x0020` (Bit 5) | `0x051ADD` | `0x051BDC` | *Ultra Armor erhöht die Stärke Deiner Rüstung.* |
+| `1` | **Chocobo Ei** | **`0x004E`** | `$7E:2261` | `0x0040` (Bit 6) | `0x051AE9` | `0x051C0A` | *Das Chocobo Ei erhöht die KP's derer, die es besitzen.* |
+| `2` | **Insektengift** | **`0x004F`** | `$7E:2261` | `0x0080` (Bit 7) | `0x051AF4` | `0x051C41` | *Wehrt Moskitos und Spinnen ab.* |
+| `3` | **Jadereif** | **`0x0050`** | `$7E:2262` | `0x0001` (Bit 0) | `0x051B01` | `0x051C60` | *Erhöht Deine Fähigkeit, ein bestimmtes Ziel zu treffen.* |
+| `4` | **Jaguarring** | **`0x0051`** | `$7E:2262` | `0x0002` (Bit 1) | `0x051B0A` | `0x051C98` | *Trage den Ring und drücke A, um wie ein Jaguar zu rennen.* |
+| `5` | **Mythenschärpe** | **`0x0052`** | `$7E:2262` | `0x0004` (Bit 2) | `0x051B15` | `0x051CD2` | *Die Kräfte dieses Gegenstandes sind unbekannt.* |
+| `6` | **Moxastab** | **`0x0053`** | `$7E:2262` | `0x0008` (Bit 3) | `0x051B23` | `0x051D01` | *Deine Heilkräfte und Gegenstände werden durch den Stab effektiver.* |
+| `7` | **Orakelknochen** | **`0x0054`** | `$7E:2262` | `0x0010` (Bit 4) | `0x051B2C` | `0x051D44` | *Bringt einige Leute dazu, Dir mehr zu erzählen.* |
+| `8` | **Rubinherz** | **`0x0055`** | `$7E:2262` | `0x0020` (Bit 5) | `0x051B3A` | `0x051D74` | *Reduziert die Chancen der Gegner, Dir einen schweren Treffer zuzufügen.* |
+| `9` | **Schleifstab** | **`0x0056`** | `$7E:2262` | `0x0040` (Bit 6) | `0x051B44` | `0x051DBC` | *Erhöht die Kräfte aller Schwertwaffen in Deinem Besitz.* |
+| `10` | **Lebenszepter** | **`0x0057`** | `$7E:2262` | `0x0080` (Bit 7) | `0x051B50` | `0x051DF4` | *Erhöht Deine Fähigkeiten, Dich gegen Angriffe der Gegner zu erwehren.* |
+| `11` | **Sonnenstein** | **`0x0058`** | `$7E:2263` | `0x0001` (Bit 0) | `0x051B5D` | `0x051E3A` | *Erhöht Deine körperliche Stärke.* |
+| `12` | **Teufelskutte** | **`0x0059`** | `$7E:2263` | `0x0002` (Bit 1) | `0x051B69` | `0x051E5B` | *Erhöht Deine Fähigkeit, Angriffen auszuweichen.* |
+| `13` | **Drachenmünze** | **`0x005A`** | `$7E:2263` | `0x0004` (Bit 2) | `0x051B76` | `0x051E8B` | *Erhöht die magischen Abwehrkräfte des Besitzers.* |
 
 ---
 
 ## 10. Schlüsselobjekte & Quest-Gegenstände
 
-| Gegenstand (ROM) | US-Originalname | ROM-Offset | Quest-Bedeutung & Fundort |
-| :--- | :--- | :---: | :--- |
-| **Amulett des Karon** | Amulet of Karon | `0x051A4D` | Überfahrt über den Ozean / Skelettschiff (Flag `0x019D`) |
-| **Schappschapp** | Thud | `0x051A40` | Hundefutter / Lockmittel für den Hund |
-| **Mülleimer** | Trash Can | `0x051A36` | Rüstungs- und Alchemie-Behälter in Assitopia |
-| **Beutel** | Magic Bag | `0x051A2F` | Erweitert die Tragekapazität von Items |
-| **Diamantenauge** | Diamond Eye | `0x051B83` | Erstes Götzendiamantenauge (Pyramiden-Boss) |
-| **Diamantenaugen** | Diamond Eyes | `0x051B91` | Beide Diamantenaugen vereint |
-| **Energie** | Energy Core | `0x051BA0` | Reaktor-Energiekern für die Raumstation Assitopia |
-| **Ventil** | Gauge / Valve | `0x051BA8` | Steuerventil für die Vulkan- und Rohrsysteme |
-| **Königsschlüssel** | Queen's Key | `0x051BAF` | Öffnet die Gemächer im Schloss von Terrorfels |
-| **Wagenrad** | Wheel | `0x051BBF` | Ersatzrad für den Planwagen in Gotika |
+Die Schlüsselobjekte umfassen storyrelevante Items. Die Einträge 14 bis 19 der ROM-Tabellen `$8C:BF91` / `$8C:BFB9` verwalten die 6 Quest-Artefakte im WRAM bei **`$7E:2264`**:
+
+| Idx | Gegenstand (ROM) | US-Originalname | Event-Flag | WRAM-Adresse / Maske | ROM-Offset | Quest-Bedeutung & Fundort |
+| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
+| `14` | **Diamantenauge** | Diamond Eye | **`0x0060`** | `$7E:2264` (`0x0001`, Bit 0) | `0x051B83` | Erstes Götzendiamantenauge (Pyramiden-Boss Rimsala) |
+| `15` | **Diamantenaugen** | Diamond Eyes | **`0x0061`** | `$7E:2264` (`0x0002`, Bit 1) | `0x051B91` | Beide Diamantenaugen vereint |
+| `17` | **Ventil** | Gauge / Valve | **`0x0062`** | `$7E:2264` (`0x0004`, Bit 2) | `0x051BA8` | Steuerventil für die Vulkan- und Rohrsysteme |
+| `19` | **Wagenrad** | Wheel | **`0x0063`** | `$7E:2264` (`0x0008`, Bit 3) | `0x051BBF` | Ersatzrad für den Planwagen in Gotika |
+| `18` | **Königsschlüssel** | Queen's Key | **`0x0064`** | `$7E:2264` (`0x0010`, Bit 4) | `0x051BAF` | Öffnet die Gemächer im Schloss von Terrorfels |
+| `16` | **Energie** | Energy Core | **`0x0065`** | `$7E:2264` (`0x0020`, Bit 5) | `0x051BA0` | Reaktor-Energiekern für die Raumstation Assitopia |
+| — | **Amulett des Karon** | Amulet of Karon | `0x019D` | `$7E:228B` (`0x0020`, Bit 5) | `0x051A4D` | Überfahrt über den Ozean / Skelettschiff |
+| — | **Schappschapp** | Thud | — | — | `0x051A40` | Hundefutter / Lockmittel für den Hund |
+| — | **Mülleimer** | Trash Can | — | — | `0x051A36` | Rüstungs- und Alchemie-Behälter in Assitopia |
+| — | **Beutel** | Magic Bag | — | — | `0x051A2F` | Erweitert die Tragekapazität von Items |
 
 ---
 

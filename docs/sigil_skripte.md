@@ -152,71 +152,89 @@ done:
 - **Push (`0x29` / `$8C:F127`):** Schiebt den aktuellen Rechenwert aus DP `$02` und `$04` per `PHA` auf den CPU-Stack.
 - **Binäre Operatoren (z. B. `0x1A ADD` / `$8C:EEFC`):** Holen den linken Operanden per `PLA` vom CPU-Stack und addieren ihn zum rechten Operanden in DP `$02`.
 
-### Vollständige Tabelle aller Sub-Opcodes (`0x01` bis `0x6F`)
+### Vollständige Tabelle aller 112 Sub-Opcodes (`0x00` bis `0x6F`)
 
-| Sub-Opcode (`sub`) | Mnemonic / Funktion | Folgende Bytes | Beschreibung |
-| :---: | :--- | :---: | :--- |
-| `0x30` – `0x3F` | **Inline-Konstante 0..15** | *keine* | Lädt direkt den Wert `sub - 0x30` (`0` bis `15`) in `$02`. |
-| `0x60` – `0x6F` | **Inline-Konstante 16..31**| *keine* | Lädt direkt den Wert `sub - 0x60 + 16` (`16` bis `31`). |
-| `0x01` | **Negative Byte-Konstante** | `b: u8` | Liest Byte `b`, setzt High-Word auf `$FFFF` und Low-Word auf `$FF00 \| b`. Wert ist immer `-256 + b` (`-256` bis `-1`). |
-| `0x02` | **Unsigned Byte** | `val: u8` | 8-Bit Integer ohne Vorzeichen (`0` bis `255`). |
-| `0x03` | **32-Bit Konstante ($FFFF High)** | `val: u16` | Liest 16-Bit-Word `w` in `$02` und setzt `$04` bedingungslos auf `$FFFF` (Wert `-65536 + w`, wird im ROM nie benutzt). |
-| `0x04` | **Unsigned Word** | `val: u16` | 16-Bit Integer ohne Vorzeichen (`0` bis `65535`, Little-Endian). |
-| `0x05` | **Read RAM Flag** | `id: u16` | Liest Bit `FLAG[id]` aus dem persistenten WRAM ab `$7E2258`. |
-| `0x0A` | **Read Temp Flag** | `id: u16` | Liest Bit `TEMP_FLAG[id]` aus dem Scratchpad ab `$7E2834`. |
-| `0x06` | **Read Signed RAM Byte** | `addr: u16` | Liest `(i8) RAM[$7E2258 + addr]`. |
-| `0x07` | **Read Unsigned RAM Byte** | `addr: u16` | Liest `(u8) RAM[$7E2258 + addr]`. |
-| `0x08` | **Read Signed RAM Word** | `addr: u16` | Liest `(i16) RAM_WORD[$7E2258 + addr]`. |
-| `0x09` | **Read Unsigned RAM Word** | `addr: u16` | Liest `(u16) RAM_WORD[$7E2258 + addr]`. |
-| `0x0B` | **Read Signed Temp Byte** | `addr: u16` | Liest `(i8) TEMP[$7E2834 + addr]`. |
-| `0x0C` | **Read Unsigned Temp Byte** | `addr: u16` | Liest `(u8) TEMP[$7E2834 + addr]`. |
-| `0x0D` | **Read Signed Temp Word** | `addr: u16` | Liest `(i16) TEMP_WORD[$7E2834 + addr]`. |
-| `0x0E` | **Read Unsigned Temp Word** | `addr: u16` | Liest `(u16) TEMP_WORD[$7E2834 + addr]`. |
-| `0x0F` | **Test Script Arg Bit** | `bit: u8` | Prüft Bit in Subroutinen-Argument. |
-| `0x10` | **Read Signed Arg Byte** | `arg: u8` | Liest Byte-Argument. |
-| `0x11` | **Read Unsigned Arg Byte** | `arg: u8` | Liest Byte-Argument. |
-| `0x12` | **Read Signed Arg Word** | `arg: u8` | Liest Word-Argument. |
-| `0x13` | **Read Unsigned Arg Word** | `arg: u8` | Liest Word-Argument. |
+Die Sprungtabelle für Expression-Sub-Opcodes liegt bei `$8C:F442` (`0x0CF442`) und umfasst **112 Einträge** (`0x00` bis `0x6F`). Das gesetzte Bit 7 (`sub | 0x80`) markiert das letzte Token eines Ausdrucks:
+
+| Sub-Opcode (`sub`) | Handler | Mnemonic / Funktion | Folgende Bytes | Beschreibung |
+| :---: | :---: | :--- | :---: | :--- |
+| `0x00` | `$8C:EE63` | **`END_EXPR`** | *keine* | Lädt DP `$02` in `A` und kehrt sofort per `RTL` aus dem Evaluator zurück. |
+| `0x01` | `$8C:EE8D` | **Negative Byte-Konstante** | `b: u8` | Liest Byte `b`, setzt `$04 = $FFFF` und `$02 = $FF00 \| b`. Wert ist `-256 + b` (`-256` bis `-1`). |
+| `0x02` | `$8C:EE9E` | **Unsigned Byte** | `val: u8` | 8-Bit Integer ohne Vorzeichen (`$02 = val`, `$04 = 0`, Bereich `0` bis `255`). |
+| `0x03` | `$8C:EEAC` | **Signed/Negative Word** | `val: u16` | Liest 16-Bit-Word `w` in `$02` und setzt `$04 = $FFFF` (vorzeichenbehaftetes 16-Bit-Word bzw. `-65536 + w`). |
+| `0x04` | `$8C:EEBC` | **Unsigned Word** | `val: u16` | 16-Bit Integer ohne Vorzeichen (`$02 = val`, `$04 = 0`, Bereich `0` bis `65535`, Little-Endian). |
+| `0x05` | `$8C:F152` | **Read RAM Flag** | `id: u16` | Prüft Bit `FLAG[id]` im persistenten WRAM ab `$7E:2258 + (id >> 3)` via Maskentabelle `$80:A87E,X` (`0` oder `1`). |
+| `0x06` | `$8C:F198` | **Read Signed RAM Byte** | `addr: u16` | Liest `(i8) RAM[$7E:2258 + addr]` (Vorzeichenerweiterung auf 16/32 Bit, `$04 = $FFFF`). |
+| `0x07` | `$8C:F1ED` | **Read Unsigned RAM Byte** | `addr: u16` | Liest `(u8) RAM[$7E:2258 + addr]` (`$04 = 0`). |
+| `0x08` | `$8C:F239` | **Read Signed RAM Word** | `addr: u16` | Liest `(i16) RAM_WORD[$7E:2258 + addr]` (`$04 = $FFFF`). |
+| `0x09` | `$8C:F235` | **Read Unsigned RAM Word** | `addr: u16` | Liest `(u16) RAM_WORD[$7E:2258 + addr]` (`$04 = 0`). |
+| `0x0A` | `$8C:F142` | **Read Temp Flag** | `id: u16` | Prüft Bit `TEMP_FLAG[id]` im Scratchpad ab `$7E:2834 + (id >> 3)` (`0` oder `1`). |
+| `0x0B` | `$8C:F18C` | **Read Signed Temp Byte** | `addr: u16` | Liest `(i8) TEMP[$7E:2834 + addr]` (Vorzeichenerweiterung, `$04 = $FFFF`). |
+| `0x0C` | `$8C:F1D9` | **Read Unsigned Temp Byte** | `addr: u16` | Liest `(u8) TEMP[$7E:2834 + addr]` (`$04 = 0`). |
+| `0x0D` | `$8C:F221` | **Read Signed Temp Word** | `addr: u16` | Liest `(i16) TEMP_WORD[$7E:2834 + addr]` (`$04 = $FFFF`). |
+| `0x0E` | `$8C:F21D` | **Read Unsigned Temp Word** | `addr: u16` | Liest `(u16) TEMP_WORD[$7E:2834 + addr]` (`$04 = 0`). |
+| `0x0F` | `$8C:F130` | **Test Script Arg Bit** | `bit: u8` | Prüft Bit `bit & 7` in `Task + $0F + (bit >> 3)` (`0` oder `1`). |
+| `0x10` | `$8C:F17C` | **Read Signed Arg Byte** | `arg: u8` | Liest `(i8) Task[$0F + arg]` (Vorzeichenerweiterung, `$04 = $FFFF`). |
+| `0x11` | `$8C:F1C1` | **Read Unsigned Arg Byte** | `arg: u8` | Liest `(u8) Task[$0F + arg]` (`$04 = 0`). |
+| `0x12` | `$8C:F205` | **Read Signed Arg Word** | `arg: u8` | Liest `(i16) Task[$0F + arg]` (`$04 = $FFFF`). |
+| `0x13` | `$8C:F201` | **Read Unsigned Arg Word** | `arg: u8` | Liest `(u16) Task[$0F + arg]` (`$04 = 0`). |
 
 ### Unäre & Binäre Operatoren
 
-| Sub-Opcode | Mnemonic | Syntax | Beschreibung |
-| :---: | :---: | :---: | :--- |
-| `0x14` | **NOT** | `!expr` | Logisches NOT (`0` wird `1`, alles andere `0`). |
-| `0x15` | **BIT_NOT** | `~expr` | Bitweises Einerkomplement. |
-| `0x16` | **NEG** | `-expr` | Vorzeichenumkehr (Zweierkomplement). |
-| `0x29` | **PUSH** | — | Schiebt DP `$02` auf den 65816 CPU-Stack. |
-| `0x17` | **MUL** | `a * b` | 16-Bit Multiplikation. |
-| `0x18` | **DIV** | `a / b` | Ganzzahlige Division. |
-| `0x1A` | **ADD** | `a + b` | 16-Bit Addition (`CLC; ADC`). |
-| `0x1B` | **SUB** | `a - b` | 16-Bit Subtraktion (`SEC; SBC`). |
-| `0x1C` | **SHL** | `a << b`| Bitweiser Linksshift. |
-| `0x1D` | **SHR** | `a >> b`| Bitweiser Rechtsshift. |
-| `0x1E` | **LT** | `a < b` | Kleiner als (signed). |
-| `0x1F` | **GT** | `a > b` | Größer als (signed). |
-| `0x20` | **LE** | `a <= b`| Kleiner oder gleich (signed). |
-| `0x21` | **GE** | `a >= b`| Größer oder gleich (signed). |
-| `0x22` | **EQ** | `a == b`| Gleichheit (`1` wenn gleich, sonst `0`). |
-| `0x23` | **NE** | `a != b`| Ungleichheit (`1` wenn ungleich, sonst `0`). |
-| `0x24` | **BIT_AND** | `a & b` | Bitweises UND. |
-| `0x25` | **BIT_OR** | `a \| b`| Bitweises ODER. |
-| `0x26` | **BIT_XOR** | `a ^ b` | Bitweises Exklusiv-ODER. |
-| `0x27` | **LOG_OR** | `a \|\| b`| Logisches ODER (`1` wenn mindestens ein Operand ungleich 0). |
-| `0x28` | **LOG_AND** | `a && b`| Logisches UND (`1` wenn beide Operanden ungleich 0). |
+| Sub-Opcode | Handler | Mnemonic | Syntax | Beschreibung |
+| :---: | :---: | :---: | :---: | :--- |
+| `0x14` | `$8C:EEC9` | **NOT** | `!expr` | Logisches NOT (`0` wird `1`, alles andere `0`). |
+| `0x15` | `$8C:EED8` | **BIT_NOT** | `~expr` | Bitweises Einerkomplement (`EOR #$FFFF`). |
+| `0x16` | `$8C:EEE2` | **NEG** | `-expr` | Arithmetische Vorzeichenumkehr (`DEC; EOR #$FFFF`, setzt `$04 = $FFFF`). |
+| `0x17` | `$8C:F24D` | **MUL** | `a * b` | 16-Bit Multiplikation via Hardware-Multiplizierer `$4202`/`$4203` (beachtet Vorzeichen über `$04`). |
+| `0x18` | `$8C:F2C5` | **DIV** | `a / b` | 16-Bit Ganzzahldivision via Hardware-Dividierer `$4204`/`$4206` (beachtet Vorzeichen über `$04`). |
+| `0x19` | `$8C:F440` | *Trap* | — | Endlosschleife (`BRA $8CF440`, unbenutzter Modulo-/Trap-Slot). |
+| `0x1A` | `$8C:EEFC` | **ADD** | `a + b` | 16-Bit Addition (`PLA; PLA; CLC; ADC $02`). |
+| `0x1B` | `$8C:EEF2` | **SUB** | `a - b` | 16-Bit Subtraktion (`PLA; PLA; SEC; SBC $02`). |
+| `0x1C` | `$8C:EF06` | **SHL** | `a << b`| Bitweiser Linksshift (`ASL` in Schleife über `X = $02`). |
+| `0x1D` | `$8C:EF17` | **SHR** | `a >> b`| Rechtsshift (logisch via `LSR`, bzw. arithmetisch mit Vorzeichenerhalt falls `$04 != 0` und `a < 0`). |
+| `0x1E` | `$8C:EF6B` | **LT** | `a < b` | Kleiner als (beachtet Vorzeichen über `$04`). |
+| `0x1F` | `$8C:EFB1` | **GT** | `a > b` | Größer als (beachtet Vorzeichen über `$04`). |
+| `0x20` | `$8C:EFD6` | **LE** | `a <= b`| Kleiner oder gleich (beachtet Vorzeichen über `$04`). |
+| `0x21` | `$8C:EF8E` | **GE** | `a >= b`| Größer oder gleich (beachtet Vorzeichen über `$04`). |
+| `0x22` | `$8C:EF3D` | **EQ** | `a == b`| Gleichheit (`1` wenn gleich, sonst `0`). |
+| `0x23` | `$8C:EF54` | **NE** | `a != b`| Ungleichheit (`1` wenn ungleich, sonst `0`). |
+| `0x24` | `$8C:F004` | **BIT_AND** | `a & b` | Bitweises UND (`AND $02`). |
+| `0x25` | `$8C:EFFB` | **BIT_OR** | `a \| b`| Bitweises ODER (`ORA $02`). |
+| `0x26` | `$8C:F00D` | **BIT_XOR** | `a ^ b` | Bitweises Exklusiv-ODER (`EOR $02`). |
+| `0x27` | `$8C:F016` | **LOG_OR** | `a \|\| b`| Logisches ODER (`1` wenn mindestens ein Operand $\neq 0$). |
+| `0x28` | `$8C:F02B` | **LOG_AND** | `a && b`| Logisches UND (`1` wenn beide Operanden $\neq 0$). |
+| `0x29` | `$8C:F127` | **PUSH** | — | Schiebt DP `$02` und `$04` per `PHA` auf den 65816 CPU-Stack. |
 
-### Funktionen & Entity-Ziel-Selektoren
+### Inline-Konstanten, Funktionen & Entity-Selektoren
 
-| Sub-Opcode | Mnemonic | Beschreibung |
-| :---: | :--- | :--- |
-| `0x2A` | **`rand()`** | Liefert 16-Bit Pseudozufallszahl aus RNG-Register. |
-| `0x2B` | **`rand(max)`** | Liefert Zufallszahl im Intervall `[0, max - 1]`. |
-| `0x2C` | **`dialog_response()`**| Liefert Spieler-Auswahl im `[Marker]`-Dialogmenü (`0`, `1`, etc.). |
-| `0x50` / `0xD0`| **`PLAYER_BOY`** | Adressiert den Jungen als Entity-Ziel. |
-| `0x51` / `0xD1`| **`PLAYER_DOG`** | Adressiert den Hund als Entity-Ziel. |
-| `0x52` / `0xD2`| **`CONTROLLED`** | Adressiert die aktuell vom Spieler gelenkte Spielfigur. |
-| `0x53` / `0xD3`| **`NON_CONTROLLED`** | Adressiert den KI-gesteuerten Begleiter. |
-| `0xAD` | **`LAST_ENTITY`** | Zuletzt interagierter NPC oder auslösendes Sprite. |
-| `0xAE` | **`ATTACHED_ENTITY`**| An das Skript gebundenes Objekt. |
+| Sub-Opcode | Handler | Mnemonic | Beschreibung |
+| :---: | :---: | :--- | :--- |
+| `0x2A` | `$8C:F057` | **`rand()`** | Liefert 16-Bit Pseudozufallszahl via `JSL $80859B` (`$04 = 0`). |
+| `0x2B` | `$8C:F097` | **`rand_range(max)`** | Unärer Operator auf `$02`: Berechnet `($02 * rand16()) >> 16` via `$4202`/`$4203` (Zufallszahl in `[0, max - 1]`). |
+| `0x2C` | `$8C:F040` | **`dialog_response()`**| Ruft `JSL $8CAB84` für Fenster `$034D` auf und liefert den gewählten `[Marker]`-Optionsindex (`0`, `1`, ...). |
+| `0x2D` | `$8C:F062` | **`trigger_actor()`** | Lädt zuletzt gespawnte/referenzierte Entity aus `$0341` in `$02` und stellt sicher, dass `Entity+$3E >= 1` ist. |
+| `0x2E` | `$8C:F315` | **`attached_entity()`**| Lädt die an den aktuellen Task gebundene Entity aus `Task+$0D` (`$7E + $000D`). |
+| `0x2F` | `$8C:F440` | *Trap* | Endlosschleife (`BRA $8CF440`, unbenutzt). |
+| `0x30` – `0x3F`| `$8C:EE74` | **Inline-Konstante `0..15`** | Lädt direkt `(sub - 0x30)` (`0` bis `15`) in `$02` (`$04 = 0`). |
+| `0x40` – `0x4F`| `$8C:EE66` | **Inline-Konstante `-16..-1`**| Lädt direkt `$FFF0 \| (sub - 0x40)` (`-16` bis `-1`) in `$02` (`$04 = $FFFF`). |
+| `0x50` | `$8C:F321` | **`PLAYER_BOY`** | Lädt Entity-Pointer des Jungen aus `$0F40` (`$4E89`). |
+| `0x51` | `$8C:F32B` | **`PLAYER_DOG`** | Lädt Entity-Pointer des Hundes aus `$0F42` (`$4F37`). |
+| `0x52` | `$8C:F335` | **`CONTROLLED`** | Lädt Entity-Pointer der aktuell vom Spieler gesteuerten Figur aus `$0F44`. |
+| `0x53` | `$8C:F33F` | **`NON_CONTROLLED`** | Lädt Entity-Pointer des KI-gesteuerten Begleiters (`$0F44 ^ $4E89 ^ $4F37`, falls `$0F44 != 0`). |
+| `0x54` | `$8C:F351` | **`task_word_09()`** | Lädt das Task-Parameter-Word `Task+$09` (`$7E + $0009`) in `$02`. |
+| `0x55` | `$8C:F36E` | **`deref_w(addr)`** | Unärer Operator: Liest 16-Bit Word aus WRAM `$7E:0000 + $02` (`LDA $0000,X`, setzt `$04 = $FFFF`). |
+| `0x56` | `$8C:F37D` | **`deref_b(addr)`** | Unärer Operator: Liest 8-Bit Byte aus WRAM `$7E:0000 + $02` (`LDA $0000,X; AND #$00FF`, setzt `$04 = $FFFF`). |
+| `0x57` | `$8C:F35D` | **`is_partner_controlled()`**| Prüft `$0F44 == $0F42` (`1`, wenn aktuell der Hund gesteuert wird, sonst `0`). |
+| `0x58` | `$8C:F38F` | **`frame_timer_lo()`** | Liest das untere 16-Bit-Word des globalen Frame-Timers `$0B19`. |
+| `0x59` | `$8C:F399` | **`frame_timer_hi()`** | Liest das obere 16-Bit-Word des globalen Frame-Timers `$0B1B`. |
+| `0x5A` | `$8C:F3A3` | **`query_status_a(cur)`**| Unärer Operator: Speichert `$02` (Währungsindex) in `$05A7`, öffnet das Kauf-Händlermenü (`JSL $8E9FA8`) und liefert `1` (`$05A9 & $20`), `2` (`$05A9 & $10`) oder `0`. |
+| `0x5B` | `$8C:F3E7` | **`query_status_b(cur)`**| Unärer Operator: Speichert `$02` (Währungsindex) in `$05A7`, öffnet das Verkaufs-Händlermenü (`JSL $8E9EBE`) und liefert `1` (`$05A9 & $10`), `2` (`$05A9 & $20`), `3` (`$05A9 & $40`) oder `0`. |
+| `0x5C` | `$8C:F075` | **`entity_stat_diff(ent)`**| Unärer Operator: Berechnet `max(0, Entity[+$2A] - Entity[+$76] - 1)` (effektive Rest-HP abzüglich ausstehendem Schaden). |
+| `0x5D` – `0x5F`| `$8C:F440` | *Trap* | Endlosschleife (`BRA $8CF440`, unbenutzt). |
+| `0x60` – `0x6F`| `$8C:EE7F` | **Inline-Konstante `16..31`**| Lädt direkt `(sub - 0x60) + 16` (`16` bis `31`) in `$02` (`$04 = 0`). |
+
+> **Hinweis zum Entity-Target-Evaluator (`$8C:F08F`):** Viele Entity-bezogene Opcodes rufen statt `$8C:EE44` direkt `$8C:F08F` auf. Dieser setzt vorab `$8A = 1`, sodass **genau ein einzelnes Expression-Token** ausgewertet wird, und speichert das Ergebnis sowohl in `$02` als auch als Entity-Basispointer in `$4C` (und `Y`).
 
 ---
 
@@ -226,201 +244,202 @@ Die primäre Sprungtabelle liegt bei `$8C:ECBE` (`0x0CECBE`) und umfasst exakt *
 
 | Opcode | Handler | Status | Argumente | Mnemonic / Funktion |
 | :---: | :---: | :---: | :--- | :--- |
-| `0x00` | `$8C:D6CA` | Aktiv | *keine* | **`END` / `RETURN`** – Subroutinen-Rücksprung (falls Caller-Link aktiv) oder Task-Terminierung. |
+| `0x00` | `$8C:D6CA` | Aktiv | *keine* | **`END` / `RETURN`** – Subroutinen-Rücksprung (falls Caller-Link `Task+$0B != 0`) oder Task-Terminierung (`$7E:2F28`). |
 | `0x01` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzter Opcode (verweist auf 65816-CPU-Halt `STP`). |
 | `0x02` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzter Opcode (verweist auf 65816-CPU-Halt `STP`). |
 | `0x03` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzter Opcode (verweist auf 65816-CPU-Halt `STP`). |
-| `0x04` | `$8C:D81D` | Aktiv | off: i16 | **`SKIP`** – Relativer Sprung im Skript um 16-Bit-Word. |
-| `0x05` | `$8C:D811` | Aktiv | off: u8 | **`SKIP_BACK`** – Relativer Rückwärtssprung um `256 - off` Bytes (Zieladresse: `stmt_start - 256 + off`). Terminal-Befehl am Schleifenende. |
+| `0x04` | `$8C:D81D` | Aktiv | off: i16 | **`SKIP`** – Relativer Sprung im Skript um 16-Bit-Word (relativ zum Ende des Befehls, mit Bank-Übertrag auf `$84`). |
+| `0x05` | `$8C:D811` | Aktiv | off: u8 | **`SKIP_BACK`** – Relativer Rückwärtssprung (`($FF00 \| off) - 2` relativ zum PC nach dem Operanden, d. h. `stmt_start - 256 + off`). Terminal-Befehl am Schleifenende. |
 | `0x06` | `$8C:ECB6` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (verweist auf 65816-CPU-Halt `STP`). |
-| `0x07` | `$8C:D7E9` | Aktiv | addr: u24 | **`ASYNC_CALL`** – Startet Subskript asynchron in neuem Task-Slot ($7E:2F28). |
-| `0x08` | `$8C:D84E` | Aktiv | cond: expr, off: i16 | **`IF`** – Verzweigt um `off`, falls Bedingung `cond` wahr (ungleich 0) ist. |
-| `0x09` | `$8C:D85D` | Aktiv | cond: expr, off: i16 | **`IFNOT`** – Verzweigt um `off`, falls Bedingung `cond` falsch (gleich 0) ist. |
-| `0x0A` | `$8C:D87A` | Aktiv | cur: expr, amt: u24, off: i16 | **`IF_MONEY_GE`** – Verzweigt, wenn Währung `cur >= amt`. |
-| `0x0B` | `$8C:D8B9` | Aktiv | cur: expr, amt: u24, off: i16 | **`IF_MONEY_LT`** – Verzweigt, wenn Währung `cur < amt`. |
-| `0x0C` | `$8C:DC27` | Aktiv | bit: u16, val: expr | **`SET_RAM_FLAG`** – Schreibt Ergebnis von `val` in Story-Bitfield `FLAG[bit]`. |
-| `0x0D` | `$8C:DC17` | Aktiv | bit: u16, val: expr | **`SET_TEMP_FLAG`** – Schreibt Ergebnis in Scratchpad-Bitfield `TEMP_FLAG[bit]`. |
-| `0x0E` | `$8C:DC05` | Aktiv | bit: u8, val: expr | **`SET_ARG_BIT`** – Schreibt Ergebnis in ein Bit eines Subroutinen-Arguments. |
+| `0x07` | `$8C:D7E9` | Aktiv | addr: u24 | **`ASYNC_CALL` / `FORK`** – Startet Subskript asynchron in neuem Task-Slot (`$8C:D2FD`, erbt `Task+$0D`, reiht via `$8C:D26B` ein). |
+| `0x08` | `$8C:D84E` | Aktiv | cond: expr, off: i16 | **`IF`** – Springt um `off` Bytes weiter, falls `cond != 0` (`F0 03` überspringt den Sprung bei `cond == 0`). |
+| `0x09` | `$8C:D85D` | Aktiv | cond: expr, off: i16 | **`IFNOT`** – Springt um `off` Bytes weiter, falls `cond == 0` (`D0 03` überspringt den Sprung bei `cond != 0`). |
+| `0x0A` | `$8C:D87A` | Aktiv | cur: expr, amt: u24, off: i16 | **`IF_MONEY_GE`** – Prüft 24-Bit-Währung `$000AC6,X >= amt`; springt bei `>= amt` um `off` Bytes (bzw. überspringt Block bei `< amt` je nach Compiler-Konvention). |
+| `0x0B` | `$8C:D8B9` | Aktiv | cur: expr, amt: u24, off: i16 | **`IF_MONEY_LT`** – Prüft 24-Bit-Währung `$000AC6,X < amt`; springt bei `< amt` um `off` Bytes. |
+| `0x0C` | `$8C:DC27` | Aktiv | bit: u16, val: expr | **`SET_RAM_FLAG`** – Setzt (`val != 0`) oder löscht (`val == 0`) Bit `FLAG[bit]` in `$7E:2258 + (bit >> 3)`. |
+| `0x0D` | `$8C:DC17` | Aktiv | bit: u16, val: expr | **`SET_TEMP_FLAG`** – Setzt oder löscht Bit `TEMP_FLAG[bit]` im Scratchpad `$7E:2834 + (bit >> 3)`. |
+| `0x0E` | `$8C:DC05` | Aktiv | bit: u8, val: expr | **`SET_ARG_BIT`** – Setzt oder löscht Bit `bit & 7` in `Task + $0F + (bit >> 3)`. |
 | `0x0F` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x10` | `$8C:DBED` | Aktiv | addr: u16, val: expr | **`WRITE_RAM_BYTE`** – Schreibt 8-Bit-Wert in `$7E:2258 + addr`. |
-| `0x11` | `$8C:DBE8` | Aktiv | addr: u16, val: expr | **`WRITE_TEMP_BYTE`** – Schreibt 8-Bit-Wert in Scratchpad `$7E:2834 + addr`. |
-| `0x12` | `$8C:DBCF` | Aktiv | arg: u8, val: expr | **`WRITE_ARG_BYTE`** – Schreibt 8-Bit-Wert in Subroutinen-Argument `arg`. |
+| `0x10` | `$8C:DBED` | Aktiv | addr: u16, val: expr | **`WRITE_RAM_BYTE`** – Schreibt 8-Bit-Byte (`SEP #$21; STA $0000,X`) in `$7E:2258 + addr`. |
+| `0x11` | `$8C:DBE8` | Aktiv | addr: u16, val: expr | **`WRITE_TEMP_BYTE`** – Schreibt 8-Bit-Byte in Scratchpad `$7E:2834 + addr`. |
+| `0x12` | `$8C:DBCF` | Aktiv | arg: u8, val: expr | **`WRITE_ARG_BYTE`** – Schreibt 8-Bit-Byte in Subroutinen-Argument `Task + $0F + arg`. |
 | `0x13` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x14` | `$8C:DBED` | *Alias* | addr: u16, val: expr | **`WRITE_RAM_BYTE`** – Alias zu Opcode 0x10. |
-| `0x15` | `$8C:DBE8` | *Alias* | addr: u16, val: expr | **`WRITE_TEMP_BYTE`** – Alias zu Opcode 0x11. |
-| `0x16` | `$8C:DBCF` | *Alias* | arg: u8, val: expr | **`WRITE_ARG_BYTE`** – Alias zu Opcode 0x12. |
-| `0x17` | `$8C:DB86` | Aktiv | addr: u16, val: u16 | **`WRITE_VAR_FAST`** – Schnelles Word-Schreiben direkt in WRAM ohne Expression-Engine. |
-| `0x18` | `$8C:DBBA` | Aktiv | addr: u16, val: expr | **`WRITE_RAM_WORD`** – Schreibt 16-Bit-Word in `$7E:2258 + addr`. |
-| `0x19` | `$8C:DBB5` | Aktiv | addr: u16, val: expr | **`WRITE_TEMP_WORD`** – Schreibt 16-Bit-Word in Scratchpad `$7E:2834 + addr`. |
-| `0x1A` | `$8C:DB9C` | Aktiv | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Schreibt 16-Bit-Word in Subroutinen-Argument `arg`. |
-| `0x1B` | `$8C:DB54` | Aktiv | w1: u16, w2: u16, b1: u8, b2: u8 | **`COPY_RAM_WORDS` / `SET_RAM_PAIRS_X8`** – Liest 6 Bytes (`w1: u16, w2: u16, b1: u8, b2: u8`) und schreibt `b1*8` nach `$2258+w1` sowie `b2*8` nach `$2258+w2` (6 Bytes; in Tools historisch als 3 Words `src, dst, len` notiert). |
-| `0x1C` | `$8C:DBBA` | *Alias* | addr: u16, val: expr | **`WRITE_RAM_WORD`** – Alias zu Opcode 0x18. |
-| `0x1D` | `$8C:DBB5` | *Alias* | addr: u16, val: expr | **`WRITE_TEMP_WORD`** – Alias zu Opcode 0x19. |
-| `0x1E` | `$8C:DB9C` | *Alias* | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Alias zu Opcode 0x1A. |
+| `0x14` | `$8C:DBED` | *Alias* | addr: u16, val: expr | **`WRITE_RAM_BYTE`** – Exakter Alias zu Opcode `0x10` (`$8C:DBED`). |
+| `0x15` | `$8C:DBE8` | *Alias* | addr: u16, val: expr | **`WRITE_TEMP_BYTE`** – Exakter Alias zu Opcode `0x11` (`$8C:DBE8`). |
+| `0x16` | `$8C:DBCF` | *Alias* | arg: u8, val: expr | **`WRITE_ARG_BYTE`** – Exakter Alias zu Opcode `0x12` (`$8C:DBCF`). |
+| `0x17` | `$8C:DB86` | Aktiv | addr: u16, val: u16 | **`WRITE_VAR_FAST`** – Schreibt konstantes 16-Bit-Word `val` direkt nach `$7E:2258 + addr` ohne Expression-Engine. |
+| `0x18` | `$8C:DBBA` | Aktiv | addr: u16, val: expr | **`WRITE_RAM_WORD`** – Schreibt 16-Bit-Word (`STA $0000,X`) nach `$7E:2258 + addr`. |
+| `0x19` | `$8C:DBB5` | Aktiv | addr: u16, val: expr | **`WRITE_TEMP_WORD`** – Schreibt 16-Bit-Word nach `$7E:2834 + addr`. |
+| `0x1A` | `$8C:DB9C` | Aktiv | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Schreibt 16-Bit-Word in Subroutinen-Argument `Task + $0F + arg`. |
+| `0x1B` | `$8C:DB54` | Aktiv | w1: u16, w2: u16, b1: u8, b2: u8 | **`SET_RAM_PAIRS_X8`** – Liest 6 Bytes und schreibt `b1 * 8` nach `$7E:2258 + w1` sowie `b2 * 8` nach `$7E:2258 + w2`. |
+| `0x1C` | `$8C:DBBA` | *Alias* | addr: u16, val: expr | **`WRITE_RAM_WORD`** – Exakter Alias zu Opcode `0x18` (`$8C:DBBA`, 16-Bit-Word!). |
+| `0x1D` | `$8C:DBB5` | *Alias* | addr: u16, val: expr | **`WRITE_TEMP_WORD`** – Exakter Alias zu Opcode `0x19` (`$8C:DBB5`, 16-Bit-Word!). |
+| `0x1E` | `$8C:DB9C` | *Alias* | arg: u8, val: expr | **`WRITE_ARG_WORD`** – Exakter Alias zu Opcode `0x1A` (`$8C:DB9C`, 16-Bit-Word!). |
 | `0x1F` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x20` | `$8C:DFD9` | Aktiv | x: u8, y: u8 | **`SET_CAMERA_BOUNDS`** – Setzt Kamera-Scrolling-Grenzen (Multiplikation mit 8 in DP $46/$48). |
-| `0x21` | `$8C:DFA2` | Aktiv | x: u8, y: u8 | **`CAMERA_FOLLOW`** – Setzt Task-Slots zurück (via `$8C:D2CE`), startet Map-Skript (via `$8F:B33F`) und bindet Kamera-Fokus an Koordinaten (Terminal-Befehl). |
-| `0x22` | `$8C:DF5A` | Aktiv | x: u8, y: u8, map: u16 | **`CHANGE_MAP`** – Teleportiert Spielfigur in neuen Raum `map` an Position `(x, y)` (Terminal-Befehl). |
-| `0x23` | `$8C:E806` | Aktiv | scroll: u16 | **`SET_MAP_SCROLL`** – Manueller Scroll-Offset für Kachelkarten in WRAM `$0E70`. |
+| `0x20` | `$8C:DFD9` | Aktiv | x: u8, y: u8 | **`SET_CAMERA_POS` / `TELEPORT_LOCAL`** – Setzt `$46 = x*8, $48 = y*8, $44 = 0` und ruft `$8F:B3E5` auf (setzt Kamera via `$90:981A` und positioniert aktive Spielerfiguren `$0F40`/`$0F42` auf derselben Karte um). |
+| `0x21` | `$8C:DFA2` | Aktiv | x: u8, y: u8 | **`CAMERA_FOLLOW` / `RELOAD_MAP_AT`** – Setzt Task-Slots zurück (`$8C:D2CE`), initialisiert Entities (`$8F:B33F`), positioniert bei `(x*8, y*8)` (`$8F:B3E5`) und startet Map-Skript neu (`$8C:D27E`, Terminal-Befehl `CLC; RTS`). |
+| `0x22` | `$8C:DF5A` | Aktiv | x: u8, y: u8, map: u16 | **`CHANGE_MAP`** – Lädt neue Karte `map` (`STA $0ADB; JSL $908E95`) an Position `(x*8, y*8)` und startet deren Map-Enter-Skript (Terminal-Befehl `CLC; RTS`). |
+| `0x23` | `$8C:E806` | Aktiv | scroll: u16 | **`SET_MAP_SCROLL`** – Schreibt 16-Bit-Wert nach WRAM `$0E70`. |
 | `0x24` | `$8C:ECB7` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x25` | `$8C:ECB8` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x26` | `$8C:E007` | Aktiv | *keine* | **`FADE_IN`** – Hellt den Bildschirm aus Schwarz auf Normalhelligkeit auf (Helligkeit auf `$0F`). |
-| `0x27` | `$8C:DFF9` | Aktiv | *keine* | **`FADE_OUT`** – Dunkelt den Bildschirm schrittweise bis Schwarz ab (schreibt `$000F` nach `$0B8B` und `$8000` nach `$0B83`, verwendet kein Forced Blanking `$80`). |
+| `0x26` | `$8C:E007` | Aktiv | *keine* | **`FADE_IN`** – Blendet den Bildschirm auf volle Helligkeit ein (`$0B8B = $000F`, `$0B83 = $800F`; beendet ggf. Forced Blank via `$80:85D8`/`$90:94B0`). |
+| `0x27` | `$8C:DFF9` | Aktiv | *keine* | **`FADE_OUT`** – Blendet den Bildschirm schrittweise auf Schwarz ab (`$0B8B = $000F`, `$0B83 = $8000`). |
 | `0x28` | `$8C:ECB9` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x29` | `$8C:D7B2` | Aktiv | addr: u24 | **`CALL`** – Synchroner Subroutinen-Aufruf (speichert Rückkehr-Link in `+0x0B`). |
-| `0x2A` | `$8C:DF50` | Aktiv | target: entity | **`FREEZE_ENTITY`** – Friert Aktionen und Bewegungen einer Figur ein. |
-| `0x2B` | `$8C:DEFA` | Aktiv | target: entity | **`UNFREEZE_ENTITY`** – Gibt eingefrorene Spielfigur/NPC wieder frei. |
-| `0x2C` | `$8C:DF13` | Aktiv | flags: u8 | **`LOCK_PLAYER`** – Sperrt Controller-Eingaben für Dialoge und Zwischensequenzen. |
-| `0x2D` | `$8C:DEBD` | Aktiv | flags: u8 | **`UNLOCK_PLAYER`** – Hebt Eingabespalte auf und gibt Kontrolle an Spieler zurück. |
-| `0x2E` | `$8C:D62D` | Aktiv | cond: expr | **`WAIT_UNTIL`** – Pausiert den Skript-Task, bis Bedingung `cond` wahr wird. |
+| `0x29` | `$8C:D7B2` | Aktiv | addr: u24 | **`CALL`** – Synchroner Subroutinen-Aufruf (erzeugt Child-Task via `$8C:D2FD`, speichert Caller-Task in `Child+$0B` und ersetzt den aktuellen Slot in `$7E:2F28,Y`). |
+| `0x2A` | `$8C:DF50` | Aktiv | target: entity | **`FREEZE_ENTITY` / `LOCK_ENTITY`** – Evaluiert `target` (`$8C:F08F`) und ruft `$8F:CD0D` auf (gibt Pfadknoten via `$8F:98AF` frei und setzt Skript-Lock-Bit `Entity+$10 \|= $0020`). |
+| `0x2B` | `$8C:DEFA` | Aktiv | target: entity | **`UNFREEZE_ENTITY` / `UNLOCK_ENTITY`** – Evaluiert `target` (`$8C:F08F`) und ruft `$8F:CCE2` auf (löscht Skript-Lock-Bits `Entity+$10 &= $DFDE` und `Entity+$12 &= $FCFF`). |
+| `0x2C` | `$8C:DF13` | Aktiv | mask: u8 | **`LOCK_PLAYER`** – Ruft `$8F:CD0D` (Skript-Lock `+$10 \|= $0020`) für alle in Bitmaske `mask` gesetzten Ziele auf (`$01` = Junge `$4E89`, `$02` = Hund `$4F37`, `$08` = `Task+$0D`). |
+| `0x2D` | `$8C:DEBD` | Aktiv | mask: u8 | **`UNLOCK_PLAYER`** – Ruft `$8F:CCE2` (Skript-Unlock `+$10 &= $DFDE`) für alle in Bitmaske `mask` gesetzten Ziele auf (`$01` = Junge, `$02` = Hund, `$08` = `Task+$0D`). |
+| `0x2E` | `$8C:D62D` | Aktiv | target: expr | **`WAIT_UNTIL` / `WAIT_ENTITY`** – Wartet auf Abschluss einer Bewegung/Aktion von Entity `target` (`>=$2000`: prüft Pfad/Task `$006C,Y` und `$006A,Y`; setzt Task-Status `+$03 = 6`). |
 | `0x2F` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x30` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_1`** – Spielt Soundeffekt auf Kanal 1 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
-| `0x31` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_2`** – Spielt Soundeffekt auf Kanal 2 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
-| `0x32` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_3`** – Spielt Soundeffekt auf Kanal 3 (`sfx_id` ist Byte-Index in ROM-Tabelle `$8C:8700`, Aufruf `$8C:8662`). |
-| `0x33` | `$8C:DABF` | Aktiv | track_id: u8 | **`PLAY_BGM`** – Wechselt Hintergrundmusik (`track_id` ist gerader Byte-Offset `0x02`, `0x04`, `0x5C`, `0x78` etc. in 16-Bit-BGM-Tabelle `$8C:87E0`, Aufruf `$8C:85E7`). |
+| `0x30` | `$8C:DA90` | Aktiv | sfx_id: u8 | **`PLAY_SFX_1`** – Sendet ggf. Panning/Param `$243B` via Kommando `$30` (`$8C:84F1`) und spielt SFX `sfx_id` über Tabelle `$8C:8700` (`$8C:8662`). |
+| `0x31` | `$8C:DA90` | *Alias* | sfx_id: u8 | **`PLAY_SFX_2`** – Exakter Alias zu Opcode `0x30` (`$8C:DA90`). |
+| `0x32` | `$8C:DA90` | *Alias* | sfx_id: u8 | **`PLAY_SFX_3`** – Exakter Alias zu Opcode `0x30` (`$8C:DA90`). |
+| `0x33` | `$8C:DABF` | Aktiv | track_id: u8 | **`PLAY_BGM`** – Lädt und startet Hintergrundmusik (`track_id` indiziert `$8C:87E0`, Aufruf `$8C:85E7`). |
 | `0x34` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x35` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x36` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x37` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x38` | `$8C:D5F6` | Aktiv | *keine* | **`YIELD`** – Gibt CPU für den aktuellen Frame an die Game-Engine ab (`CLC; RTS`). |
-| `0x39` | `$8C:D609` | Aktiv | frames: expr | **`SLEEP_SUB`** – Pausiert Task für dynamisch berechnete Anzahl Frames. |
-| `0x3A` | `$8C:D5F6` | *Alias* | *keine* | **`YIELD`** – Alias zu Opcode 0x38. |
-| `0x3B` | `$8C:D609` | *Alias* | frames: expr | **`SLEEP_SUB`** – Alias zu Opcode 0x39. |
-| `0x3C` | `$8C:E0ED` | Aktiv | type: u16, param: u16, x: u8, y: u8 | **`SPAWN_NPC_PARAM`** – Erzeugt NPC über Tabelle `$8E:B55A` mit 16-Bit Zusatzparameter. |
-| `0x3D` | `$8C:E14C` | Aktiv | ent: expr, val: u16 | **`SET_NPC_TALK_SCRIPT`** – Weist NPC Script/Param zu (`E w`). |
+| `0x38` | `$8C:D5F6` | Aktiv | *keine* | **`YIELD`** – Gibt CPU für den aktuellen Frame ab (`CLC; RTS`, PC bleibt auf dem nächsten Befehl). |
+| `0x39` | `$8C:D609` | Aktiv | frames: expr | **`SLEEP_EXPR` / `WAIT_FRAME`** – Pausiert Task für `frames` Ticks (speichert Zielzeit `$0B19 + frames - 1` in `Task+$05..$07`, Status `Task+$03 = 4`). |
+| `0x3A` | `$8C:D5F6` | *Alias* | *keine* | **`YIELD`** – Exakter Alias zu Opcode `0x38` (`$8C:D5F6`). |
+| `0x3B` | `$8C:D609` | *Alias* | frames: expr | **`SLEEP_EXPR` / `WAIT_ANIM`** – Exakter Alias zu Opcode `0x39` (`$8C:D609`). |
+| `0x3C` | `$8C:E0ED` | Aktiv | type: u16, flags: u16, x: u8, y: u8 | **`SPAWN_NPC_PARAM`** – Spawnt Entity (`$8E:B55A,X`) bei `(x*8, y*8)` mit Flags `flags` (`$8F:B045` falls Bit 15 = 0, sonst `$8F:B04A`; speichert neuen Entity-Pointer in `$0341`). |
+| `0x3D` | `$8C:E14C` | Aktiv | ent: entity, script_id: u16 | **`SET_NPC_TALK_SCRIPT` / `ATTACH_SCRIPT`** – Schreibt `script_id` nach `Entity+$66` und Trigger-Flag `#$0040` nach `Entity+$68`. |
 | `0x3E` | `$8C:ECBC` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x3F` | `$8C:E161` | Aktiv | expr: expr, w1: u16, w2: u16 | **`SET_NPC_SCRIPT`** – Startet Verhaltensskript auf NPC (`E w w`). |
+| `0x3F` | `$8C:E161` | Aktiv | ent: expr, flags: u16, script_id: u16 | **`SET_NPC_SCRIPT`** – Schreibt `flags` nach `Entity+$68` und `script_id` nach `Entity+$66`; falls `flags & $0400 != 0`, wird das Skript sofort via `$8C:D232` gestartet. |
 | `0x40` | `$8C:ECBB` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x41` | `$8C:ECBA` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x42` | `$8C:E3EF` | Aktiv | target: entity, x: u8, y: u8 | **`TELEPORT_ENTITY`** – Setzt Position einer Entity auf feste Kachel-Koordinaten. |
-| `0x43` | `$8C:E40E` | Aktiv | target: expr, x: expr, y: expr | **`TELEPORT_ENTITY_EXPR`** – Setzt Position anhand dynamisch berechneter Koordinaten (`E E E`). |
-| `0x44` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_0_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 0 via `$8C:DD50` (5 Bytes). |
-| `0x45` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_1_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 1 via `$8C:DD50` (5 Bytes). |
-| `0x46` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_2_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 2 via `$8C:DD50` (5 Bytes). |
-| `0x47` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_3_SIZE`** – Setzt Fenster-ID, Position und Maße für Textfenster 3 via `$8C:DD50` (5 Bytes). |
-| `0x48` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_0_DEFAULT`** – Setzt Textfenster 0 auf Standardmaße (2, 2, 28, 10). |
-| `0x49` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_1_DEFAULT`** – Setzt Textfenster 1 auf Standardmaße. |
-| `0x4A` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_2_DEFAULT`** – Setzt Textfenster 2 auf Standardmaße. |
-| `0x4B` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_3_DEFAULT`** – Setzt Textfenster 3 auf Standardmaße. |
-| `0x4C` | `$8C:DC65` | Aktiv | dummy: u8 | **`NOP_SKIP_BYTE`** – Überspringt 1 Byte im Skript und fährt sofort fort (`SEC; RTS`). |
-| `0x4D` | `$8C:DC67` | Aktiv | *keine* | **`NOP`** – Keine Operation; sofortige Fortsetzung im selben Frame. |
-| `0x4E` | `$8C:E1B1` | Aktiv | target: entity | **`DESPAWN_ENTITY`** – Entfernt Sprite/NPC vollständig von der Map. |
+| `0x42` | `$8C:E3EF` | Aktiv | target: entity, x: u8, y: u8 | **`TELEPORT_ENTITY`** – Teleportiert `target` auf Rasterkoordinaten `(x*8, y*8)` via `$8F:C266`/`$8F:C279` (2 Byte-Koordinaten, historisch in Tools teils als 16-Bit-Word geführt). |
+| `0x43` | `$8C:E40E` | Aktiv | target: entity, x: expr, y: expr | **`TELEPORT_ENTITY_EXPR`** – Teleportiert `target` auf berechnete Pixelkoordinaten `(x, y)` via `$8F:C266`/`$8F:C279`. |
+| `0x44` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_0_SIZE`** – Blendet HUD aus (`$8C:C906`), konfiguriert Fenster-Slot `$034D + win * $2C` (`$8C:DD50`) auf `(x, y, w, h)` und öffnet das Fenster (`$8C:B051`). |
+| `0x45` | `$8C:DC79` | *Alias* | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_1_SIZE`** – Exakter Alias zu Opcode `0x44` (`$8C:DC79`). |
+| `0x46` | `$8C:DC79` | *Alias* | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_2_SIZE`** – Exakter Alias zu Opcode `0x44` (`$8C:DC79`). |
+| `0x47` | `$8C:DC79` | Aktiv | win: u8, x: u8, y: u8, w: u8, h: u8 | **`SET_WINDOW_3_SIZE`** – Wie `0x44`, erkennt aber `X == $008E` (Opcode `0x47`) und setzt abweichend VRAM-Basis `+$26 = $1F64`, `+$2A = 1` und Flag `+$12 \|= $0010`. |
+| `0x48` | `$8C:DCE7` | Aktiv | *keine* | **`RESET_WINDOW_0_DEFAULT`** – Blendet HUD aus (`$8C:C906`) und öffnet Fenster 0 (`$034D`) mit Standardmaßen `(x=2, y=2, w=28, h=10)` via `$8C:B051`. |
+| `0x49` | `$8C:DCE7` | *Alias* | *keine* | **`RESET_WINDOW_1_DEFAULT`** – Exakter Alias zu Opcode `0x48` (`$8C:DCE7`). |
+| `0x4A` | `$8C:DCE7` | *Alias* | *keine* | **`RESET_WINDOW_2_DEFAULT`** – Exakter Alias zu Opcode `0x48` (`$8C:DCE7`). |
+| `0x4B` | `$8C:DCE7` | *Alias* | *keine* | **`RESET_WINDOW_3_DEFAULT`** – Exakter Alias zu Opcode `0x48` (`$8C:DCE7`). |
+| `0x4C` | `$8C:DC65` | Aktiv | dummy: u8 | **`NOP_SKIP_BYTE`** – Überspringt 1 Byte im Skript (`INC $82`) und fährt sofort fort (`SEC; RTS`). |
+| `0x4D` | `$8C:DC67` | Aktiv | *keine* | **`NOP`** – Keine Operation; sofortige Fortsetzung im selben Frame (`SEC; RTS`). |
+| `0x4E` | `$8C:E1B1` | Aktiv | target: entity | **`BIND_TASK_ENTITY` / `SCRIPT_CMD_4E`** – Bindet `target` als `Attached`-Entity (`Task+$0D`) an den aktuellen Skript-Task (dekrementiert Refcount `+$3E` der alten Entity und inkrementiert `+$3E` der neuen Entity). |
 | `0x4F` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x50` | `$8C:DDE6` | Aktiv | vram: u8, text_id: u16 | **`SHOW_TEXT_VRAM`** – Lädt Text mit expliziter VRAM-Layer-Zuweisung. |
-| `0x51` | `$8C:DDF3` | Aktiv | text_id: u16 | **`SHOW_TEXT`** – Öffnet Textbox und startet Huffman-Dekomprimierung aus Bank $92. |
-| `0x52` | `$8C:DD87` | Aktiv | text_id: u16 | **`SHOW_TEXT_MODAL`** – Trägt Text in Message-Queue (`$8C:D0F6`) ein, ruft `$8C:C8E4` auf und kehrt mit gesetztem Carry zurück. |
+| `0x50` | `$8C:DDE6` | Aktiv | win: u8, text_id: u16 | **`SHOW_WINDOW_TEXT`** – Wählt Fenster `$034D + win * $2C` (`$8C:DD50`), dekodiert `text_id` (`$8C:D0B8`) und gibt den Text im gewählten Fenster aus (`$8C:A198`). |
+| `0x51` | `$8C:DDF3` | Aktiv | text_id: u16 | **`SHOW_TEXT`** – Dekodiert `text_id` (`$8C:D0B8`) und gibt den Text im Standard-Textfenster 0 (`$034D`) aus (`$8C:A198`). |
+| `0x52` | `$8C:DD87` | Aktiv | text_id: u16 | **`SHOW_TEXT_MODAL` / `SHOW_TEXT_END`** – Schließt ggf. Status-HUD (`$8C:C8B9`), trägt `text_id` ein (`$8C:D0F6`) und führt die modale Textausgabe via `$8C:C8E4` aus. |
 | `0x53` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x54` | `$8C:DD65` | Aktiv | vram: u8 | **`HIDE_TEXT_VRAM`** – Schließt Textfenster in spezifischem VRAM-Layer. |
-| `0x55` | `$8C:DD71` | Aktiv | *keine* | **`HIDE_TEXT`** – Schließt die aktive Textbox sofort. |
+| `0x54` | `$8C:DD65` | Aktiv | win: u8 | **`HIDE_WINDOW_TEXT`** – Schließt Fenster `$034D + win * $2C` (`$8C:B1AC`) und stellt das Status-HUD wieder her (`$8C:C920`). |
+| `0x55` | `$8C:DD71` | Aktiv | *keine* | **`HIDE_TEXT`** – Schließt das Standard-Textfenster 0 (`$034D`, `$8C:B1AC`) und stellt das Status-HUD wieder her (`$8C:C920`). |
 | `0x56` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
 | `0x57` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x58` | `$8C:E088` | Aktiv | *keine* | **`FADE_IN_MUSIC`** – Blendet Musiklautstärke allmählich ein (keine Operanden). |
-| `0x59` | `$8C:E075` | Aktiv | *keine* | **`FADE_OUT_MUSIC`** – Blendet Musiklautstärke allmählich aus (keine Operanden). |
-| `0x5A` | `$8C:E290` | Aktiv | *keine* | **`DISABLE_INTERRUPTS`** – Sperrt NMI- und Interrupt-Trigger für kritische Skriptsequenzen. |
-| `0x5B` | `$8C:E296` | Aktiv | *keine* | **`ENABLE_INTERRUPTS`** – Gibt NMI- und Interrupt-Trigger wieder frei. |
-| `0x5C` | `$8C:E1CC` | Aktiv | obj: expr, state: expr | **`SET_OBJECT_STATE`** – Setzt Schalter-, Truhen- oder Kachel-Status auf expliziten Wert (`E E`). |
-| `0x5D` | `$8C:E200` | Aktiv | obj: expr, flag: u16 | **`CONDITIONAL_UNLOAD`** – Entfernt Sprite/Kachel, falls Story-Flag aktiv ist (`E w`). |
-| `0x5E` | `$8C:E22F` | Aktiv | obj: expr, flag: u16 | **`UNLOAD_IF_FLAG_CLEAR`** – Entfernt Sprite/Kachel, falls Story-Flag inaktiv ist (`E w`). |
-| `0x5F` | `$8C:E278` | Aktiv | obj: expr, delta: u16 | **`ADD_OBJECT_STATE`** – Addiert Delta-Wert auf Kachel-Status (`E w`). |
-| `0x60` | `$8C:E1DC` | Aktiv | obj: expr | **`INC_OBJECT_STATE`** – Inkrementiert Kachel-Status um 1 (z. B. Schalter weiterdrehen). |
-| `0x61` | `$8C:E1EE` | Aktiv | obj: expr | **`DEC_OBJECT_STATE`** – Dekrementiert Kachel-Status um 1. |
-| `0x62` | `$8C:E3D0` | Aktiv | id: u8, x: u16, y: u16 | **`SET_AMBIENT_ACTOR_POS`** – Weist Ambient-/Projektil-Slot `$507D` Zielkoordinaten zu via `$90A2A7`. |
-| `0x63` | `$8C:E376` | Aktiv | *keine* | **`WAIT_PATH_END`** – Wartet, bis die Entity das Ende des Kachelpfads erreicht hat. |
-| `0x64` | `$8C:E29C` | Aktiv | speed: expr | **`SET_BG1_SCROLL_SPEED`** – Setzt Scrollgeschwindigkeit für Hintergrund-Layer BG1. |
-| `0x65` | `$8C:E2B5` | Aktiv | *keine* | **`ENABLE_BG1`** – Aktiviert Rendering von Hintergrund-Layer BG1. |
-| `0x66` | `$8C:E2AC` | Aktiv | *keine* | **`DISABLE_BG1`** – Deaktiviert Rendering von Hintergrund-Layer BG1. |
+| `0x58` | `$8C:E088` | Aktiv | *keine* | **`FADE_IN_MUSIC`** – Setzt `$9B = $10` und ruft `$8C:89B7` auf (Musik-Lautstärke einblenden). |
+| `0x59` | `$8C:E075` | Aktiv | *keine* | **`FADE_OUT_MUSIC`** – Setzt `$9B = $F0` und ruft `$8C:89B7` auf (Musik-Lautstärke ausblenden). |
+| `0x5A` | `$8C:E290` | Aktiv | *keine* | **`OPEN_SPEAKER_BAR` / `DISABLE_INTERRUPTS`** – Ruft `$8C:C9A5` auf: blendet HUD aus (`$8C:C906`), fährt den unteren Cinematic-/Sprecherbalken (`$011E`) ein und setzt `$0B79 \|= $0080`. |
+| `0x5B` | `$8C:E296` | Aktiv | *keine* | **`CLOSE_SPEAKER_BAR` / `ENABLE_INTERRUPTS`** – Ruft `$8C:C9CC` auf: fährt den unteren Cinematic-/Sprecherbalken (`$011E`) wieder aus (`$0B79 \|= $0040`). |
+| `0x5C` | `$8C:E1CC` | Aktiv | obj: expr, state: expr | **`SET_MAP_STATE` / `MAP_EFFECT_5C`** – Setzt den dynamischen Karten-Kachelstatus `$1080,X` für Objekt `obj` auf `state` via `$90:A372`. |
+| `0x5D` | `$8C:E200` | Aktiv | obj: expr, flag: u16 | **`SET_MAP_STATE_FROM_FLAG`** – Prüft `FLAG[flag]`: setzt Karten-Kachelstatus `$1080,X` via `$90:A372` auf `$007F` (wenn gesetzt) bzw. `$0000` (wenn gelöscht). |
+| `0x5E` | `$8C:E22F` | Aktiv | obj: expr, flag: u16 | **`SET_MAP_STATE_IF_FLAG_CLEAR`** – Prüft `FLAG[flag]`: falls gelöscht (`0`), wird Karten-Kachelstatus `$1080,X` via `$90:A372` auf `$007F` gesetzt. |
+| `0x5F` | `$8C:E278` | Aktiv | obj: expr, delta: u16 | **`ADD_MAP_STATE` / `TILE_STATE`** – Addiert 16-Bit-Wert `delta` auf Karten-Kachelstatus `$1080,X` und aktualisiert die Kacheln via `$90:A372`. |
+| `0x60` | `$8C:E1DC` | Aktiv | obj: expr | **`INC_MAP_STATE` / `BG_SCROLL_X`** – Inkrementiert Karten-Kachelstatus `$1080,X` um 1 und ruft `$90:A372` auf. |
+| `0x61` | `$8C:E1EE` | Aktiv | obj: expr | **`DEC_MAP_STATE` / `BG_SCROLL_Y`** – Dekrementiert Karten-Kachelstatus `$1080,X` um 1 und ruft `$90:A372` auf. |
+| `0x62` | `$8C:E3D0` | Aktiv | id: u8, p1: u16, p2: u16 | **`SET_AMBIENT_ACTOR_POS` / `CONFIG_TILE_ANIM`** – Konfiguriert Kachel-/Palettenanimations-Slot `id` in `$507D,X` (`$4FE6,X` und `$504A,X`) via `$90:A2A7`. |
+| `0x63` | `$8C:E376` | Aktiv | *keine* | **`OPEN_ALCHEMY_MENU` / `WAIT_PATH_END`** – Öffnet das Bank-`$8D` Alchemie-Auswahlmenü (`$8D:B58D`/`$8D:B738`, prüft die 35 Formel-Flags ab `$7E:2258` via `$C5:02A1`) und lädt danach die Map-Grafik neu. |
+| `0x64` | `$8C:E29C` | Aktiv | entity: expr | **`SHOW_LEFT_SPEAKER` / `BG_SCROLL_SPEED`** – Speichert Entity-Pointer in `$0B73` und blendet das linke Sprecher-Sprite bei `(24, 182)` via `$8C:C9EA` (`X=1`) ein. |
+| `0x65` | `$8C:E2B5` | Aktiv | *keine* | **`SLIDE_IN_LEFT_SPEAKER` / `ENABLE_BG1`** – Blendet das bereits in `$0B73` gesetzte linke Sprecher-Sprite via `$8C:C9EA` (`X=1`) ein. |
+| `0x66` | `$8C:E2AC` | Aktiv | *keine* | **`HIDE_LEFT_SPEAKER` / `DISABLE_BG1`** – Blendet das linke Sprecher-Sprite (`$0B73`) via `$8C:CA3F` (`X=1`) aus. |
 | `0x67` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x68` | `$8C:E2BE` | Aktiv | speed: expr | **`SET_BG2_SCROLL_SPEED`** – Setzt Scrollgeschwindigkeit für Hintergrund-Layer BG2. |
-| `0x69` | `$8C:E2D7` | Aktiv | *keine* | **`ENABLE_BG2`** – Aktiviert Rendering von Hintergrund-Layer BG2. |
-| `0x6A` | `$8C:E2CE` | Aktiv | *keine* | **`DISABLE_BG2`** – Deaktiviert Rendering von Hintergrund-Layer BG2. |
+| `0x68` | `$8C:E2BE` | Aktiv | entity: expr | **`SHOW_RIGHT_SPEAKER` / `BG2_SCROLL_SPEED`** – Speichert Entity-Pointer in `$0B75` und blendet das rechte Sprecher-Sprite bei `(198, 182)` via `$8C:C9EA` (`X=2`) ein. |
+| `0x69` | `$8C:E2D7` | Aktiv | *keine* | **`SLIDE_IN_RIGHT_SPEAKER` / `ENABLE_BG2`** – Blendet das bereits in `$0B75` gesetzte rechte Sprecher-Sprite via `$8C:C9EA` (`X=2`) ein. |
+| `0x6A` | `$8C:E2CE` | Aktiv | *keine* | **`HIDE_RIGHT_SPEAKER` / `DISABLE_BG2`** – Blendet das rechte Sprecher-Sprite (`$0B75`) via `$8C:CA3F` (`X=2`) aus. |
 | `0x6B` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x6C` | `$8C:DE50` | Aktiv | target: entity, dx: i8, dy: i8 | **`MOVE_ENTITY_REL`** – Relative Bewegung einer Entity um Pixel-Deltas. |
-| `0x6D` | `$8C:DE18` | Aktiv | target: expr, dx: expr, dy: expr | **`STOP_ENTITY_MOVE`** – Stoppt laufende Pixelbewegung einer Entity (`E E E`). |
-| `0x6E` | `$8C:DE49` | Aktiv | target: entity, dx: i8, dy: i8 | **`MOVE_ENTITY_FAST`** – Schnelle relative Bewegung (Sprint/Dash). |
-| `0x6F` | `$8C:DE11` | Aktiv | target: expr, dx: expr, dy: expr | **`STOP_ENTITY_FAST`** – Stoppt schnelle Bewegung einer Entity (`E E E`). |
-| `0x70` | `$8C:E30E` | Aktiv | a: expr, b: expr | **`ENTITY_FACE_ENTITY`** – Dreht Figur `a` in Blickrichtung von Figur `b` (`E E`). |
-| `0x71` | `$8C:E31E` | Aktiv | a: expr, b: expr | **`FACE_EACH_OTHER`** – Dreht Figuren `a` und `b` gegenseitig zueinander (`E E`). |
+| `0x6C` | `$8C:DE50` | Aktiv | target: entity, x: u8, y: u8 | **`WALK_TO_GRID` / `SET_ENTITY_POS_FAST`** – Bewegt `target` mit Pfadfindung (`$8F:AA33`, Modus 0) zu den absoluten Rasterkoordinaten `(x*8, y*8)`. |
+| `0x6D` | `$8C:DE18` | Aktiv | target: entity, dx: expr, dy: expr | **`WALK_REL_TILES` / `SET_ENTITY_POS_REL_FAST`** – Bewegt `target` mit Pfadfindung (`$8F:AA33`, Modus 0) relativ um `(dx*16, dy*16)` Pixel (16x16-Kacheleinheiten). |
+| `0x6E` | `$8C:DE49` | Aktiv | target: entity, x: u8, y: u8 | **`FORCE_WALK_TO_GRID`** – Bewegt `target` direkt/erzwungen (`$8F:AA84`, Modus 1, `$3C12 \|= $0230`) zu den absoluten Rasterkoordinaten `(x*8, y*8)`. |
+| `0x6F` | `$8C:DE11` | Aktiv | target: entity, dx: expr, dy: expr | **`FORCE_WALK_REL_TILES`** – Bewegt `target` direkt/erzwungen (`$8F:AA84`, Modus 1, `$3C12 \|= $0230`) relativ um `(dx*16, dy*16)` Pixel. |
+| `0x70` | `$8C:E30E` | Aktiv | a: entity, b: entity | **`ENTITY_FACE_ENTITY`** – Dreht Figur `a` (`+$22`) in Richtung von Figur `b` (`$8C:E334`). |
+| `0x71` | `$8C:E31E` | Aktiv | a: entity, b: entity | **`FACE_EACH_OTHER`** – Dreht Figur `a` zu `b` (`$8C:E334`) und Figur `b` entgegengesetzt (`EOR #$0008; STA $0022,Y`) zu `a`. |
 | `0x72` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x73` | `$8C:DE76` | Aktiv | target: expr, x: expr, y: expr | **`MOVE_ENTITY_ABS`** – Lässt Spielfigur linear zu Koordinaten laufen (`E E E`). |
-| `0x74` | `$8C:E2E0` | Aktiv | target: entity | **`CLEAR_ENTITY_FLAGS`** – Löscht Kollisions- und Transparenz-Sonderflags an `+$22`. |
-| `0x75` | `$8C:E2F6` | Aktiv | target: entity | **`SET_ENTITY_NOCLIP`** – Setzt Noclip-Flag `$08` (ignoriert Hindernisse und Kachelkollision). |
-| `0x76` | `$8C:E302` | Aktiv | target: entity | **`SET_ENTITY_TRANSPARENT_NOCLIP`** – Aktiviert Halbtransparenz und Noclip (Flags `$0C`). |
-| `0x77` | `$8C:E2EA` | Aktiv | target: entity | **`SET_ENTITY_TRANSPARENT`** – Aktiviert Halbtransparenz (Flag `$04`, z. B. Geistereffekt). |
-| `0x78` | `$8C:E4B1` | Aktiv | target: entity, anim: u16, speed: expr | **`SET_ANIMATION`** – Weist Entity Animationssequenz `anim` mit Tempo `speed` zu. |
-| `0x79` | `$8C:E557` | Aktiv | target: entity, anim: u16, speed: expr | **`SET_ANIMATION_WAIT`** – Startet Animationssequenz via `$8C:E4B1` und pausiert Task bis zum Abschluss (Status 6). |
-| `0x7A` | `$8C:E48F` | Aktiv | target: expr, val: expr | **`WRITE_DEREF`** – 16-Bit Word via Zeiger schreiben (`*(u16*)target = val`). |
-| `0x7B` | `$8C:E49E` | Aktiv | target: expr, val: expr | **`WRITE_DEREF_BYTE`** – 8-Bit Byte via Zeiger schreiben (`*(u8*)target = val`). |
-| `0x7C` | `$8C:D940` | Aktiv | cur: expr, amt: u24 | **`GIVE_MONEY`** – Addiert 24-Bit-Betrag `amt` zur gewählten Währung `cur`. |
-| `0x7D` | `$8C:D8EA` | Aktiv | cur: expr, amt: u24 | **`TAKE_MONEY`** – Zieht 24-Bit-Betrag `amt` von der gewählten Währung `cur` ab. |
-| `0x7E` | `$8C:D993` | Aktiv | a: expr, b: expr, c: expr, d: expr | **`EXCHANGE_MONEY` / `SCRIPT_CMD_7E`** – Geldwechsel/Arithmetik mit 4 Ausdrücken (`E E E E`). Reine Arithmetik (`nests = false`), wertet intern vier Ausdrücke via `$8C:EE44` aus (Berechnung von Geld-/Währungsumtausch via Hardware-Multiplikation/Division) und kehrt direkt mit `SEC` zurück. |
-| `0x7F` | `$8C:E57B` | Aktiv | target: u16 | **`SHOW_NAMING_SCREEN`** – Öffnet Namenseingabe-Bildschirm (im ROM `target = 3` für Hund). |
-| `0x80` | `$8C:E604` | Aktiv | *keine* | **`SHOW_HUD_ALL`** – Blendet HP- und Ring-Menü-HUD vollständig ein. |
-| `0x81` | `$8C:E60A` | Aktiv | *keine* | **`HIDE_HUD_ALL`** – Blendet gesamtes HUD für Zwischensequenzen aus. |
-| `0x82` | `$8C:E610` | Aktiv | *keine* | **`RESTORE_MAIN_SCREEN_LAYERS`** – Kopiert `$7E:235B..235E` in PPU-Register `$212C..$2131`. |
-| `0x83` | `$8C:E648` | Aktiv | *keine* | **`SET_SUB_SCREEN_LAYERS`** – Kopiert `$0F82..0F85` in Sub-Screen PPU-Register. |
-| `0x84` | `$8C:D971` | Aktiv | currency: expr, amount: expr | **`GIVE_MONEY_EXPR`** – Geldüberweisung mit dynamisch berechnetem Betrag (`E E`). |
-| `0x85` | `$8C:D91B` | Aktiv | currency: expr, amount: expr | **`TAKE_MONEY_EXPR`** – Geldabzug mit dynamisch berechnetem Betrag (`E E`). |
-| `0x86` | `$8C:E67C` | Aktiv | val: expr | **`APU_SOUND_CMD_28`** – Sendet Sound-/Musik-Kommando `$28` mit Parameter an APU-Port `$2142`. |
-| `0x87` | `$8C:E696` | Aktiv | val: expr | **`APU_SOUND_CMD_2A`** – Sendet Sound-/Musik-Kommando `$2A` mit Parameter an APU-Port `$2142`. |
-| `0x88` | `$8C:E6AB` | Aktiv | *keine* | **`CLEAR_SHOP_MENU`** – Leert den Händler-Warenpuffer an `$0B97`. |
-| `0x89` | `$8C:E6B6` | Aktiv | item: expr, count: expr | **`ADD_SHOP_ITEM`** – Fügt Gegenstand zum Händler-Puffer `$0B97` hinzu (`E E`). |
-| `0x8A` | `$8C:E758` | Aktiv | shop_id: expr | **`OPEN_SHOP_MENU`** – Öffnet Händler-Ringmenü (Expression-Operand via Evaluator `$8C:EE44`). |
+| `0x73` | `$8C:DE76` | Aktiv | target: entity, x: expr, y: expr | **`FORCE_WALK_TO_PIXELS` / `MOVE_ENTITY_TO`** – Bewegt `target` direkt/erzwungen (`$8F:AA84`, Modus 1) zu den absoluten Pixelkoordinaten `(x, y)`. |
+| `0x74` | `$8C:E2E0` | Aktiv | target: entity | **`FACE_NORTH` / `ENTITY_ACT_74`** – Setzt Blickrichtung `Entity+$22` auf `$0000` (Norden / Oben). |
+| `0x75` | `$8C:E2F6` | Aktiv | target: entity | **`FACE_SOUTH` / `ENTITY_ACT_75`** – Setzt Blickrichtung `Entity+$22` auf `$0008` (Süden / Unten). |
+| `0x76` | `$8C:E302` | Aktiv | target: entity | **`FACE_WEST` / `ENTITY_ACT_76`** – Setzt Blickrichtung `Entity+$22` auf `$000C` (Westen / Links). |
+| `0x77` | `$8C:E2EA` | Aktiv | target: entity | **`FACE_EAST` / `ENTITY_ACT_77`** – Setzt Blickrichtung `Entity+$22` auf `$0004` (Osten / Rechts). |
+| `0x78` | `$8C:E4B1` | Aktiv | target: entity, anim: u16, mode: expr | **`PLAY_ENTITY_ANIM`** – Spielt Entity-Animation `anim` (Tabelle `$C4:42D2` falls positiv) im Modus `mode` (`$8C:E501`, Aufruf `$90:8124`). |
+| `0x79` | `$8C:E557` | Aktiv | target: entity, anim: u16, mode: expr | **`PLAY_ENTITY_ANIM_WAIT`** – Startet Animation via `$8C:E4B1` und pausiert den Task bis zum Abschluss (`Entity+$88 = Task`, `Task+$03 = 6`). |
+| `0x7A` | `$8C:E48F` | Aktiv | target: expr, val: expr | **`WRITE_WRAM_WORD`** – Schreibt 16-Bit-Word (`STA $0000,X`) an WRAM-Adresse `$7E:0000 + target`. |
+| `0x7B` | `$8C:E49E` | Aktiv | target: expr, val: expr | **`WRITE_WRAM_BYTE`** – Schreibt 8-Bit-Byte (`SEP #$20; STA $0000,X`) an WRAM-Adresse `$7E:0000 + target`. |
+| `0x7C` | `$8C:D940` | Aktiv | cur: expr, amt: u24 | **`GIVE_MONEY`** – Addiert 24-Bit-Konstante `amt` zur Währung `$000AC6,X`. |
+| `0x7D` | `$8C:D8EA` | Aktiv | cur: expr, amt: u24 | **`TAKE_MONEY`** – Subtrahiert 24-Bit-Konstante `amt` von Währung `$000AC6,X`. |
+| `0x7E` | `$8C:D993` | Aktiv | div: expr, src: expr, mul: expr, dst: expr | **`EXCHANGE_MONEY` / `SCRIPT_CMD_7E`** – Währungsumtausch: berechnet `p = MONEY[src] * mul`, speichert Rest `p % div` in `MONEY[src]` und addiert Quotient `p / div` auf `MONEY[dst]`. |
+| `0x7F` | `$8C:E57B` | Aktiv | target: u16 | **`SHOW_NAMING_SCREEN`** – Öffnet den Namenseingabe-Bildschirm (`$8D:8000`/`$8D:824F`, Zieltabelle `$8C:E5FE,X`). |
+| `0x80` | `$8C:E604` | Aktiv | *keine* | **`SHOW_HUD_ALL`** – Löscht Bit 15 in `$0B2B` und stellt das Status-HUD-Fenster (`$034D`) via `$8C:C920` wieder her. |
+| `0x81` | `$8C:E60A` | Aktiv | *keine* | **`HIDE_HUD_ALL`** – Schließt das Status-HUD-Fenster (`$034D`) und setzt Bit 15 in `$0B2B` via `$8C:C906`. |
+| `0x82` | `$8C:E610` | Aktiv | *keine* | **`RESTORE_MAIN_SCREEN_LAYERS`** – Kopiert `$7E:235B..235E` in die PPU-Register `$212C`, `$212D`, `$2131`, `$2130`. |
+| `0x83` | `$8C:E648` | Aktiv | *keine* | **`SET_SUB_SCREEN_LAYERS`** – Kopiert die Karten-Standardwerte `$0F82..0F85` in die PPU-Register `$212C`, `$212D`, `$2131`, `$2130`. |
+| `0x84` | `$8C:D971` | Aktiv | cur: expr, amt: expr | **`GIVE_MONEY_EXPR`** – Addiert dynamisch berechneten 16-Bit-Betrag `amt` zur 24-Bit-Währung `$000AC6,X`. |
+| `0x85` | `$8C:D91B` | Aktiv | cur: expr, amt: expr | **`TAKE_MONEY_EXPR`** – Subtrahiert dynamisch berechneten 16-Bit-Betrag `amt` von der 24-Bit-Währung `$000AC6,X`. |
+| `0x86` | `$8C:E67C` | Aktiv | val: expr | **`APU_SOUND_CMD_28`** – Speichert `val & $FF` in `$9A` und sendet APU-Kommando `$28` via `$8C:84F1`. |
+| `0x87` | `$8C:E696` | Aktiv | val: expr | **`APU_SOUND_CMD_2A`** – Sendet APU-Kommando `$2A` mit Parameter `val` in `Y` via `$8C:84F1`. |
+| `0x88` | `$8C:E6AB` | Aktiv | *keine* | **`CLEAR_SHOP_MENU`** – Leert die Händler-Warenliste (`$0B97 = $FFFF`, `$0E6E = 0`). |
+| `0x89` | `$8C:E6B6` | Aktiv | item: expr, price: expr | **`ADD_SHOP_ITEM`** – Fügt Artikel `item` (Tabelle `$8C:E712`/`$8C:E742`) mit Preis/Anzahl `price` (`$0BC7,X`) zur Händlerliste `$0B97,X` hinzu und setzt Typ-Bits in `$0E6E`. |
+| `0x8A` | `$8C:E758` | Aktiv | cur: expr | **`OPEN_SHOP_MENU`** – Speichert Währungsindex `cur` in `$05A7` und öffnet das Kauf-Händlermenü via `$8E:9FA8`. |
 | `0x8B` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0x8C` | `$8C:E79B` | Aktiv | text_id: u16 | **`SHOW_TEXT_ALT` / `SHOW_MESSAGE`** – Zeigt Text/Nachricht mit 16-Bit Text-ID-Operand via `$8C:D0F6` an (kein Speicherbuch-Menü). |
-| `0x8D` | `$8C:E786` | Aktiv | intensity: u8 | **`SCREEN_SHAKE`** – Startet Bildschütteln (`intensity > 0`) oder stoppt es (`0`). |
-| `0x8E` | `$8C:D86C` | Aktiv | a: expr, b: expr, off: i16 | **`IF_EQUAL`** – Verzweigt um `off`, falls Ausdruck `a == b` ist. |
-| `0x8F` | `$8C:D8AB` | Aktiv | a: expr, b: expr, off: i16 | **`IF_NOT_EQUAL`** – Verzweigt um `off`, falls Ausdruck `a != b` ist. |
-| `0x90` | `$8C:E02A` | Aktiv | level: expr | **`SET_BRIGHTNESS_EXPR`** – Setzt Bildschirm-Helligkeit (0..15) anhand dynamischen Ausdrucks. |
-| `0x91` | `$8C:E051` | Aktiv | level: expr | **`SET_BRIGHTNESS_ALT`** – Setzt Bildschirm-Helligkeit (0..15) an `$0106`/`$0B8B` anhand dynamischen Ausdrucks. |
-| `0x92` | `$8C:E831` | Aktiv | target: entity, focus: expr | **`SET_ENTITY_TARGET`** – Setzt AI-Kampf- und Verfolgungsfokus an `Entity+$46`. |
-| `0x93` | `$8C:E887` | Aktiv | target: entity, amount: expr | **`DAMAGE_ENTITY`** – Fügt Entity Schaden zu via `$8F:C0C7` (addiert auf Schadenspuffer `Entity+$76`, setzt Flag `$0008` in `+$12`). |
-| `0x94` | `$8C:E811` | Aktiv | target: entity, amount: expr | **`HEAL_ENTITY`** – Heilt Entity mit grünem Zahlen-Popup via `$8F:C02F` (Popup `$90:D87B`, `ADC Entity+$2A` gedeckelt auf Max-HP). |
-| `0x95` | `$8C:E821` | Aktiv | target: entity, hp: expr | **`SET_ENTITY_HP`** / **`HEAL_SILENT`** – Stille Heilung via `$8F:C03A` (`ADC Entity+$2A` ohne Popup). Hinweis: ROM besitzt keinen Opcode zum absoluten Setzen von HP. |
-| `0x96` | `$8C:E89E` | Aktiv | x: expr, y: expr | **`SET_CAMERA_BASE`** – Verschiebt die Basis-Kamerakoordinaten via `$90A006`. |
-| `0x97` | `$8C:E8B2` | Aktiv | args: expr... (7x) | **`SHAKE_SCREEN_COMPLEX`** – Komplexer Erdbebeneffekt via `$90A370` (Richtung, Frequenz, Amplitude, Dämpfung). |
-| `0x98` | `$8C:E9A2` | Aktiv | target: expr | **`SWITCH_CHARACTER` / `SELECT_ENTITY`** – Schaltet aktive Spielfigur um (Entity-Selector-Parameter, z. B. Tokens 0x50, 0x51, 0x53 bzw. Entity-Ausdruck; vergleicht mit `$0F44`, nicht nur 0/1). |
-| `0x99` | `$8C:EA70` | Aktiv | a, b, c, d, e, f: expr... | **`ENTER_MODE7_MAP`** – Startet Mode-7-Szene (liest 6 Ausdrücke; Terminal-Befehl / kein Return). |
-| `0x9A` | `$8C:EAD0` | Aktiv | pitch: expr | **`MODE7_SET_CAMERA_PITCH`** – Setzt Kamera-Neigungswinkel für Mode-7-Flug in Bank `$C4`. |
-| `0x9B` | `$8C:E134` | Aktiv | target: entity | **`ATTACH_CAMERA_TO_ENTITY`** – Koppelt Kamera fest an Figur/NPC. |
-| `0x9C` | `$8C:E142` | Aktiv | target: entity | **`DETACH_CAMERA_FROM_ENTITY`** – Löst Kamera von Figur für statische Kameraszenen. |
-| `0x9D` | `$8C:DE71` | Aktiv | target: entity, x: expr, y: expr | **`MOVE_ENTITY_ABS_EXPR`** – Absolute Bewegung zu dynamisch berechneten Zielkoordinaten. |
-| `0x9E` | `$8C:D4B5` | Aktiv | target: expr, spell: expr, level: expr, extra: expr... | **`CAST_ALCHEMY`** – Löst Alchemiezauber aus (Ausdrücke bis Terminierungs-0). |
-| `0x9F` | `$8C:E9B1` | Aktiv | *keine* | **`SHOW_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts im Bildschirm ein. |
-| `0xA0` | `$8C:EA29` | Aktiv | *keine* | **`UPDATE_CURRENCY_HUD`** – Aktualisiert Ziffern der Währungsanzeige via `$8C:B2F2`. |
-| `0xA1` | `$8C:EA60` | Aktiv | *keine* | **`HIDE_CURRENCY_HUD`** – Blendet Währungsanzeige oben rechts aus via `$8C:B1AC`. |
-| `0xA2` | `$8C:E09B` | Aktiv | type: u16, param: u16, x: expr, y: expr | **`SPAWN_NPC`** – Erzeugt neues Sprite auf der Map über Tabelle `$8E:B55A`. |
-| `0xA3` | `$8C:D789` | Aktiv | idx: u8 | **`CALL_INDEXED_BYTE`** – Subroutinenaufruf über 8-Bit-Offset in Sprungtabelle `$93:8000`. |
-| `0xA4` | `$8C:D77E` | Aktiv | idx: u16 | **`CALL_INDEXED_WORD`** – Subroutinenaufruf über 16-Bit-Offset in Sprungtabelle `$93:8000`. |
-| `0xA5` | `$8C:D745` | Aktiv | off: i8 | **`CALL_RELATIVE_BYTE`** – Relativer Subroutinen-Aufruf (8-Bit Offset) mit Caller-Link in `+0x0B`. |
-| `0xA6` | `$8C:D729` | Aktiv | off: i16 | **`CALL_RELATIVE_WORD`** – Relativer Subroutinen-Aufruf (16-Bit Offset) mit Caller-Link in `+0x0B`. |
-| `0xA7` | `$8C:D600` | Aktiv | frames: u8 | **`SLEEP_SHORT`** – Pausiert Task für 8-Bit Frame-Zähler (bis 255 Ticks) via Status 4. |
-| `0xA8` | `$8C:D5F8` | Aktiv | frames: u16 | **`SLEEP_ALIGNED`** – Pausiert Task für `frames` Ticks mit VBlank-Ausrichtung. |
-| `0xA9` | `$8C:EAEB` | Aktiv | target: entity, act: expr | **`TRIGGER_ENTITY_ACTION`** – Löst Entity-Aktion aus (Tabelle `$8C:EAF9`: Hüpfen, Treffer, etc.). |
-| `0xAA` | `$8C:EBF0` | Aktiv | *keine* | **`SET_CANINE_AI_TARGETING`** – Schaltet Hund-AI-Such- und Schnüffelmodus an `$7E:23C7` via `$91B896` (keine Operanden). |
-| `0xAB` | `$8C:ECB2` | Aktiv | *keine* | **`RESET_GAME_STATE`** – Führt Soft-Reset zu Spielstart aus (`JMP $8084C9`, Terminal-Befehl). |
-| `0xAC` | `$8C:D4A8` | Aktiv | target: expr, spell: expr, level: expr, extra: expr... | **`CAST_ALCHEMY_CHECK_DOG`** – Löst Alchemiezauber aus (prüft inaktiven Hund `$3BC1`). |
-| `0xAD` | `$8C:DB3B` | Aktiv | w1: u16, w2: u16, b1: u8, b2: u8 | **`SET_TEMP_PAIRS_X8`** – Setzt `$7E:2834+w1 = b1*8` und `$7E:2834+w2 = b2*8` (6 Bytes). |
-| `0xAE` | `$8C:DB08` | Aktiv | arg1: u8, arg2: u8, b1: u8, b2: u8 | **`SET_ARG_PAIRS_X8`** – Setzt `Arg[arg1] = b1*8` und `Arg[arg2] = b2*8` (4 Bytes). |
-| `0xAF` | `$8C:D7AF` | Aktiv | count: u8, params: expr[count], addr: u24 | **`CALL_PARAMS`** – Subroutinenaufruf mit Parameterzähler `count` und Parametern auf dem Stack. |
-| `0xB0` | `$8C:D786` | Aktiv | count: u8, params: expr[count], idx: u8 | **`CALL_INDEXED_BYTE_PARAMS`** – Tabellensprung über `$93:8000` mit Zähler `count` und Stack-Parametern. |
-| `0xB1` | `$8C:D77B` | Aktiv | count: u8, params: expr[count], idx: u16 | **`CALL_INDEXED_WORD_PARAMS`** – 16-Bit-Tabellensprung mit Zähler `count` und Stack-Parametern. |
-| `0xB2` | `$8C:D735` | Aktiv | count: u8, params: expr[count], off: i8 | **`CALL_RELATIVE_BYTE_PARAMS`** – Relativer Subroutinenaufruf mit Zähler `count` und Stack-Parametern. |
-| `0xB3` | `$8C:D71A` | Aktiv | count: u8, params: expr[count], off: i16 | **`CALL_RELATIVE_WORD_PARAMS`** – Relativer Subroutinenaufruf (16-Bit) mit Zähler `count` und Stack-Parametern. |
-| `0xB4` | `$8C:D7E6` | Aktiv | count: u8, params: expr[count], addr: u24 | **`ASYNC_CALL_PARAMS`** – Asynchroner Task-Start mit Zähler `count` und Stack-Parametern. |
-| `0xB5` | `$8C:EC1C` | Aktiv | args: expr... (8x) | **`PALETTE_FADE_CUSTOM`** – Benutzerdefinierter Farbpaletten-Fade (8 Ausdrücke). |
-| `0xB6` | `$8C:EC5E` | Aktiv | args: expr... (4x) | **`START_PALETTE_CYCLE`** – Aktiviert animierten Kachel-Farbzyklus in CGRAM via `$8CEC9A` (4 Ausdrücke). |
-| `0xB7` | `$8C:EC8B` | Aktiv | args: expr | **`STOP_PALETTE_CYCLE`** – Beendet Kachel-Farbzyklus in CGRAM via `$8CEC9A`. |
+| `0x8C` | `$8C:E79B` | Aktiv | text_id: u16 | **`OPEN_SAVE_MENU` / `SHOW_MESSAGE`** – Blendet Bildschirm aus, initialisiert das 4-Slot-Speichermenü (`$8D:CC49`), lädt den Ortsnamen `text_id` (`$8C:D0F6`), führt das Speichermenü (`$8D:D012`) aus und lädt danach die Map neu. |
+| `0x8D` | `$8C:E786` | Aktiv | mode: u8 | **`SET_SCREEN_SHAKE` / `SET_MUSIC_VOLUME`** – Startet Kamerawackeln bei `mode != 0` (`$90:989C`: `INC $C3`, Amplitude `$2409/$240B = 4`) bzw. stoppt es bei `mode == 0` (`$90:9893`: `STZ $C3..$C9`). |
+| `0x8E` | `$8C:D86C` | Aktiv | cur: expr, amt: expr, off: i16 | **`IF_MONEY_GE_EXPR` / `IF_EQUAL`** – Prüft dynamisch `MONEY[cur] >= amt` (setzt `$02 = amt, $04 = 0` und springt zu `0x0A`-Handler `$8C:D890`) und verzweigt um `off` Bytes. |
+| `0x8F` | `$8C:D8AB` | Aktiv | cur: expr, amt: expr, off: i16 | **`IF_MONEY_LT_EXPR` / `IF_NOT_EQUAL`** – Prüft dynamisch `MONEY[cur] < amt` (setzt `$02 = amt, $04 = 0` und springt zu `0x0B`-Handler `$8C:D8CF`) und verzweigt um `off` Bytes. |
+| `0x90` | `$8C:E02A` | Aktiv | speed: expr | **`FADE_OUT_SPEED` / `FLASH_SCREEN`** – Blendet Bildschirm mit Geschwindigkeit `speed & $0F` auf Schwarz ab (`$0B8B = speed & $0F`, `$0B83 = $8000 \| (speed & $0F)`). |
+| `0x91` | `$8C:E051` | Aktiv | level: expr | **`SET_BRIGHTNESS_FAST`** – Setzt Bildschirm-Helligkeit (`$0106` und `$0B8B`) direkt auf `level & $0F`. |
+| `0x92` | `$8C:E831` | Aktiv | target: entity, amount: expr | **`DAMAGE_ENTITY_MAIN` / `SET_ENTITY_TARGET`** – Fügt `target` Schaden zu via `$8F:C0B6` (`+$12 \|= $0038`: Schaden + Zahlen-Popup + Trefferreaktion; delegiert bei `$23D5 != 0` an `0xBB` und verrechnet bei `$23D7 != 0` Magieabwehr via `$8F:C002`). |
+| `0x93` | `$8C:E887` | Aktiv | target: entity, amount: expr | **`DAMAGE_ENTITY` (Silent)** – Fügt `target` stillen Schaden zu via `$8F:C0C7` (`ADC Entity+$76`, setzt nur `Entity+$12 \|= $0008` ohne Zahlen-Popup und ohne Treffer-Animation). |
+| `0x94` | `$8C:E811` | Aktiv | target: entity, amount: expr | **`HEAL_ENTITY`** – Heilt `target` mit grünem Zahlen-Popup via `$8F:C02F` (Popup `$90:D87B`, `ADC Entity+$2A` gedeckelt auf Max-HP `$8E:000F,X`). |
+| `0x95` | `$8C:E821` | Aktiv | target: entity, hp: expr | **`SET_ENTITY_HP` / `HEAL_SILENT`** – Stille Heilung via `$8F:C03A` (`ADC Entity+$2A` gedeckelt auf Max-HP `$8E:000F,X`, ohne Zahlen-Popup). |
+| `0x96` | `$8C:E89E` | Aktiv | dx: expr, dy: expr | **`SET_CAMERA_BASE`** – Verschiebt die Basis-Kamerakoordinaten (`$BF`/`$C1`, `$010E`/`$0110`) um `((dx & $7F) << 9, (dy & $7F) << 9)` via `$90:A006`. |
+| `0x97` | `$8C:E8B2` | Aktiv | args: expr... (7x) | **`PALETTE_ADD_RGB` / `SHAKE_SCREEN_COMPLEX`** – Addiert vorzeichenbehaftete `(R, G, B)`-Deltas auf `count` Palettenfarben ab `start_color` in `$7E:6187`/`$7E:65F1` und überträgt sie per DMA (`$80:85FA`) ins CGRAM. |
+| `0x98` | `$8C:E9A2` | Aktiv | target: expr | **`SWITCH_CHARACTER` / `SELECT_ENTITY`** – Vergleicht `target` mit der aktiven Spielerfigur `$0F44`; falls unterschiedlich, wird die Führung via `$8C:F5A8` gewechselt. |
+| `0x99` | `$8C:EA70` | Aktiv | args: expr... (6x) | **`ENTER_MODE7_MAP`** – Schreibt 6 Parameter nach `$0E72` und `$0E76..$0E7B`, ruft die Spezial-/Mode-7-Sequenz `$80:BC00` auf und lädt anschließend die Karte neu (`$8E:E08B`). |
+| `0x9A` | `$8C:EAD0` | Aktiv | font_idx: expr | **`SELECT_FONT` / `SET_PITCH`** – Lädt den Font-Offset aus `$8C:EAE7,X` (`0` $\rightarrow$ `$C4:0000`, `2` $\rightarrow$ `$C4:0FA2`) und initialisiert die VWF-Schriftart via `$8C:A144`. |
+| `0x9B` | `$8C:E134` | Aktiv | target: entity | **`DESPAWN_ENTITY` / `ATTACH_CAMERA`** – Dekrementiert den Skript-Referenzzähler `Entity+$3E` und entfernt die Entity via `$8F:B28F` von der Karte. |
+| `0x9C` | `$8C:E142` | Aktiv | target: entity | **`UNREF_ENTITY` / `CAMERA_ACTION_9C`** – Dekrementiert den Skript-Referenzzähler `Entity+$3E` (`DEC $003E,X`), ohne die Entity sofort zu despawnen. |
+| `0x9D` | `$8C:DE71` | Aktiv | target: entity, x: expr, y: expr | **`WALK_TO_PIXELS` / `SET_ENTITY_POS`** – Bewegt `target` mit Pfadfindung (`$8F:AA33`, Modus 0) zu den absoluten Pixelkoordinaten `(x, y)`. |
+| `0x9E` | `$8C:D4B5` | Aktiv | target: expr, spell: expr, level: expr, extra: expr... | **`CAST_ALCHEMY`** – Startet Alchemie-/Effekt-Animation (`$91:9759`) auf `target` mit nullterminierter Folgeliste von Ziel-Entities (`$3BC1 = 0`). |
+| `0x9F` | `$8C:E9B1` | Aktiv | *keine* | **`SHOW_CURRENCY_HUD`** – Öffnet das Währungsfenster (`$0435`) via `$8C:B051` und spawnt das Währungs-Icon-Sprite (`$0DED`) via `$90:817B`. |
+| `0xA0` | `$8C:EA29` | Aktiv | *keine* | **`UPDATE_CURRENCY_HUD`** – Aktualisiert den angezeigten Kontostand der aktuellen Währung (`$7E:2348` $\rightarrow$ `$0AC6,X`) im Fenster `$0435`. |
+| `0xA1` | `$8C:EA60` | Aktiv | *keine* | **`HIDE_CURRENCY_HUD`** – Schließt das Währungsfenster (`$0435`) via `$8C:B1AC` (`STZ $0CB5`). |
+| `0xA2` | `$8C:E09B` | Aktiv | type: u16, flags: u16, x: expr, y: expr | **`SPAWN_NPC`** – Spawnt Entity (`$8E:B55A,X`) mit `flags` an berechneten Pixelkoordinaten `(x, y)` (`$8F:B045`/`$8F:B04A`). |
+| `0xA3` | `$8C:D789` | Aktiv | idx: u8 | **`CALL_INDEXED_BYTE`** – Synchroner Subroutinenaufruf über 8-Bit-Index in die globale Sprungtabelle (`$93:8000 + ($93:8000) + ($93:8008) + idx * 3`). |
+| `0xA4` | `$8C:D77E` | Aktiv | off: u16 | **`CALL_INDEXED_WORD`** – Synchroner Subroutinenaufruf über 16-Bit-Byte-Offset in die globale Sprungtabelle (`$93:8000 + ($93:8000) + off`). |
+| `0xA5` | `$8C:D745` | Aktiv | off: i8 | **`CALL_RELATIVE_BYTE`** – Synchroner Subroutinenaufruf an relative Adresse `stmt_start + (off \| $FF00)` (rückwärts). |
+| `0xA6` | `$8C:D729` | Aktiv | off: i16 | **`CALL_RELATIVE_WORD`** – Synchroner Subroutinenaufruf an relative Adresse `stmt_start + off`. |
+| `0xA7` | `$8C:D600` | Aktiv | frames: u8 | **`SLEEP` (Byte)** – Pausiert Task für `frames` Ticks (8-Bit, `Task+$03 = 4`). |
+| `0xA8` | `$8C:D5F8` | Aktiv | frames: u16 | **`SLEEP_WORD`** – Pausiert Task für `frames` Ticks (16-Bit, `Task+$03 = 4`). |
+| `0xA9` | `$8C:EAEB` | Aktiv | target: entity, act: expr | **`TRIGGER_ENTITY_ACTION`** – Führt Entity-Status-/Richtungsbefehl über Sprungtabelle `$8C:EAF9` aus (`0..14`: setzt Blickrichtung `+$22`; `16..54`: setzt/löscht Flags in `+$10`, `+$12`, `+$14`). |
+| `0xAA` | `$8C:EBF0` | Aktiv | *keine* | **`SET_CANINE_AI_TARGETING`** – Ruft `$91:B896` für Junge (`$4E89`) und Hund (`$4F37`) auf (mit `SEC` falls `$23C7 == 0`, sonst `CLC` und `STZ $23C7`). |
+| `0xAB` | `$8C:ECB2` | Aktiv | *keine* | **`RESET_GAME_STATE`** – Führt Soft-Reset zum Titelbildschirm aus (`JML $8084C9`, Terminal-Befehl). |
+| `0xAC` | `$8C:D4A8` | Aktiv | target: expr, spell: expr, level: expr, extra: expr... | **`CAST_ALCHEMY_CHECK_DOG`** – Wie `0x9E`, setzt aber `$3BC1 = $4F37`, falls der Hund 0 HP (`$4F37+$2A == 0`) hat, um ihn aus der Zielliste auszublenden. |
+| `0xAD` | `$8C:DB3B` | Aktiv | w1: u16, w2: u16, b1: u8, b2: u8 | **`SET_TEMP_PAIRS_X8`** – Schreibt `b1 * 8` nach `$7E:2834 + w1` und `b2 * 8` nach `$7E:2834 + w2` (6 Bytes). |
+| `0xAE` | `$8C:DB08` | Aktiv | arg1: u8, arg2: u8, b1: u8, b2: u8 | **`SET_ARG_PAIRS_X8`** – Schreibt `b1 * 8` nach `Task + $0F + arg1` und `b2 * 8` nach `Task + $0F + arg2` (4 Bytes). |
+| `0xAF` | `$8C:D7AF` | Aktiv | count: u8, params: expr[count], addr: u24 | **`CALL_PARAMS`** – Kopiert `count` Ausdrücke via `$8C:D6FE` in den neuen Task-Frame (`+$0F..`) und führt `CALL (0x29)` nach `addr` aus. |
+| `0xB0` | `$8C:D786` | Aktiv | count: u8, params: expr[count], idx: u8 | **`CALL_INDEXED_BYTE_PARAMS`** – Evaluiert `count` Parameter via `$8C:D6FE` und führt `CALL_INDEXED_BYTE (0xA3)` aus. |
+| `0xB1` | `$8C:D77B` | Aktiv | count: u8, params: expr[count], off: u16 | **`CALL_INDEXED_WORD_PARAMS`** – Evaluiert `count` Parameter via `$8C:D6FE` und führt `CALL_INDEXED_WORD (0xA4)` aus. |
+| `0xB2` | `$8C:D735` | Aktiv | count: u8, params: expr[count], off: i8 | **`CALL_RELATIVE_BYTE_PARAMS`** – Evaluiert `count` Parameter via `$8C:D6FE` und führt `CALL_RELATIVE_BYTE (0xA5)` aus (`off` relativ zu `stmt_start`). |
+| `0xB3` | `$8C:D71A` | Aktiv | count: u8, params: expr[count], off: i16 | **`CALL_RELATIVE_WORD_PARAMS`** – Evaluiert `count` Parameter via `$8C:D6FE` und führt `CALL_RELATIVE_WORD (0xA6)` aus (`off` relativ zu `stmt_start`). |
+| `0xB4` | `$8C:D7E6` | Aktiv | count: u8, params: expr[count], addr: u24 | **`ASYNC_CALL_PARAMS` / `FORK_PARAMS`** – Evaluiert `count` Parameter via `$8C:D6FE` und startet asynchronen Task (`0x07`) bei `addr`. |
+| `0xB5` | `$8C:EC1C` | Aktiv | args: expr... (8x) | **`LAUNCH_PROJECTILE_ARC` / `PALETTE_FADE_CUSTOM`** – Spawnt und startet ein Projektil-/Effekt-Objekt mit 8 Ausdrücken via `$90:DCE3` (Tabelle `$90:D9A9,X`). |
+| `0xB6` | `$8C:EC5E` | Aktiv | pal: expr, first: expr, last: expr, speed: expr | **`START_PALETTE_CYCLE`** – Lädt ggf. Basispalette via `$8C:EC9A` und startet CGRAM-Farbrotation (`$1374,X..$13F4,X`) via `$90:D532`. |
+| `0xB7` | `$8C:EC8B` | Aktiv | slot: expr | **`STOP_PALETTE_CYCLE`** – Setzt ggf. Basispalette via `$8C:EC9A` zurück und beendet CGRAM-Farbrotation (`STZ $13D4,X`). |
 | `0xB8` | `$8C:ECBD` | *STP-Trap* | — | `TRAP_UNIMPLEMENTED` – Unbenutzt (CPU-Halt `STP`). |
-| `0xB9` | `$8C:E441` | Aktiv | target: expr, dx: expr, dy: expr | **`TELEPORT_REL`** – Relative Teleportation um berechnete Deltas (`E E E`). |
-| `0xBA` | `$8C:E0DA` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FAST`** – Schneller NPC-Spawn mit festen Byte-Koordinaten. |
-| `0xBB` | `$8C:E868` | Aktiv | target: expr, val: expr | **`DAMAGE_ENTITY_2`** – Sekundärer Schadensbefehl via `$8F:C103` (prüft Statusbit `$1000` an `Entity+$10`, addiert auf `Entity+$76`, setzt Flag `$0018` in `+$12`). |
-| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`LOCK_PLAYER_BOY_FAST`** – Schnelles Sperren der Eingaben für den Jungen (setzt Bit 0 in `$7E:2429` via Branch zu `$8C:DF1A`). Historisch in Community-Docs irrtümlich als `FACE_NORTH` gelistet. |
-| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOY_FAST`** – Schnelles Freigeben der Eingaben für den Jungen (löscht Bit 0 in `$7E:2429` via Branch zu `$8C:DEC4`). Historisch irrtümlich als `FACE_NORTH_WAIT`. |
-| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`LOCK_PLAYER_DOG_FAST`** – Schnelles Sperren der Eingaben für den Hund (setzt Bit 1 in `$7E:2429` via Branch zu `$8C:DF1A`). Historisch irrtümlich als `FACE_SOUTH`. |
-| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`UNLOCK_PLAYER_DOG_FAST`** – Schnelles Freigeben der Eingaben für den Hund (löscht Bit 1 in `$7E:2429` via Branch zu `$8C:DEC4`). Historisch irrtümlich als `FACE_SOUTH_WAIT`. |
-| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`LOCK_PLAYER_BOTH_FAST`** – Schnelles Sperren der Eingaben für Junge und Hund (setzt Bits 0 und 1 in `$7E:2429` via Branch zu `$8C:DF1A`). Historisch irrtümlich als `FACE_WEST`. |
-| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOTH_FAST`** – Schnelles Freigeben der Eingaben für Junge und Hund (löscht Bits 0 und 1 in `$7E:2429` via Branch zu `$8C:DEC4`). Historisch irrtümlich als `FACE_EAST`. |
-| `0xC2` | `$8C:E0C4` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FLAGGED`** – Erzeugt NPC über `$8E:B55A` mit gesetztem `$8000`-Zustandsflag. |
+| `0xB9` | `$8C:E441` | Aktiv | target: entity, dx: expr, dy: expr | **`TRY_TELEPORT_REL` / `SET_ENTITY_POS_REL`** – Prüft Kollision bei `(Entity.x + dx, Entity.y + dy)` via `$8F:AEF9`; teleportiert falls frei (`$8F:C279`) und schreibt Erfolg (`1`/`0`) nach `$7E:23E3`. |
+| `0xBA` | `$8C:E0DA` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FAST`** – Spawnt Entity (`$8E:B55A,X`) bei `(x*8, y*8)` mit Flags `$08 = $0000` (`$8F:B045`, speichert Entity in `$0341`). |
+| `0xBB` | `$8C:E868` | Aktiv | target: entity, val: expr | **`DAMAGE_ENTITY_2` (No Flinch)** – Fügt `target` Schaden mit Zahlen-Popup zu via `$8F:C103` (`Entity+$12 \|= $0018`, ohne `$0020` Treffer-/Rückstoß-Animation; ignoriert unverwundbare Ziele mit `+$10 & $1000`). |
+| `0xBC` | `$8C:DF04` | Aktiv | *keine* | **`LOCK_PLAYER_BOY_FAST`** – Sperrt den Jungen (`$4E89`) für Skriptsteuerung (`LDA #$0001; BRA $8CDF1A` $\rightarrow$ `JSL $8FCD0D`, setzt `Entity+$10 \|= $0020`). |
+| `0xBD` | `$8C:DEAE` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOY_FAST`** – Gibt den Jungen (`$4E89`) wieder frei (`LDA #$0001; BRA $8CDEC4` $\rightarrow$ `JSL $8FCCE2`, löscht `Entity+$10 &= $DFDE`). |
+| `0xBE` | `$8C:DF09` | Aktiv | *keine* | **`LOCK_PLAYER_DOG_FAST`** – Sperrt den Hund (`$4F37`) für Skriptsteuerung (`LDA #$0002; BRA $8CDF1A` $\rightarrow$ `JSL $8FCD0D`). |
+| `0xBF` | `$8C:DEB3` | Aktiv | *keine* | **`UNLOCK_PLAYER_DOG_FAST`** – Gibt den Hund (`$4F37`) wieder frei (`LDA #$0002; BRA $8CDEC4` $\rightarrow$ `JSL $8FCCE2`). |
+| `0xC0` | `$8C:DF0E` | Aktiv | *keine* | **`LOCK_PLAYER_BOTH_FAST`** – Sperrt Junge (`$4E89`) und Hund (`$4F37`) (`LDA #$0003; BRA $8CDF1A` $\rightarrow$ `JSL $8FCD0D`). |
+| `0xC1` | `$8C:DEB8` | Aktiv | *keine* | **`UNLOCK_PLAYER_BOTH_FAST`** – Gibt Junge (`$4E89`) und Hund (`$4F37`) wieder frei (`LDA #$0003; BRA $8CDEC4` $\rightarrow$ `JSL $8FCCE2`). |
+| `0xC2` | `$8C:E0C4` | Aktiv | type: u8, x: u8, y: u8 | **`SPAWN_NPC_FLAGGED`** – Spawnt Entity (`$8E:B55A,X`) bei `(x*8, y*8)` mit gesetztem Flag `$08 = $8000` (`$8F:B04A`). |
+
 
 ---
 
