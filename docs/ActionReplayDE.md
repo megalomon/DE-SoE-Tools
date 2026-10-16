@@ -640,7 +640,8 @@
 ```text
 8FAE7070
 ```
-*(Hebelt die Kollisionsprüfung an `$8F:AE70` aus; erlaubt freies Bewegen durch solide Kacheln, Wände, Bäume und Felsen. Game-Genie-Äquivalent: `5DC5-CD7E`).*
+*(Hebelt die Kollisionsprüfung an `$8F:AE70` aus; erlaubt freies Bewegen durch solide Kacheln, Wände, Bäume und Felsen).*
+
 
 
 
