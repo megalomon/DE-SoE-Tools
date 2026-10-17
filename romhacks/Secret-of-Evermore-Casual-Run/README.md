@@ -21,7 +21,7 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 
 ## 2. Gameplay-Features & Änderungen (Version 2.1)
 
-### 🏃 Modernisierte Steuerung & Bewegung
+### Modernisierte Steuerung & Bewegung
 - **Standardmäßiger Dauerlauf (Default Dash):**  
   Der Junge läuft automatisch, sobald das Steuerkreuz betätigt wird (kein mühsames Halten der B-Taste mehr nötig).
 - **B-Taste zum Gehen & schnellen Aufladen:**  
@@ -29,20 +29,20 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 - **A- & B-Tastenbelegung:**  
   **A** greift an, interagiert und bestätigt Menüpunkte. **B** bricht verlässlich in allen Menüs ab.
 
-### ⚔️ Geteilte Waffen-Erfahrung (Shared Weapon Experience)
+### Geteilte Waffen-Erfahrung (Shared Weapon Experience)
 - Alle Waffen derselben Gattung teilen sich den Erfahrungszuwachs simultan:
   - **Schwerter:** Knochenknüppel, Drachentöter, Exkalibur, Laserschwert
   - **Äxte:** Tarantelaxt, Bronzeaxt, Streitaxt, Atomaxt
   - **Speere:** Speer, Bronzespeer, Lanze, Tri-Spitze
 - Erhält eine geführte Waffe im Kampf Erfahrung, leveln alle vier Waffen derselben Familie sofort mit. Veraltete Waffen müssen nach einem Upgrade nicht mehr mühsam nachgelevelt werden!
 
-### ⏳ 50 % weniger Grinding (Halbierte EXP-Kurve)
+### 50 % weniger Grinding (Halbierte EXP-Kurve)
 - **Halbierte Level-99 EXP-Kurve:**  
   Die erforderlichen Erfahrungspunkte für alle Level von 1 bis 99 wurden für den Jungen und den Hund um 50 % reduziert.
 - **Flüssiger Spielfluss:**  
   Bosse und neue Areale können ohne Zwangspausen zum Level-Grinding gemeistert werden.
 
-### 💰 Gegner- & Boss-Rebalancing (89 Datensätze)
+### Gegner- & Boss-Rebalancing (89 Datensätze)
 - **Doppelte Währungsbelohnung:**  
   Besiegte reguläre Gegner lassen das Doppelte an Gold (Talente / Dukaten / Juwelen) fallen.
 - **Angepasste Boss-Kraftpunkte (HP):**  
@@ -50,7 +50,7 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 - **Verbesserte Beute- & Zutatendropraten:**  
   Zutaten- und Beutefunde treten häufiger und verlässlicher auf.
 
-### 🛡️ Waffen-, Item- & Heilmittel-Balancing
+### Waffen-, Item- & Heilmittel-Balancing
 - **Effektivere Heilmittel:**  
   - Blütenblätter heilen **80 KP** (vorher 40 KP).
   - Nektar heilt **200 KP** (vorher 100 KP).
@@ -58,7 +58,7 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 - **Verstärkte Basiswaffen:**  
   Frühe Nahkampfwaffen wurden moderat gestärkt (z. B. Knochenknüppel ATK 10 $\rightarrow$ 13).
 
-### 🗺️ Karten- & Dungeon-Reparaturen
+### Karten- & Dungeon-Reparaturen
 - **Pyramiden-Kacheln:**  
   Symbol- und Rückweg-Fixes in der Pyramide von Antiqua verhindern Hänger und Dead-Ends.
 - **Hundelabyrinth:**  
@@ -125,6 +125,5 @@ romhacks/Secret-of-Evermore-Casual-Run/
 
 ## 6. Credits & Danksagung
 
-- **Andrew Clunn:** Für die Entwicklung des fantastischen Original-ROM-Hacks *Casual Run* (v2.1) und die Unterstützung bei der Portierung.
+- **Andrew Clunn:** Für die Entwicklung des fantastischen Original-ROM-Hacks *Casual Run* (v2.1) und die Erlaubnis zur Portierung.
 - **Claude M. Moyse:** Für die deutsche Original-Lokalisierung.
-- **megalomon:** Deutsche PAL-Reimplementierung, Adress-Mapping und Build-Pipeline.
