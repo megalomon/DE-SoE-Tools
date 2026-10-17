@@ -59,6 +59,8 @@ Ausführliche, deutschsprachige Dokumente nach Vorbild von DataCrystal (speziell
 - [**`docs/maps.md`**](docs/maps.md) – Komplette Tabelle aller 127 Maps mit echten deutschen Ortsnamen (*Allelachema*, *Krozkrübel*, *Terrorfels*, *Chaosturm*, *Assitopia*), SNES-Headern, Enter-Skripten und Triggern.
 - [**`docs/sigil_skripte.md`**](docs/sigil_skripte.md) – SIGIL Script-Engine, Opcode-Referenz und Kontrollfluss.
 - [**`docs/text_dekomprimierung.md`**](docs/text_dekomprimierung.md) – 65816-Markov-Huffman-Dekomprimierer und Text-Steuerzeichen.
+- [**`docs/CutStrings.md`**](docs/CutStrings.md) – Forensische Analyse aller unbenutzten / verworfenen deutschen Texte.
+- [**`romhacks/Secret-of-Evermore-Casual-Run/`**](romhacks/Secret-of-Evermore-Casual-Run/) – Vollständige deutsche PAL-Portierung von *Secret of Evermore: Casual Run* (Version 2.1).
 
 ---
 
