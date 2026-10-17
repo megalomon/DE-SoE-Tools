@@ -10,12 +10,7 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 
 > [!IMPORTANT]
 > **Grundlage:**  
-> Dieser ROM-Hack basiert auf der aktuellen **Version 2.1** des ursprünglichen Hacks von **Andrew Clunn** ([GitHub-Repository](https://github.com/andrewclunn/Secret-of-Evermore-Casual-Run)).  
-> Sämtliche 65816-Hooks und Datentabellen wurden nativ für die **deutsche PAL-ROM** mit der Übersetzung von **Claude M. Moyse** reimplementiert.
-
-> [!TIP]
-> **Download des fertigen Patches:**  
-> Der spielfertige IPS-Patch kann direkt über den [GitHub Release v2.1](https://github.com/megalomon/DE-SoE-Tools/releases/tag/casual-run-v2.1-de) heruntergeladen werden.
+> Dieser ROM-Hack basiert auf der aktuellen Version 2.1 des ursprünglichen Hacks von **Andrew Clunn** ([GitHub-Repository](https://github.com/andrewclunn/Secret-of-Evermore-Casual-Run)) und wurde für die offizielle deutsche PAL-ROM (`Secret of Evermore (Germany).sfc`) reimplementiert.
 
 ---
 
@@ -33,7 +28,7 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 - Alle Waffen derselben Gattung teilen sich den Erfahrungszuwachs simultan:
   - **Schwerter:** Knochenknüppel, Drachentöter, Exkalibur, Laserschwert
   - **Äxte:** Tarantelaxt, Bronzeaxt, Streitaxt, Atomaxt
-  - **Speere:** Speer, Bronzespeer, Lanze, Tri-Spitze
+  - **Speere:** Speer, Bronzespeer, Elfenbeinspeer, Neutronenspeer
 - Erhält eine geführte Waffe im Kampf Erfahrung, leveln alle vier Waffen derselben Familie sofort mit. Veraltete Waffen müssen nach einem Upgrade nicht mehr mühsam nachgelevelt werden!
 
 ### 50 % weniger Grinding (Halbierte EXP-Kurve)
@@ -44,7 +39,7 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 
 ### Gegner- & Boss-Rebalancing (89 Datensätze)
 - **Doppelte Währungsbelohnung:**  
-  Besiegte reguläre Gegner geben das Doppelte an Währung (Krallen in Prähistorie, Juwelen in Antika, Goldmünzen in Gotika und Kreditkarten in Omnitopia).
+  Besiegte reguläre Gegner geben das Doppelte an Währung (Krallen in Prähistorie, Juwelen in Antika, Goldmünzen in Gotika und Kreditkarten in Assitopia).
 - **Angepasste Boss-Kraftpunkte (HP):**  
   Extrem zähe Bosse mit überzogenen Lebenspunkte-Polstern wurden moderat abgeschwächt für dynamischere, spannendere Kämpfe.
 - **Verbesserte Beute- & Zutatendropraten:**  
@@ -86,8 +81,8 @@ Die deutsche PAL-ROM (`Secret of Evermore (Germany).sfc`) unterscheidet sich in 
 ## 4. Bauen & Patchen
 
 ### Option A: Fertigen IPS-Patch anwenden (Empfohlen)
-1. Lade `Secret_of_Evermore_Casual_Run_German.ips` aus dem [GitHub Release v2.1](https://github.com/megalomon/DE-SoE-Tools/releases/tag/casual-run-v2.1-de) herunter.
-2. Wende den Patch mit einem IPS-Patcher (z. B. [FLIPS](https://www.romhacking.net/utilities/1040/), Lunar IPS oder [RomPatcher.js](https://www.marcrobledo.com/RomPatcher.js/)) auf deine deutsche Basis-ROM an.
+1. Verwende die Patch-Datei `Secret_of_Evermore_Casual_Run_German.ips` (oder das Release-Zip).
+2. Wende den Patch mit einem IPS-Patcher (z. B. [FLIPS](https://www.romhacking.net/utilities/1040/), Lunar IPS oder [RomPatcher.js](https://www.marcrobledo.com/RomPatcher.js/)) auf deine unmodifizierte deutsche Basis-ROM an.
 
 ### Option B: Aus dem Quellcode selbst bauen
 Mit dem beiliegenden Python-Build-Skript:

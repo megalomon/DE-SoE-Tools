@@ -579,25 +579,25 @@
 * **Level 3 (3:00 Max):** `7E0AEE03` *(XP 0%: `7E0AED00`)*
 * **Entfernen / Sperren:** `7E0AEE00`
 
-#### Speer (Lanze 1)
+#### Speer (Speer 1)
 * **Level 1 (1:00):** `7E0AF001` *(XP 0%: `7E0AEF00` | XP 99%: `7E0AEFFF`)*
 * **Level 2 (2:00):** `7E0AF002` *(XP 0%: `7E0AEF00` | XP 99%: `7E0AEFFF`)*
 * **Level 3 (3:00 Max):** `7E0AF003` *(XP 0%: `7E0AEF00`)*
 * **Entfernen / Sperren:** `7E0AF000`
 
-#### Bronzespeer (Lanze 2)
+#### Bronzespeer (Speer 2)
 * **Level 1 (1:00):** `7E0AF201` *(XP 0%: `7E0AF100` | XP 99%: `7E0AF1FF`)*
 * **Level 2 (2:00):** `7E0AF202` *(XP 0%: `7E0AF100` | XP 99%: `7E0AF1FF`)*
 * **Level 3 (3:00 Max):** `7E0AF203` *(XP 0%: `7E0AF100`)*
 * **Entfernen / Sperren:** `7E0AF200`
 
-#### Elfenbeinspeer (Lanze 3)
+#### Elfenbeinspeer (Speer 3)
 * **Level 1 (1:00):** `7E0AF401` *(XP 0%: `7E0AF300` | XP 99%: `7E0AF3FF`)*
 * **Level 2 (2:00):** `7E0AF402` *(XP 0%: `7E0AF300` | XP 99%: `7E0AF3FF`)*
 * **Level 3 (3:00 Max):** `7E0AF403` *(XP 0%: `7E0AF300`)*
 * **Entfernen / Sperren:** `7E0AF400`
 
-#### Neutronenspeer (Lanze 4)
+#### Neutronenspeer (Speer 4)
 * **Level 1 (1:00):** `7E0AF601` *(XP 0%: `7E0AF500` | XP 99%: `7E0AF5FF`)*
 * **Level 2 (2:00):** `7E0AF602` *(XP 0%: `7E0AF500` | XP 99%: `7E0AF5FF`)*
 * **Level 3 (3:00 Max):** `7E0AF603` *(XP 0%: `7E0AF500`)*

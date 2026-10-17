@@ -93,9 +93,9 @@ Für Romhacks, Skripte und TAS-Analysen:
 
 ### Währungen (24-Bit Little-Endian)
 - **Krallen (Prähistorie):** `$7E0AC6` – `$7E0AC8`
-- **Juwelen / Edelsteine (Antika):** `$7E0AC9` – `$7E0ACB`
+- **Juwelen (Antika):** `$7E0AC9` – `$7E0ACB`
 - **Goldmünzen (Gotika):** `$7E0ACC` – `$7E0ACE`
-- **Credits (Omnitopia):** `$7E0ACF` – `$7E0AD1`
+- **Kreditkarten (Assitopia):** `$7E0ACF` – `$7E0AD1`
 - **Aktiver Währungsindex:** `$7E2348` (`0x00`, `0x03`, `0x06`, `0x09`)
 
 ### Waffenlevel & Erfahrung (16-Bit Word pro Waffe)
@@ -103,7 +103,7 @@ Aufbau: **Low-Byte (`+0`)** = XP / Ladefortschritt (`0..255`, im Statusmenü ang
 
 - **Fäuste:** `$7E0ADD`
 - **Schwerter:**
-  - Knochenknöppel: `$7E0ADF`
+  - Knochenknüppel: `$7E0ADF`
   - Drachentöter: `$7E0AE1`
   - Exkalibur: `$7E0AE3`
   - Laserschwert: `$7E0AE5`
@@ -112,7 +112,7 @@ Aufbau: **Low-Byte (`+0`)** = XP / Ladefortschritt (`0..255`, im Statusmenü ang
   - Bronzeaxt: `$7E0AE9`
   - Streitaxt: `$7E0AEB`
   - Atomaxt: `$7E0AED`
-- **Lanzen / Speere:**
+- **Speere:**
   - Speer: `$7E0AEF`
   - Bronzespeer: `$7E0AF1`
   - Elfenbeinspeer: `$7E0AF3`

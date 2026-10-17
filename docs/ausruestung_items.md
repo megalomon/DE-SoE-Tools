@@ -70,9 +70,9 @@ Die **Bazooka** (im ROM-Text `0x050830` wörtlich *Bazooka*) ist die schwere Fer
 
 | Munition (ROM) | US-Originalname | ROM-Offset | Basis-Angriff | WRAM-Adresse | Wertebereich |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Donnergranaten** | Thunder Ball | `0x050807` | **200** | `$7E0B09` | `0` – `99` (`0x63`) |
-| **Plasmaraketen** | Particle Bomb | `0x050816` | **350** | `$7E0B0A` | `0` – `99` (`0x63`) |
-| **Cyberbomben** | Cryo-Blast | `0x050824` | **800** | `$7E0B0B` | `0` – `99` (`0x63`) |
+| **Donnergranaten** | Thunder Ball | `0x050807` | **200** | `$7E2345` | `0` – `99` (`0x63`) |
+| **Plasmaraketen** | Particle Bomb | `0x050816` | **350** | `$7E2346` | `0` – `99` (`0x63`) |
+| **Cyberbomben** | Cryo-Blast | `0x050824` | **800** | `$7E2347` | `0` – `99` (`0x63`) |
 
 - **Bazooka Ausrüstungseintrag:** `$7E0AF7` / `$7E0AF8` (Status im Ringmenü).
 

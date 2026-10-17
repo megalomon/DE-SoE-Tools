@@ -77,10 +77,10 @@ Jede normale Waffe und auch der Hund belegen **2 Bytes (16-Bit Word)** im WRAM a
 | **Bronzeaxt** | Axt 2 | `$7E0AE9` | `$7E0AEA` | `00 03` |
 | **Streitaxt** | Axt 3 | `$7E0AEB` | `$7E0AEC` | `00 03` |
 | **Atomaxt** | Axt 4 | `$7E0AED` | `$7E0AEE` | `00 03` |
-| **Speer** | Lanze 1 | `$7E0AEF` | `$7E0AF0` | `00 03` |
-| **Bronzespeer** | Lanze 2 | `$7E0AF1` | `$7E0AF2` | `00 03` |
-| **Elfenbeinspeer** | Lanze 3 | `$7E0AF3` | `$7E0AF4` | `00 03` |
-| **Neutronenspeer** | Lanze 4 | `$7E0AF5` | `$7E0AF6` | `00 03` |
+| **Speer** | Speer 1 | `$7E0AEF` | `$7E0AF0` | `00 03` |
+| **Bronzespeer** | Speer 2 | `$7E0AF1` | `$7E0AF2` | `00 03` |
+| **Elfenbeinspeer** | Speer 3 | `$7E0AF3` | `$7E0AF4` | `00 03` |
+| **Neutronenspeer** | Speer 4 | `$7E0AF5` | `$7E0AF6` | `00 03` |
 | **Bazooka** | Fernkampf | `$7E0AF7` | `$7E0AF8` | *Kein Level* |
 | **Hund (Angriff / Biss)** | Hund | `$7E0B07` | `$7E0B08` | `00 03` |
 
