@@ -3,3 +3,7 @@
 dump_de/
 __pycache__/
 *.pyc
+*.sfc
+*.smc
+*.srm
+*.state
