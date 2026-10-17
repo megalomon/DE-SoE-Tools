@@ -172,8 +172,7 @@ fn main() {
                     record_usage(*id, map_id, &trigger_kind, addr);
                 }
                 Instruction::Call(target) | Instruction::Fork(target) => {
-                    let t_addr = Rom::script_to_rom_addr(*target);
-                    enqueue!(t_addr, map_id, &trigger_kind);
+                    enqueue!(*target, map_id, &trigger_kind);
                 }
                 Instruction::CallParams { addr: t_addr, .. } | Instruction::ForkParams { addr: t_addr, .. } => {
                     enqueue!(*t_addr, map_id, &trigger_kind);
