@@ -38,9 +38,9 @@ impl Rom {
     /// Erstellt eine Rom-Instanz aus einem Byte-Buffer.
     pub fn from_bytes(data: Vec<u8>) -> Result<Self, RomError> {
         let sz = data.len();
-        let header_offset = if sz == 3_145_728 + 512 || sz == 3_670_016 + 512 {
+        let header_offset = if sz == 3_145_728 + 512 || sz == 3_670_016 + 512 || sz == 4_194_304 + 512 {
             512
-        } else if sz == 3_145_728 || sz == 3_670_016 {
+        } else if sz == 3_145_728 || sz == 3_670_016 || sz == 4_194_304 {
             0
         } else {
             return Err(RomError::InvalidSize(sz));
