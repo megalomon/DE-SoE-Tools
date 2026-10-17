@@ -47,7 +47,7 @@ def cpu_to_pc(addr: int) -> int:
     elif 0x80 <= bank <= 0xBF:
         if offset < 0x8000:
             raise ValueError(f"Ungültige HiROM-Adresse im unteren Spiegelbereich: ${addr:06X}")
-        return ((bank - 0x80) * 0x10000) + (offset - 0x8000)
+        return ((bank - 0x80) * 0x10000) + offset
     else:
         raise ValueError(f"Erwartete HiROM CPU-Adresse ($800000-$FFFFFF), erhalten: ${addr:06X}")
 

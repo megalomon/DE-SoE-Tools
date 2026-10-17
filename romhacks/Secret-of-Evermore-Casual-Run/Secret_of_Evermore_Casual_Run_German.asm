@@ -127,83 +127,100 @@ WeaponAttack_Record14_C43ADE:
 ; $C43ADE: This slice defines 2 of the two attack bytes; preserve inherited high bytes where omitted. Records are 36 bytes, with a name pointer at +$02 and undocumented words after +$04.
     db $58, $02
 
-; Range: $C43B8E-$C43BEA (93 bytes)
-
-; Original US: $C43B8E -> German PAL: $C441CE
+; ============================================================================
+; HELME (Records 14-23): Gezielte Abwehrwert-Patches (+0x00 & +0x02)
+; Deutsche Namen-Pointer (+0x04) und Systemfelder (+0x06, +0x08) bleiben 100% intakt!
+; ============================================================================
+; Record 14: Schädelhelm (Dino Helm) - Abwehr 6 -> 5
 org $C441CE
-ArmorRecordFields_14_23_C43B8E:
-; $C43B8E: Armor directory routes 40 ten-byte records at $C43B02-$C43C91; this slice intersects records 14-23.
-; $C43B8E: Record fields: +$00 effective defense (word), +$02 displayed defense (word), +$04 name pointer (word in bank $C4), +$06 undocumented pointer (word), +$08 undocumented value (word).
-; $C43B8E: Slice begins at record offset +$00 and ends after offset +$02; preserve partial words and all undocumented fields.
-    db $05, $00, $05, $00, $7A, $64, $AD, $60, $BC, $00, $08, $00, $08, $00, $84, $64
-    db $AD, $60, $BE, $00, $0D, $00, $0D, $00, $92, $64, $AD, $60, $C0, $00, $13, $00
-    db $13, $00, $A0, $64, $AD, $60, $C2, $00, $1B, $00, $1B, $00, $AF, $64, $AD, $60
-    db $C4, $00, $25, $00, $25, $00, $BD, $64, $AD, $60, $C6, $00, $31, $00, $31, $00
-    db $C9, $64, $AD, $60, $C8, $00, $40, $00, $40, $00, $D7, $64, $AD, $60, $CA, $00
-    db $4F, $00, $4F, $00, $E6, $64, $AD, $60, $CC, $00, $60, $00, $60
+    db $05, $00, $05, $00
 
-; Range: $C43C06-$C43C62 (93 bytes)
+; Record 15: Bronzehelm (Bronze Helmet) - Abwehr 11 -> 8
+org $C441D8
+    db $08, $00, $08, $00
 
-; Original US: $C43C06 -> German PAL: $C44246
+; Record 16: Blecheimer (Obsidian Helm) - Abwehr 18 -> 13
+org $C441E2
+    db $0D, $00, $0D, $00
+
+; Record 17: Römerhelm (Centurion Helm) - Abwehr 27 -> 19
+org $C441EC
+    db $13, $00, $13, $00
+
+; Record 18: Titanenkrone (Titan Crown) - Abwehr 39 -> 27
+org $C441F6
+    db $1B, $00, $1B, $00
+
+; Record 19: Drachenhelm (Dragon Helm) - Abwehr 54 -> 37
+org $C44200
+    db $25, $00, $25, $00
+
+; Record 20: Ritterhelm (Knight Helm) - Abwehr 72 -> 49
+org $C4420A
+    db $31, $00, $31, $00
+
+; Record 21: Sonnenhelm (Lightning Helm) - Abwehr 93 -> 64
+org $C44214
+    db $40, $00, $40, $00
+
+; Record 22: Meisterhelm (Old Reliable) - Abwehr 117 -> 79
+org $C4421E
+    db $4F, $00, $4F, $00
+
+; Record 23: Magiehelm (Brainstorm) - Abwehr 144 -> 96
+org $C44228
+    db $60, $00, $60, $00
+
+; ============================================================================
+; ARMBÄNDER (Records 26-35): Gezielte Abwehrwert-Patches (+0x00 & +0x02)
+; Deutsche Namen-Pointer (+0x04) und Systemfelder (+0x06, +0x08) bleiben 100% intakt!
+; ============================================================================
+; Record 26: Klauenreif (Claw Guard) - Abwehr 5 -> 3
 org $C44246
-ArmorRecordFields_26_35_C43C06:
-; $C43C06: Armor directory routes 40 ten-byte records at $C43B02-$C43C91; this slice intersects records 26-35.
-; $C43C06: Record fields: +$00 effective defense (word), +$02 displayed defense (word), +$04 name pointer (word in bank $C4), +$06 undocumented pointer (word), +$08 undocumented value (word).
-; $C43C06: Slice begins at record offset +$00 and ends after offset +$02; preserve partial words and all undocumented fields.
-    db $03, $00, $03, $00, $1A, $65, $AD, $60, $D4, $00, $07, $00, $07, $00, $25, $65
-    db $AD, $60, $D6, $00, $0A, $00, $0A, $00, $34, $65, $AD, $60, $D8, $00, $10, $00
-    db $10, $00, $44, $65, $AD, $60, $DA, $00, $16, $00, $16, $00, $51, $65, $AD, $60
-    db $DC, $00, $1D, $00, $1D, $00, $5D, $65, $AD, $60, $DE, $00, $26, $00, $26, $00
-    db $6D, $65, $AD, $60, $E0, $00, $2F, $00, $2F, $00, $7B, $65, $AD, $60, $E2, $00
-    db $39, $00, $39, $00, $86, $65, $AD, $60, $E4, $00, $41, $00, $41
+    db $03, $00, $03, $00
 
-; Range: $C4559A-$C4559D (4 bytes)
+; Record 27: Schlangenarmband (Serpent Span) - Abwehr 10 -> 7
+org $C44250
+    db $07, $00, $07, $00
 
-; Original US: $C4559A -> German PAL: $C45BDA
-org $C45BDA
-DogEquipRing_IconPtr:
-    db $E6, $00, $C8, $00
+; Record 28: Bronzeklaue (Bronze Gauntlet) - Abwehr 17 -> 10
+org $C4425A
+    db $0A, $00, $0A, $00
 
-; Range: $C45AA0-$C45AA2 (3 bytes)
+; Record 29: Feuerfetisch (Gloves of Ra) - Abwehr 26 -> 16
+org $C44264
+    db $10, $00, $10, $00
 
-; Original US: $C45AA0 -> German PAL: $C460E0
-org $C460E0
-Undocumented_C45AA0:
-; $C45AA0: Retained 3-byte slice in native bank; source boundaries are not verified instruction, record or routine boundaries.
-; $C45AA0: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
-; $C45AA0: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
-    db $50, $00, $C8
+; Record 30: Eisenarmband (Iron Bracer) - Abwehr 37 -> 22
+org $C4426E
+    db $16, $00, $16, $00
 
-; Range: $C45B9D-$C45BA2 (6 bytes)
-; Function/storage: ALCHEMY_EXPERIENCE_LEVEL_TABLE
+; Record 31: Roys Ring (Dragon Claw) - Abwehr 50 -> 29
+org $C44278
+    db $1D, $00, $1D, $00
 
-; Original US: $C45B9D -> German PAL: $C461DD
-org $C461DD
-AlchemyExperience_LevelValues_C45B9D:
-; $C45B9D: Byte-valued alchemy experience table at $C45B9C-$C45BA4: this slice covers entry indexes 1-6.
-; $C45B9D: Native nine-entry layout is corroborated by Evermizer. The unchanged first and final entries come from the clean base; do not interpret these values as CPU opcodes.
+; Record 32: Ritterhandschuh (Knight Gauntlet) - Abwehr 65 -> 38
+org $C44282
+    db $26, $00, $26, $00
+
+; Record 33: Drachenklaue (Magnum Bracer) - Abwehr 82 -> 47
+org $C4428C
+    db $2F, $00, $2F, $00
+
+; Record 34: Magierhandschuh (Relic Glove) - Abwehr 101 -> 57
+org $C44296
+    db $39, $00, $39, $00
+
+; Record 35: Cyber-Armband (Virtual Glove) - Abwehr 122 -> 65
+org $C442A0
+    db $41, $00, $41, $00
+
+; ============================================================================
+; ALCHEMIE-ERFAHRUNG LEVELKURVE (Bank $C5, deutsche PAL-Tabelle bei $C5:0202)
+; Modifiziert die Zuwächse für Level 1 bis 6: $07, $05, $04, $03, $02, $02
+; ============================================================================
+org $C50203
     db $07, $05, $04, $03, $02, $02
-
-; Range: $C45E75-$C45E76 (2 bytes)
-
-; Original US: $C45E75 -> German PAL: $C464B5
-org $C464B5
-CrushBaseMight:
-    db $3D, $00
-
-; Range: $C45E7B-$C45E7E (4 bytes)
-
-; Original US: $C45E7B -> German PAL: $C464BB
-org $C464BB
-DrainPowers:
-    db $20, $00, $20, $00
-
-; ============================================================================
-; ROM BANK $C5
-; ============================================================================
-
-; Range: $C57410-$C574D9 (202 bytes)
-; Function/storage: SHARED_WEAPON_EXPERIENCE
 
 ; ============================================================================
 ; 2. MODUL: EXP-PROGRESSION & STATUSWERTE (Bank $CC, deutscher Shift +$0392)
@@ -352,7 +369,7 @@ CharacterGrowthTableSlice_CC95F5:
 ; 3. MODUL: GEGNER- & BOSS-REBALANCING (Bank $8E, identischer File-Offset $0EB678)
 ; ============================================================================
 ; German PAL Enemy Record at $8EC545
-org $8EC545
+org $CEC545
 EnemyStats_Record051_HP_CEC545:
 ; $CEC545: Physical native character record 51 at $CEC536; 74-byte stride, slice +$0F-+$27.
 ; $CEC545: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -365,7 +382,7 @@ EnemyStats_Record051_HP_CEC545:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC58F
-org $8EC58F
+org $CEC58F
 EnemyStats_Record052_HP_CEC58F:
 ; $CEC58F: Physical native character record 52 at $CEC580; 74-byte stride, slice +$0F-+$30.
 ; $CEC58F: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money; +$29-+$29 PrizeChance; +$2C-+$2D ChargeLimit; +$2E-+$2F ChargeGain.
@@ -379,7 +396,7 @@ EnemyStats_Record052_HP_CEC58F:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC5E3
-org $8EC5E3
+org $CEC5E3
 EnemyStats_Record053_Attack_CEC5E3:
 ; $CEC5E3: Physical native character record 53 at $CEC5CA; 74-byte stride, slice +$19-+$27.
 ; $CEC5E3: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -390,7 +407,7 @@ EnemyStats_Record053_Attack_CEC5E3:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC63B
-org $8EC63B
+org $CEC63B
 EnemyStats_Record054_Money_CEC63B:
 ; $CEC63B: Physical native character record 54 at $CEC614; 74-byte stride, slice +$27-+$28.
 ; $CEC63B: Fields in this slice: +$27-+$28 Money.
@@ -401,7 +418,7 @@ EnemyStats_Record054_Money_CEC63B:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC677
-org $8EC677
+org $CEC677
 EnemyStats_Record055_Attack_CEC677:
 ; $CEC677: Physical native character record 55 at $CEC65E; 74-byte stride, slice +$19-+$28.
 ; $CEC677: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -412,7 +429,7 @@ EnemyStats_Record055_Attack_CEC677:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC6C1
-org $8EC6C1
+org $CEC6C1
 EnemyStats_Record056_Attack_CEC6C1:
 ; $CEC6C1: Physical native character record 56 at $CEC6A8; 74-byte stride, slice +$19-+$27.
 ; $CEC6C1: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -423,7 +440,7 @@ EnemyStats_Record056_Attack_CEC6C1:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC701
-org $8EC701
+org $CEC701
 EnemyStats_Record057_HP_CEC701:
 ; $CEC701: Physical native character record 57 at $CEC6F2; 74-byte stride, slice +$0F-+$27.
 ; $CEC701: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -436,7 +453,7 @@ EnemyStats_Record057_HP_CEC701:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC74B
-org $8EC74B
+org $CEC74B
 EnemyStats_Record058_HP_CEC74B:
 ; $CEC74B: Physical native character record 58 at $CEC73C; 74-byte stride, slice +$0F-+$21.
 ; $CEC74B: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -449,7 +466,7 @@ EnemyStats_Record058_HP_CEC74B:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC79F
-org $8EC79F
+org $CEC79F
 EnemyStats_Record059_Attack_CEC79F:
 ; $CEC79F: Physical native character record 59 at $CEC786; 74-byte stride, slice +$19-+$27.
 ; $CEC79F: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -460,7 +477,7 @@ EnemyStats_Record059_Attack_CEC79F:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC7AF
-org $8EC7AF
+org $CEC7AF
 TumbleWeed_NormalDropClass:
 ; $CEC7AF: Physical native character record 59 at $CEC786; 74-byte stride, slice +$29-+$29.
 ; $CEC7AF: Fields in this slice: +$29-+$29 PrizeChance.
@@ -471,7 +488,7 @@ TumbleWeed_NormalDropClass:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC7E9
-org $8EC7E9
+org $CEC7E9
 EnemyStats_Record060_Attack_CEC7E9:
 ; $CEC7E9: Physical native character record 60 at $CEC7D0; 74-byte stride, slice +$19-+$27.
 ; $CEC7E9: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -482,7 +499,7 @@ EnemyStats_Record060_Attack_CEC7E9:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC829
-org $8EC829
+org $CEC829
 EnemyStats_Record061_HP_CEC829:
 ; $CEC829: Physical native character record 61 at $CEC81A; 74-byte stride, slice +$0F-+$28.
 ; $CEC829: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -495,7 +512,7 @@ EnemyStats_Record061_HP_CEC829:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC87D
-org $8EC87D
+org $CEC87D
 EnemyStats_Record062_Attack_CEC87D:
 ; $CEC87D: Physical native character record 62 at $CEC864; 74-byte stride, slice +$19-+$27.
 ; $CEC87D: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -506,7 +523,7 @@ EnemyStats_Record062_Attack_CEC87D:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC8BD
-org $8EC8BD
+org $CEC8BD
 EnemyStats_Record063_HP_CEC8BD:
 ; $CEC8BD: Physical native character record 63 at $CEC8AE; 74-byte stride, slice +$0F-+$27.
 ; $CEC8BD: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -519,7 +536,7 @@ EnemyStats_Record063_HP_CEC8BD:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC911
-org $8EC911
+org $CEC911
 EnemyStats_Record064_Attack_CEC911:
 ; $CEC911: Physical native character record 64 at $CEC8F8; 74-byte stride, slice +$19-+$27.
 ; $CEC911: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -530,7 +547,7 @@ EnemyStats_Record064_Attack_CEC911:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC95B
-org $8EC95B
+org $CEC95B
 EnemyStats_Record065_Attack_CEC95B:
 ; $CEC95B: Physical native character record 65 at $CEC942; 74-byte stride, slice +$19-+$27.
 ; $CEC95B: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -541,7 +558,7 @@ EnemyStats_Record065_Attack_CEC95B:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EC9A5
-org $8EC9A5
+org $CEC9A5
 EnemyStats_Record066_Attack_CEC9A5:
 ; $CEC9A5: Physical native character record 66 at $CEC98C; 74-byte stride, slice +$19-+$24.
 ; $CEC9A5: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -552,7 +569,7 @@ EnemyStats_Record066_Attack_CEC9A5:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECA83
-org $8ECA83
+org $CECA83
 EnemyStats_Record069_Attack_CECA83:
 ; $CECA83: Physical native character record 69 at $CECA6A; 74-byte stride, slice +$19-+$27.
 ; $CECA83: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -563,7 +580,7 @@ EnemyStats_Record069_Attack_CECA83:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECACD
-org $8ECACD
+org $CECACD
 EnemyStats_Record070_Attack_CECACD:
 ; $CECACD: Physical native character record 70 at $CECAB4; 74-byte stride, slice +$19-+$28.
 ; $CECACD: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -574,7 +591,7 @@ EnemyStats_Record070_Attack_CECACD:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECB17
-org $8ECB17
+org $CECB17
 EnemyStats_Record071_Attack_CECB17:
 ; $CECB17: Physical native character record 71 at $CECAFE; 74-byte stride, slice +$19-+$28.
 ; $CECB17: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -585,7 +602,7 @@ EnemyStats_Record071_Attack_CECB17:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECB57
-org $8ECB57
+org $CECB57
 EnemyStats_Record072_HP_CECB57:
 ; $CECB57: Physical native character record 72 at $CECB48; 74-byte stride, slice +$0F-+$24.
 ; $CECB57: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -598,7 +615,7 @@ EnemyStats_Record072_HP_CECB57:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECBA1
-org $8ECBA1
+org $CECBA1
 EnemyStats_Record073_HP_CECBA1:
 ; $CECBA1: Physical native character record 73 at $CECB92; 74-byte stride, slice +$0F-+$23.
 ; $CECBA1: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$23 Experience (partial field).
@@ -611,7 +628,7 @@ EnemyStats_Record073_HP_CECBA1:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECBEB
-org $8ECBEB
+org $CECBEB
 EnemyStats_Record074_HP_CECBEB:
 ; $CECBEB: Physical native character record 74 at $CECBDC; 74-byte stride, slice +$0F-+$10.
 ; $CECBEB: Fields in this slice: +$0F-+$10 HP.
@@ -622,7 +639,7 @@ EnemyStats_Record074_HP_CECBEB:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECBFF
-org $8ECBFF
+org $CECBFF
 EnemyStats_Record074_Experience_CECBFF:
 ; $CECBFF: Physical native character record 74 at $CECBDC; 74-byte stride, slice +$23-+$24.
 ; $CECBFF: Fields in this slice: +$23-+$24 Experience (partial field).
@@ -633,7 +650,7 @@ EnemyStats_Record074_Experience_CECBFF:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECC3F
-org $8ECC3F
+org $CECC3F
 EnemyStats_Record075_Attack_CECC3F:
 ; $CECC3F: Physical native character record 75 at $CECC26; 74-byte stride, slice +$19-+$21.
 ; $CECC3F: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -644,7 +661,7 @@ EnemyStats_Record075_Attack_CECC3F:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECC7F
-org $8ECC7F
+org $CECC7F
 EnemyStats_Record076_HP_CECC7F:
 ; $CECC7F: Physical native character record 76 at $CECC70; 74-byte stride, slice +$0F-+$24.
 ; $CECC7F: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -657,7 +674,7 @@ EnemyStats_Record076_HP_CECC7F:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECCC9
-org $8ECCC9
+org $CECCC9
 EnemyStats_Record077_HP_CECCC9:
 ; $CECCC9: Physical native character record 77 at $CECCBA; 74-byte stride, slice +$0F-+$28.
 ; $CECCC9: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -670,7 +687,7 @@ EnemyStats_Record077_HP_CECCC9:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECD13
-org $8ECD13
+org $CECD13
 EnemyStats_Record078_HP_CECD13:
 ; $CECD13: Physical native character record 78 at $CECD04; 74-byte stride, slice +$0F-+$24.
 ; $CECD13: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -683,7 +700,7 @@ EnemyStats_Record078_HP_CECD13:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECD5D
-org $8ECD5D
+org $CECD5D
 EnemyStats_Record079_HP_CECD5D:
 ; $CECD5D: Physical native character record 79 at $CECD4E; 74-byte stride, slice +$0F-+$10.
 ; $CECD5D: Fields in this slice: +$0F-+$10 HP.
@@ -694,7 +711,7 @@ EnemyStats_Record079_HP_CECD5D:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECD71
-org $8ECD71
+org $CECD71
 EnemyStats_Record079_Experience_CECD71:
 ; $CECD71: Physical native character record 79 at $CECD4E; 74-byte stride, slice +$23-+$24.
 ; $CECD71: Fields in this slice: +$23-+$24 Experience (partial field).
@@ -705,7 +722,7 @@ EnemyStats_Record079_Experience_CECD71:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECDBB
-org $8ECDBB
+org $CECDBB
 EnemyStats_Record080_Experience_CECDBB:
 ; $CECDBB: Physical native character record 80 at $CECD98; 74-byte stride, slice +$23-+$27.
 ; $CECDBB: Fields in this slice: +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -716,7 +733,7 @@ EnemyStats_Record080_Experience_CECDBB:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECE09
-org $8ECE09
+org $CECE09
 EnemyStats_Record081_Money_CECE09:
 ; $CECE09: Physical native character record 81 at $CECDE2; 74-byte stride, slice +$27-+$27.
 ; $CECE09: Fields in this slice: +$27-+$27 Money (partial field).
@@ -727,7 +744,7 @@ EnemyStats_Record081_Money_CECE09:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECE45
-org $8ECE45
+org $CECE45
 EnemyStats_Record082_Attack_CECE45:
 ; $CECE45: Physical native character record 82 at $CECE2C; 74-byte stride, slice +$19-+$19.
 ; $CECE45: Fields in this slice: +$19-+$19 Attack (partial field).
@@ -738,7 +755,7 @@ EnemyStats_Record082_Attack_CECE45:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECE85
-org $8ECE85
+org $CECE85
 EnemyStats_Record083_HP_CECE85:
 ; $CECE85: Physical native character record 83 at $CECE76; 74-byte stride, slice +$0F-+$1D.
 ; $CECE85: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1D MagicDefense (partial field).
@@ -750,7 +767,7 @@ EnemyStats_Record083_HP_CECE85:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECECF
-org $8ECECF
+org $CECECF
 EnemyStats_Record084_HP_CECECF:
 ; $CECECF: Physical native character record 84 at $CECEC0; 74-byte stride, slice +$0F-+$28.
 ; $CECECF: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -763,7 +780,7 @@ EnemyStats_Record084_HP_CECECF:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECF23
-org $8ECF23
+org $CECF23
 EnemyStats_Record085_Attack_CECF23:
 ; $CECF23: Physical native character record 85 at $CECF0A; 74-byte stride, slice +$19-+$28.
 ; $CECF23: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -774,7 +791,7 @@ EnemyStats_Record085_Attack_CECF23:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECF7B
-org $8ECF7B
+org $CECF7B
 EnemyStats_Record086_Money_CECF7B:
 ; $CECF7B: Physical native character record 86 at $CECF54; 74-byte stride, slice +$27-+$27.
 ; $CECF7B: Fields in this slice: +$27-+$27 Money (partial field).
@@ -785,7 +802,7 @@ EnemyStats_Record086_Money_CECF7B:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECFAD
-org $8ECFAD
+org $CECFAD
 EnemyStats_Record087_HP_CECFAD:
 ; $CECFAD: Physical native character record 87 at $CECF9E; 74-byte stride, slice +$0F-+$24.
 ; $CECFAD: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -798,7 +815,7 @@ EnemyStats_Record087_HP_CECFAD:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ECFF7
-org $8ECFF7
+org $CECFF7
 EnemyStats_Record088_HP_CECFF7:
 ; $CECFF7: Physical native character record 88 at $CECFE8; 74-byte stride, slice +$0F-+$1D.
 ; $CECFF7: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1D MagicDefense (partial field).
@@ -810,7 +827,7 @@ EnemyStats_Record088_HP_CECFF7:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED059
-org $8ED059
+org $CED059
 EnemyStats_Record089_Money_CED059:
 ; $CED059: Physical native character record 89 at $CED032; 74-byte stride, slice +$27-+$27.
 ; $CED059: Fields in this slice: +$27-+$27 Money (partial field).
@@ -821,7 +838,7 @@ EnemyStats_Record089_Money_CED059:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED095
-org $8ED095
+org $CED095
 EnemyStats_Record090_Attack_CED095:
 ; $CED095: Physical native character record 90 at $CED07C; 74-byte stride, slice +$19-+$27.
 ; $CED095: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -832,7 +849,7 @@ EnemyStats_Record090_Attack_CED095:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED137
-org $8ED137
+org $CED137
 EnemyStats_Record092_Money_CED137:
 ; $CED137: Physical native character record 92 at $CED110; 74-byte stride, slice +$27-+$27.
 ; $CED137: Fields in this slice: +$27-+$27 Money (partial field).
@@ -843,7 +860,7 @@ EnemyStats_Record092_Money_CED137:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED173
-org $8ED173
+org $CED173
 EnemyStats_Record093_Attack_CED173:
 ; $CED173: Physical native character record 93 at $CED15A; 74-byte stride, slice +$19-+$27.
 ; $CED173: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -854,7 +871,7 @@ EnemyStats_Record093_Attack_CED173:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED1BD
-org $8ED1BD
+org $CED1BD
 EnemyStats_Record094_Attack_CED1BD:
 ; $CED1BD: Physical native character record 94 at $CED1A4; 74-byte stride, slice +$19-+$27.
 ; $CED1BD: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -865,7 +882,7 @@ EnemyStats_Record094_Attack_CED1BD:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED207
-org $8ED207
+org $CED207
 EnemyStats_Record095_Attack_CED207:
 ; $CED207: Physical native character record 95 at $CED1EE; 74-byte stride, slice +$19-+$27.
 ; $CED207: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -876,7 +893,7 @@ EnemyStats_Record095_Attack_CED207:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED247
-org $8ED247
+org $CED247
 EnemyStats_Record096_HP_CED247:
 ; $CED247: Physical native character record 96 at $CED238; 74-byte stride, slice +$0F-+$24.
 ; $CED247: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -889,7 +906,7 @@ EnemyStats_Record096_HP_CED247:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED291
-org $8ED291
+org $CED291
 EnemyStats_Record097_HP_CED291:
 ; $CED291: Physical native character record 97 at $CED282; 74-byte stride, slice +$0F-+$21.
 ; $CED291: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -902,7 +919,7 @@ EnemyStats_Record097_HP_CED291:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED2CC
-org $8ED2CC
+org $CED2CC
 EnemyStats_Record098_NamePointer_CED2CC:
 ; $CED2CC: Physical native character record 98 at $CED2CC; 74-byte stride, slice +$00-+$00.
 ; $CED2CC: Fields in this slice: +$00-+$00 NamePointer (partial field).
@@ -913,7 +930,7 @@ EnemyStats_Record098_NamePointer_CED2CC:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED2EF
-org $8ED2EF
+org $CED2EF
 EnemyStats_Record098_Experience_CED2EF:
 ; $CED2EF: Physical native character record 98 at $CED2CC; 74-byte stride, slice +$23-+$27.
 ; $CED2EF: Fields in this slice: +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -924,7 +941,7 @@ EnemyStats_Record098_Experience_CED2EF:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED339
-org $8ED339
+org $CED339
 EnemyStats_Record099_Experience_CED339:
 ; $CED339: Physical native character record 99 at $CED316; 74-byte stride, slice +$23-+$27.
 ; $CED339: Fields in this slice: +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -935,7 +952,7 @@ EnemyStats_Record099_Experience_CED339:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED387
-org $8ED387
+org $CED387
 EnemyStats_Record100_Money_CED387:
 ; $CED387: Physical native character record 100 at $CED360; 74-byte stride, slice +$27-+$27.
 ; $CED387: Fields in this slice: +$27-+$27 Money (partial field).
@@ -946,7 +963,7 @@ EnemyStats_Record100_Money_CED387:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED3C3
-org $8ED3C3
+org $CED3C3
 EnemyStats_Record101_Attack_CED3C3:
 ; $CED3C3: Physical native character record 101 at $CED3AA; 74-byte stride, slice +$19-+$27.
 ; $CED3C3: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -957,7 +974,7 @@ EnemyStats_Record101_Attack_CED3C3:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED40D
-org $8ED40D
+org $CED40D
 EnemyStats_Record102_Attack_CED40D:
 ; $CED40D: Physical native character record 102 at $CED3F4; 74-byte stride, slice +$19-+$27.
 ; $CED40D: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -968,7 +985,7 @@ EnemyStats_Record102_Attack_CED40D:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED457
-org $8ED457
+org $CED457
 EnemyStats_Record103_Attack_CED457:
 ; $CED457: Physical native character record 103 at $CED43E; 74-byte stride, slice +$19-+$30.
 ; $CED457: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money; +$29-+$29 PrizeChance; +$2C-+$2D ChargeLimit; +$2E-+$2F ChargeGain.
@@ -981,7 +998,7 @@ EnemyStats_Record103_Attack_CED457:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED4A1
-org $8ED4A1
+org $CED4A1
 EnemyStats_Record104_Attack_CED4A1:
 ; $CED4A1: Physical native character record 104 at $CED488; 74-byte stride, slice +$19-+$30.
 ; $CED4A1: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money; +$29-+$29 PrizeChance; +$2C-+$2D ChargeLimit; +$2E-+$2F ChargeGain.
@@ -994,7 +1011,7 @@ EnemyStats_Record104_Attack_CED4A1:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED4F9
-org $8ED4F9
+org $CED4F9
 EnemyStats_Record105_Money_CED4F9:
 ; $CED4F9: Physical native character record 105 at $CED4D2; 74-byte stride, slice +$27-+$27.
 ; $CED4F9: Fields in this slice: +$27-+$27 Money (partial field).
@@ -1005,7 +1022,7 @@ EnemyStats_Record105_Money_CED4F9:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED52B
-org $8ED52B
+org $CED52B
 EnemyStats_Record106_HP_CED52B:
 ; $CED52B: Physical native character record 106 at $CED51C; 74-byte stride, slice +$0F-+$10.
 ; $CED52B: Fields in this slice: +$0F-+$10 HP.
@@ -1016,7 +1033,7 @@ EnemyStats_Record106_HP_CED52B:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED53F
-org $8ED53F
+org $CED53F
 EnemyStats_Record106_Experience_CED53F:
 ; $CED53F: Physical native character record 106 at $CED51C; 74-byte stride, slice +$23-+$24.
 ; $CED53F: Fields in this slice: +$23-+$24 Experience (partial field).
@@ -1027,7 +1044,7 @@ EnemyStats_Record106_Experience_CED53F:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED58D
-org $8ED58D
+org $CED58D
 EnemyStats_Record107_Money_CED58D:
 ; $CED58D: Physical native character record 107 at $CED566; 74-byte stride, slice +$27-+$27.
 ; $CED58D: Fields in this slice: +$27-+$27 Money (partial field).
@@ -1038,7 +1055,7 @@ EnemyStats_Record107_Money_CED58D:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED5D7
-org $8ED5D7
+org $CED5D7
 EnemyStats_Record108_Money_CED5D7:
 ; $CED5D7: Physical native character record 108 at $CED5B0; 74-byte stride, slice +$27-+$27.
 ; $CED5D7: Fields in this slice: +$27-+$27 Money (partial field).
@@ -1049,7 +1066,7 @@ EnemyStats_Record108_Money_CED5D7:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED621
-org $8ED621
+org $CED621
 EnemyStats_Record109_Money_CED621:
 ; $CED621: Physical native character record 109 at $CED5FA; 74-byte stride, slice +$27-+$27.
 ; $CED621: Fields in this slice: +$27-+$27 Money (partial field).
@@ -1060,7 +1077,7 @@ EnemyStats_Record109_Money_CED621:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED6A7
-org $8ED6A7
+org $CED6A7
 EnemyStats_Record111_Attack_CED6A7:
 ; $CED6A7: Physical native character record 111 at $CED68E; 74-byte stride, slice +$19-+$30.
 ; $CED6A7: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money; +$29-+$29 PrizeChance; +$2C-+$2D ChargeLimit; +$2E-+$2F ChargeGain.
@@ -1073,7 +1090,7 @@ EnemyStats_Record111_Attack_CED6A7:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED6FF
-org $8ED6FF
+org $CED6FF
 EnemyStats_Record112_Money_CED6FF:
 ; $CED6FF: Physical native character record 112 at $CED6D8; 74-byte stride, slice +$27-+$27.
 ; $CED6FF: Fields in this slice: +$27-+$27 Money (partial field).
@@ -1084,7 +1101,7 @@ EnemyStats_Record112_Money_CED6FF:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED745
-org $8ED745
+org $CED745
 EnemyStats_Record113_Experience_CED745:
 ; $CED745: Physical native character record 113 at $CED722; 74-byte stride, slice +$23-+$27.
 ; $CED745: Fields in this slice: +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -1095,7 +1112,7 @@ EnemyStats_Record113_Experience_CED745:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED74B
-org $8ED74B
+org $CED74B
 BlueMosquito_NormalDropClass:
 ; $CED74B: Physical native character record 113 at $CED722; 74-byte stride, slice +$29-+$29.
 ; $CED74B: Fields in this slice: +$29-+$29 PrizeChance.
@@ -1106,7 +1123,7 @@ BlueMosquito_NormalDropClass:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED785
-org $8ED785
+org $CED785
 EnemyStats_Record114_Attack_CED785:
 ; $CED785: Physical native character record 114 at $CED76C; 74-byte stride, slice +$19-+$27.
 ; $CED785: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -1117,7 +1134,7 @@ EnemyStats_Record114_Attack_CED785:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED795
-org $8ED795
+org $CED795
 GrayMosquito_NormalDropClass:
 ; $CED795: Physical native character record 114 at $CED76C; 74-byte stride, slice +$29-+$29.
 ; $CED795: Fields in this slice: +$29-+$29 PrizeChance.
@@ -1128,7 +1145,7 @@ GrayMosquito_NormalDropClass:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED7C5
-org $8ED7C5
+org $CED7C5
 EnemyStats_Record115_HP_CED7C5:
 ; $CED7C5: Physical native character record 115 at $CED7B6; 74-byte stride, slice +$0F-+$10.
 ; $CED7C5: Fields in this slice: +$0F-+$10 HP.
@@ -1139,7 +1156,7 @@ EnemyStats_Record115_HP_CED7C5:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED7D9
-org $8ED7D9
+org $CED7D9
 EnemyStats_Record115_Experience_CED7D9:
 ; $CED7D9: Physical native character record 115 at $CED7B6; 74-byte stride, slice +$23-+$24.
 ; $CED7D9: Fields in this slice: +$23-+$24 Experience (partial field).
@@ -1150,7 +1167,7 @@ EnemyStats_Record115_Experience_CED7D9:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED80F
-org $8ED80F
+org $CED80F
 EnemyStats_Record116_HP_CED80F:
 ; $CED80F: Physical native character record 116 at $CED800; 74-byte stride, slice +$0F-+$21.
 ; $CED80F: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -1163,7 +1180,7 @@ EnemyStats_Record116_HP_CED80F:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED859
-org $8ED859
+org $CED859
 EnemyStats_Record117_HP_CED859:
 ; $CED859: Physical native character record 117 at $CED84A; 74-byte stride, slice +$0F-+$21.
 ; $CED859: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -1176,7 +1193,7 @@ EnemyStats_Record117_HP_CED859:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED8A5
-org $8ED8A5
+org $CED8A5
 Undocumented_EnemyStats_Record118_UndocumentedField11_CED8A5:
 ; $CED8A5: Physical native character record 118 at $CED894; this retained slice covers +$11-+$11.
 ; $CED8A5: Record placement and 74-byte stride are verified, but these field semantics remain undocumented. Preserve bytes and inherited record neighbors.
@@ -1187,7 +1204,7 @@ Undocumented_EnemyStats_Record118_UndocumentedField11_CED8A5:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED8F9
-org $8ED8F9
+org $CED8F9
 EnemyStats_Record119_Defense_CED8F9:
 ; $CED8F9: Physical native character record 119 at $CED8DE; 74-byte stride, slice +$1B-+$28.
 ; $CED8F9: Fields in this slice: +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -1198,7 +1215,7 @@ EnemyStats_Record119_Defense_CED8F9:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED937
-org $8ED937
+org $CED937
 EnemyStats_Record120_HP_CED937:
 ; $CED937: Physical native character record 120 at $CED928; 74-byte stride, slice +$0F-+$21.
 ; $CED937: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -1211,7 +1228,7 @@ EnemyStats_Record120_HP_CED937:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8ED981
-org $8ED981
+org $CED981
 EnemyStats_Record121_HP_CED981:
 ; $CED981: Physical native character record 121 at $CED972; 74-byte stride, slice +$0F-+$21.
 ; $CED981: Fields in this slice: +$0F-+$10 HP; +$13-+$14 AggressionRange; +$15-+$16 AggressionChance; +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$21 HitRate (partial field).
@@ -1224,7 +1241,7 @@ EnemyStats_Record121_HP_CED981:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDAB3
-org $8EDAB3
+org $CEDAB3
 EnemyStats_Record125_Attack_CEDAB3:
 ; $CEDAB3: Physical native character record 125 at $CEDA9A; 74-byte stride, slice +$19-+$27.
 ; $CEDAB3: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -1235,7 +1252,7 @@ EnemyStats_Record125_Attack_CEDAB3:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDAFD
-org $8EDAFD
+org $CEDAFD
 EnemyStats_Record126_Attack_CEDAFD:
 ; $CEDAFD: Physical native character record 126 at $CEDAE4; 74-byte stride, slice +$19-+$27.
 ; $CEDAFD: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$27 Money (partial field).
@@ -1246,7 +1263,7 @@ EnemyStats_Record126_Attack_CEDAFD:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDB47
-org $8EDB47
+org $CEDB47
 EnemyStats_Record127_Attack_CEDB47:
 ; $CEDB47: Physical native character record 127 at $CEDB2E; 74-byte stride, slice +$19-+$28.
 ; $CEDB47: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -1257,7 +1274,7 @@ EnemyStats_Record127_Attack_CEDB47:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDB91
-org $8EDB91
+org $CEDB91
 EnemyStats_Record128_Attack_CEDB91:
 ; $CEDB91: Physical native character record 128 at $CEDB78; 74-byte stride, slice +$19-+$28.
 ; $CEDB91: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -1268,7 +1285,7 @@ EnemyStats_Record128_Attack_CEDB91:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDC7D
-org $8EDC7D
+org $CEDC7D
 EnemyStats_Record131_Money_CEDC7D:
 ; $CEDC7D: Physical native character record 131 at $CEDC56; 74-byte stride, slice +$27-+$27.
 ; $CEDC7D: Fields in this slice: +$27-+$27 Money (partial field).
@@ -1279,7 +1296,7 @@ EnemyStats_Record131_Money_CEDC7D:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDCC7
-org $8EDCC7
+org $CEDCC7
 EnemyStats_Record132_Money_CEDCC7:
 ; $CEDCC7: Physical native character record 132 at $CEDCA0; 74-byte stride, slice +$27-+$28.
 ; $CEDCC7: Fields in this slice: +$27-+$28 Money.
@@ -1290,7 +1307,7 @@ EnemyStats_Record132_Money_CEDCC7:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDD03
-org $8EDD03
+org $CEDD03
 EnemyStats_Record133_Attack_CEDD03:
 ; $CEDD03: Physical native character record 133 at $CEDCEA; 74-byte stride, slice +$19-+$24.
 ; $CEDD03: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -1301,7 +1318,7 @@ EnemyStats_Record133_Attack_CEDD03:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDD4D
-org $8EDD4D
+org $CEDD4D
 EnemyStats_Record134_Attack_CEDD4D:
 ; $CEDD4D: Physical native character record 134 at $CEDD34; 74-byte stride, slice +$19-+$24.
 ; $CEDD4D: Fields in this slice: +$19-+$1A Attack; +$1B-+$1C Defense; +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$24 Experience (partial field).
@@ -1312,7 +1329,7 @@ EnemyStats_Record134_Attack_CEDD4D:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDDE5
-org $8EDDE5
+org $CEDDE5
 EnemyStats_Record136_MagicDefense_CEDDE5:
 ; $CEDDE5: Physical native character record 136 at $CEDDC8; 74-byte stride, slice +$1D-+$28.
 ; $CEDDE5: Fields in this slice: +$1D-+$1E MagicDefense; +$1F-+$20 Evade; +$21-+$22 HitRate; +$23-+$26 Experience; +$27-+$28 Money.
@@ -1323,7 +1340,7 @@ EnemyStats_Record136_MagicDefense_CEDDE5:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDE39
-org $8EDE39
+org $CEDE39
 EnemyStats_Record137_Money_CEDE39:
 ; $CEDE39: Physical native character record 137 at $CEDE12; 74-byte stride, slice +$27-+$28.
 ; $CEDE39: Fields in this slice: +$27-+$28 Money.
@@ -1334,7 +1351,7 @@ EnemyStats_Record137_Money_CEDE39:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDE75
-org $8EDE75
+org $CEDE75
 EnemyStats_Record138_Attack_CEDE75:
 ; $CEDE75: Physical native character record 138 at $CEDE5C; 74-byte stride, slice +$19-+$19.
 ; $CEDE75: Fields in this slice: +$19-+$19 Attack (partial field).
@@ -1345,7 +1362,7 @@ EnemyStats_Record138_Attack_CEDE75:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDEBF
-org $8EDEBF
+org $CEDEBF
 EnemyStats_Record139_Attack_CEDEBF:
 ; $CEDEBF: Physical native character record 139 at $CEDEA6; 74-byte stride, slice +$19-+$19.
 ; $CEDEBF: Fields in this slice: +$19-+$19 Attack (partial field).
@@ -1356,7 +1373,7 @@ EnemyStats_Record139_Attack_CEDEBF:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDF09
-org $8EDF09
+org $CEDF09
 EnemyStats_Record140_Attack_CEDF09:
 ; $CEDF09: Physical native character record 140 at $CEDEF0; 74-byte stride, slice +$19-+$19.
 ; $CEDF09: Fields in this slice: +$19-+$19 Attack (partial field).
@@ -1367,7 +1384,7 @@ EnemyStats_Record140_Attack_CEDF09:
 ; Function/storage: NATIVE_CHARACTER_RECORDS
 
 ; German PAL Enemy Record at $8EDF53
-org $8EDF53
+org $CEDF53
 EnemyStats_Record141_Attack_CEDF53:
 ; $CEDF53: Physical native character record 141 at $CEDF3A; 74-byte stride, slice +$19-+$19.
 ; $CEDF53: Fields in this slice: +$19-+$19 Attack (partial field).
@@ -1383,17 +1400,26 @@ EnemyStats_Record141_Attack_CEDF53:
 ; ============================================================================
 ; 4. MODUL: STEUERUNG - AUTO-RUN / DEFAULT DASH & B ZUM GEHEN
 ; ============================================================================
-; Deutscher PAL ROM Offset $1082B2 ($90:82B2): Invertiert B-Check
-; Standardmäßig Dauerlauf; Halten von B schaltet auf Gehen & schnelles Aufladen um
-org $9082B2
+; 1) Jaguar-Ring Check bei $D0:82B0 (0x1082B0): F0 99 -> EA EA (NOP NOP)
+;    Ermöglicht Sprinten von Spielbeginn an ohne Jaguar-Ring
+org $D082B0
+    db $EA, $EA
+
+; 2) B-Knopf Check bei $D0:82B8 (0x1082B8): D0 07 -> F0 07 (BEQ)
+;    Invertiert die Steuerung: Sprinten ist Standard; Halten von B schaltet auf Gehen & schnelles Aufladen um
+org $D082B8
     db $F0, $07
 
 ; ============================================================================
 ; 5. MODUL: GETEILTE WAFFEN-ERFAHRUNG (Shared Weapon Experience)
 ; ============================================================================
-; Hook am Beginn der deutschen Waffen-XP-Routine bei $8F:9714 (File-Offset $0F9714)
-org $8F9714
-    db $5C, $10, $00, $F0  ; JML $F00010 (SharedWeaponExperience)
+; Hook an den beiden Aufrufstellen im Kampf-Code (Bank $CF):
+; Ersetzt JSL $8F9714 durch JSL $F00010
+org $CFB6C8
+    db $10, $00, $F0
+
+org $CFB729
+    db $10, $00, $F0
 
 ; ============================================================================
 ; 6. ERWEITERTE HILFSROUTINEN IN BANK $F0 ($F00000-$F00FFF)
@@ -1404,21 +1430,30 @@ SharedWeaponExperience_German:
 ; Selbe Waffenfamilie (Schwerter, Äxte, Speere) wird simultan gelevelt
     db $AD, $20, $BF, $48, $AE, $BA, $0A, $8E, $20, $BF, $E0, $1A, $00, $F0, $09, $BD
     db $DD, $0A, $29, $00, $FF, $C9, $00, $03, $F0, $0F, $BD, $DD, $0A, $29, $0C, $00
-    db $C9, $00, $00, $F0, $06, $22, $3B, $97, $8F, $80, $34, $AD, $20, $BF, $3A, $29
-    db $18, $00, $C9, $00, $00, $D0, $2A, $A9, $02, $00, $8D, $BA, $0A, $22, $3B, $97
-    db $8F, $A9, $04, $00, $8D, $BA, $0A, $22, $3B, $97, $8F, $A9, $06, $00, $8D, $BA
-    db $0A, $22, $3B, $97, $8F, $A9, $08, $00, $8D, $BA, $0A, $22, $3B, $97, $8F, $80
+    db $C9, $00, $00, $F0, $06, $22, $14, $97, $8F, $80, $34, $AD, $20, $BF, $3A, $29
+    db $18, $00, $C9, $00, $00, $D0, $2A, $A9, $02, $00, $8D, $BA, $0A, $22, $14, $97
+    db $8F, $A9, $04, $00, $8D, $BA, $0A, $22, $14, $97, $8F, $A9, $06, $00, $8D, $BA
+    db $0A, $22, $14, $97, $8F, $A9, $08, $00, $8D, $BA, $0A, $22, $14, $97, $8F, $80
     db $5E, $AD, $20, $BF, $3A, $29, $10, $00, $C9, $00, $00, $D0, $2A, $A9, $0A, $00
-    db $8D, $BA, $0A, $22, $3B, $97, $8F, $A9, $0C, $00, $8D, $BA, $0A, $22, $3B, $97
-    db $8F, $A9, $0E, $00, $8D, $BA, $0A, $22, $3B, $97, $8F, $A9, $10, $00, $8D, $BA
-    db $0A, $22, $3B, $97, $8F, $80, $28, $A9, $12, $00, $8D, $BA, $0A, $22, $3B, $97
-    db $8F, $A9, $14, $00, $8D, $BA, $0A, $22, $3B, $97, $8F, $A9, $16, $00, $8D, $BA
-    db $0A, $22, $3B, $97, $8F, $A9, $18, $00, $8D, $BA, $0A, $22, $3B, $97, $8F, $AD
+    db $8D, $BA, $0A, $22, $14, $97, $8F, $A9, $0C, $00, $8D, $BA, $0A, $22, $14, $97
+    db $8F, $A9, $0E, $00, $8D, $BA, $0A, $22, $14, $97, $8F, $A9, $10, $00, $8D, $BA
+    db $0A, $22, $14, $97, $8F, $80, $28, $A9, $12, $00, $8D, $BA, $0A, $22, $14, $97
+    db $8F, $A9, $14, $00, $8D, $BA, $0A, $22, $14, $97, $8F, $A9, $16, $00, $8D, $BA
+    db $0A, $22, $14, $97, $8F, $A9, $18, $00, $8D, $BA, $0A, $22, $14, $97, $8F, $AD
     db $20, $BF, $8D, $BA, $0A, $68, $8D, $20, $BF, $6B
 
 ; ============================================================================
 ; 7. KARTEN- & DUNGEON-FIXES (Pyramid & Dog Maze in Bank $F0 & $FF)
 ; ============================================================================
+; Map-List Zeigertabelle in Bank $E0 (File-Offset $20FDE5):
+; Map 86 (0x56: Antika Pyramide Oberste Ebene) -> $F0:1000 (File-Offset $20FF3D)
+org $E0FF3D
+    db $00, $10, $F0
+
+; Map 115 (0x73: Gotika Hundelabyrinth) -> $FF:3000 (File-Offset $20FFB1)
+org $E0FFB1
+    db $00, $30, $FF
+
 org $F01000
 PyramidSymbols_MapData:
     db $06, $0D, $78, $49, $17, $01, $42, $02, $00, $00, $00, $00, $00, $1A, $01, $4A

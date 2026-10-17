@@ -45,19 +45,19 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 - **Verbesserte Beute- & Zutatendropraten:**  
   Zutaten- und Beutefunde treten häufiger und verlässlicher auf.
 
-### Waffen-, Item- & Heilmittel-Balancing
-- **Effektivere Heilmittel & Zutaten:**  
-  - **Blätter** heilen **80 KP** (vorher 40 KP).
-  - **Nektar** heilt **200 KP** (vorher 100 KP).
-  - Das Tragelimit für die Zutat **Pfeffer** wurde auf **99** erhöht.
+### Ausrüstungs-, Item- & Alchemie-Balancing
+- **Rüstungs- & Helm-Rebalancing:**  
+  Moderate Abwehrwert-Anpassungen für 10 Helme (Schädelhelm bis Magiehelm) und 10 Armbänder (Klauenreif bis Cyber-Armband) für einen ausgeglicheneren Schadensverlauf, wobei alle originalen deutschen Namenszeiger und Strukturdaten unangetastet bleiben.
 - **Verstärkte Basiswaffen:**  
   Frühe Nahkampfwaffen wurden moderat gestärkt (z. B. Knochenknüppel ATK 10 $\rightarrow$ 13).
+- **Alchemie-Levelkurve:**  
+  Beschleunigter Levelaufstieg für Zauberformeln auf den Stufen 1 bis 6 (direkt in Bank `$C5` bei `$C5:0202`).
 
 ### Karten- & Dungeon-Reparaturen
 - **Pyramiden-Kacheln:**  
-  Symbol- und Rückweg-Fixes in der Pyramide von Antika verhindern Hänger und Dead-Ends.
+  Symbol- und Rückweg-Fixes in der Pyramide von Antika verhindern Hänger und Dead-Ends (Map 86 auf `$F0:1000`).
 - **Hundelabyrinth:**  
-  Verbindungskacheln im Hundelabyrinth repariert.
+  Verbindungskacheln im Hundelabyrinth repariert (Map 115 auf `$FF:3000`).
 
 ---
 
@@ -67,14 +67,16 @@ Die deutsche PAL-ROM (`Secret of Evermore (Germany).sfc`) unterscheidet sich in 
 
 | System / Bereich | US-Offset (v2.1) | Deutscher PAL-Offset | Technische Umsetzung |
 | :--- | :--- | :--- | :--- |
-| **Waffen-Tabelle (Bank $C4)** | `$C4:38E6` | **`$C4:3F26`** (`+0x0640`) | 15 Waffen-Einträge (Stride 36 Bytes) |
-| **Heilmittel (Blätter/Nektar)** | `$C4:3B8E` | **`$C4:41CE`** (`+0x0640`) | KP-Heilwerte und Tragegrenzen |
-| **EXP-Kurve Level 1–99** | `$CC:8BD3` | **`$CC:8F65`** (`+0x0392`) | 594 Bytes (Junge + Hund EXP-Tabelle) |
-| **Status-Wachstumstabellen** | `$CC:9285` | **`$CC:9617`** (`+0x0392`) | BoyDefense, MagicDefense, Hundestats |
-| **Gegner- & Boss-Datensätze** | `$CE:B678` | **`$8E:B678`** (`0x0EB678`) | 89 Datensätze (1:1 Dateioffset-Match) |
-| **Waffen-XP Routine** | `$8F:9717` / `$8F:973E` | **`$8F:9714`** / **`$8F:973B`** | JML-Hook nach `$F0:0010` |
-| **Bewegung & Auto-Run** | `$90:82AA` | **`$90:82B2`** (`0x1082B2`) | Invertierter B-Check (`D0 07` $\rightarrow$ `F0 07`) |
-| **Erweiterter Code / Maps** | Bank `$F0` / `$FF` | **Bank `$F0` / `$FF`** | 4 MiB HiROM-Expansion (`0x300000`-`0x3FFFFF`) |
+| **Waffen-Tabelle (Bank $C4)** | `$C4:38E6` | **`$C4:3F26`** (`0x043F26`) | 15 Waffen-Einträge (Stride 36 Bytes) |
+| **Helme & Armbänder (Bank $C4)** | `$C4:3B8E` / `$C4:3C06` | **`$C4:41CE`** & **`$C4:4246`** | 20 isolierte 4-Byte-Patches (Abwehrwerte), deutsche Textzeiger in Bank `$C5` bleiben intakt |
+| **Alchemie-Levelkurve (Bank $C5)** | `$C4:5B9D` | **`$C5:0203`** (`0x050203`) | 6 Bytes modifizierte Zuwachswerte für Stufen 1–6 |
+| **EXP-Kurve Level 1–99 (Bank $CC)** | `$CC:8BD3` | **`$CC:8F65`** (`0x0C8F65`) | 594 Bytes (Junge + Hund EXP-Tabelle, halbiert) |
+| **Status-Wachstumstabellen (Bank $CC)** | `$CC:9285` | **`$CC:9617`** (`0x0C9617`) | BoyDefense, MagicDefense, Hundestats |
+| **Gegner- & Boss-Datensätze (Bank $CE)** | `$CE:C545` | **`$CE:C545`** (`0x0EC545`) | 89 Datensätze (HP & 2x Kill-Gold in HiROM Bank `$CE`) |
+| **Waffen-XP Routine (Bank $CF)** | `$CF:B717` | **`$CF:B6C8`** & **`$CF:B729`** | Call-Site-Hooks nach `$F0:0010`; Helper ruft native Routine `$8F:9714` auf |
+| **Bewegung & Auto-Run (Bank $D0)** | `$90:82AA` | **`$D0:82B0`** & **`$D0:82B8`** | Jaguar-Ring-Bypass (`EA EA`) & Default-Dash-Invertierung (`F0 07`) |
+| **Karten-Zeigertabelle (Bank $E0)** | `$E0:FDE5` | **`$E0:FF3D`** & **`$E0:FFB1`** | Zeiger für Map 86 (Pyramide) und Map 115 (Hundelabyrinth) auf erweiterte Bänke |
+| **Erweiterter Code & Maps (Bank $F0 / $FF)** | Bank `$F0` / `$FF` | **Bank `$F0` / `$FF`** | 4 MiB HiROM-Expansion (`0x300000`-`0x3FFFFF`) |
 
 ---
 
@@ -100,8 +102,8 @@ Das Skript validiert die deutsche Basis-ROM, erweitert sie sauber auf 4 MiB, ass
   - SHA-1: `5e5c2082526690d05f962c3ffbd7e080c681bfa4`
 - **Gepatchte ROM:** `Secret of Evermore Casual Run (Germany).sfc`
   - Dateigröße: `4.194.304` Bytes (4 MiB HiROM)
-  - SHA-256: `703c241aa327a637691bb1e4c49bca6ae01e4b0083909ebb6be1eeeb5840bdef`
-  - SNES-Prüfsumme: `0x02AF`
+  - SHA-256: `e75b0b6f1b7926e0d7c0d495d107298cda704ecef9d28d4b194f086433845faf`
+  - SNES-Prüfsumme: `0x2F12`
 
 ---
 
