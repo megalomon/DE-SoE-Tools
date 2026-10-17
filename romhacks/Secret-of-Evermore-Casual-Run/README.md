@@ -44,23 +44,23 @@ Eine native Portierung des beliebten ROM-Hacks **Secret of Evermore: Casual Run*
 
 ### Gegner- & Boss-Rebalancing (89 Datensätze)
 - **Doppelte Währungsbelohnung:**  
-  Besiegte reguläre Gegner lassen das Doppelte an Gold (Talente / Dukaten / Juwelen) fallen.
+  Besiegte reguläre Gegner geben das Doppelte an Währung (Krallen in Prähistorie, Juwelen in Antika, Goldmünzen in Gotika und Kreditkarten in Omnitopia).
 - **Angepasste Boss-Kraftpunkte (HP):**  
   Extrem zähe Bosse mit überzogenen Lebenspunkte-Polstern wurden moderat abgeschwächt für dynamischere, spannendere Kämpfe.
 - **Verbesserte Beute- & Zutatendropraten:**  
   Zutaten- und Beutefunde treten häufiger und verlässlicher auf.
 
 ### Waffen-, Item- & Heilmittel-Balancing
-- **Effektivere Heilmittel:**  
-  - Blütenblätter heilen **80 KP** (vorher 40 KP).
-  - Nektar heilt **200 KP** (vorher 100 KP).
-  - Das Tragelimit für Schlammpfeffer wurde auf **99** erhöht.
+- **Effektivere Heilmittel & Zutaten:**  
+  - **Blätter** heilen **80 KP** (vorher 40 KP).
+  - **Nektar** heilt **200 KP** (vorher 100 KP).
+  - Das Tragelimit für die Zutat **Pfeffer** wurde auf **99** erhöht.
 - **Verstärkte Basiswaffen:**  
   Frühe Nahkampfwaffen wurden moderat gestärkt (z. B. Knochenknüppel ATK 10 $\rightarrow$ 13).
 
 ### Karten- & Dungeon-Reparaturen
 - **Pyramiden-Kacheln:**  
-  Symbol- und Rückweg-Fixes in der Pyramide von Antiqua verhindern Hänger und Dead-Ends.
+  Symbol- und Rückweg-Fixes in der Pyramide von Antika verhindern Hänger und Dead-Ends.
 - **Hundelabyrinth:**  
   Verbindungskacheln im Hundelabyrinth repariert.
 
@@ -73,7 +73,7 @@ Die deutsche PAL-ROM (`Secret of Evermore (Germany).sfc`) unterscheidet sich in 
 | System / Bereich | US-Offset (v2.1) | Deutscher PAL-Offset | Technische Umsetzung |
 | :--- | :--- | :--- | :--- |
 | **Waffen-Tabelle (Bank $C4)** | `$C4:38E6` | **`$C4:3F26`** (`+0x0640`) | 15 Waffen-Einträge (Stride 36 Bytes) |
-| **Heilmittel (Blüten/Nektar)** | `$C4:3B8E` | **`$C4:41CE`** (`+0x0640`) | KP-Heilwerte und Tragegrenzen |
+| **Heilmittel (Blätter/Nektar)** | `$C4:3B8E` | **`$C4:41CE`** (`+0x0640`) | KP-Heilwerte und Tragegrenzen |
 | **EXP-Kurve Level 1–99** | `$CC:8BD3` | **`$CC:8F65`** (`+0x0392`) | 594 Bytes (Junge + Hund EXP-Tabelle) |
 | **Status-Wachstumstabellen** | `$CC:9285` | **`$CC:9617`** (`+0x0392`) | BoyDefense, MagicDefense, Hundestats |
 | **Gegner- & Boss-Datensätze** | `$CE:B678` | **`$8E:B678`** (`0x0EB678`) | 89 Datensätze (1:1 Dateioffset-Match) |
