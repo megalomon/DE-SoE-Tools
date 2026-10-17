@@ -1426,7 +1426,7 @@ org $CFB729
 ; ============================================================================
 org $F00010
 SharedWeaponExperience_German:
-; Shared Weapon Experience angepasst an die deutsche PAL-Routine ($8F:973B)
+; Shared Weapon Experience angepasst an die deutsche PAL-Routine ($8F:9714)
 ; Selbe Waffenfamilie (Schwerter, Äxte, Speere) wird simultan gelevelt
     db $AD, $20, $BF, $48, $AE, $BA, $0A, $8E, $20, $BF, $E0, $1A, $00, $F0, $09, $BD
     db $DD, $0A, $29, $00, $FF, $C9, $00, $03, $F0, $0F, $BD, $DD, $0A, $29, $0C, $00
@@ -5233,11 +5233,11 @@ PyramidSymbols_MapData:
     db $B5
 
 ; ============================================================================
-; ROM BANK $F1
+; ROM BANK $FF
 ; ============================================================================
 
-; Range: $F16000-$F16085 (134 bytes)
-; Function/storage: AUXILIARY_DIALOGUE, ENEMY_PRIZE_PROFILE_HELPER
+; Range: $FF3000 (Bank $FF)
+; Function/storage: DogMazeConnection_MapData (Map 115)
 
 org $FF3000
 DogMazeConnection_MapData:
