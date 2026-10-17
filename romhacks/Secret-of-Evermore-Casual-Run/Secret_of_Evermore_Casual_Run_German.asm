@@ -1724,7 +1724,7 @@ org $D08917
 org $D19D0C
     db $22, $00, $11, $F5, $60
 
-; 9. Modul: Atlas Dauer (60s / 3600 Frames statt 5400 Frames)
+; 9. Modul: Zauberformel Arnold Wirkungsdauer (60s / 3600 Frames statt 5400 Frames)
 org $D1AF37
     db $10, $0E
 
@@ -1759,13 +1759,13 @@ org $D6C529
 org $D6C547
     db $F4, $01, $00
 
-; Atlas-Händler unbegrenzter Nachschub ($D6:ECEF & $D6:ECFE)
+; Arnitamin-Händler (Arnold) im Hotel von Allelachema unbegrenzter Nachschub ($D6:ECEF & $D6:ECFE)
 org $D6ECEF
     db $4D, $4D, $4D, $4D, $4D, $4D, $4D
 org $D6ECFE
     db $4D, $4D, $4D, $4D
 
-; Hallen von Collosia Speerwurf-Zweig ($D7:940A)
+; Kaskadengrotte Speerwurf-Zweig ($D7:940A)
 org $D7940A
     db $0D
 

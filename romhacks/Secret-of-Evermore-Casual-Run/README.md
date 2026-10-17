@@ -57,12 +57,12 @@ Sämtliche 16 Module wurden direkt auf das Adress- und Skript-Layout der deutsch
 ### Modul 9: Zauberformeln-Rebalancing & Wirkungsdauer
 - Schaden angepasst: Höllenfaust (`$C5:04DB` = `0x3D`), Supersog (`$C5:04E1` = `0x20`), Energiesog (`$C5:04E3` = `0x20`).
 - Schadens- und Heilungs-Äquivalenz für Absaugzauber implementiert (`$D1:9D0C` $\rightarrow$ `$F5:1100`, Skalierungstabelle an `$C5:020B`).
-- Wirkungsdauer: Atlas 60 Sekunden (`$D1:AF37`), Kraftfeld 30 Sekunden (`$D1:AF8A`).
+- Wirkungsdauer: Zauberformel Arnold 60 Sekunden (`$D1:AF37`), Kraftfeld 30 Sekunden (`$D1:AF8A`).
 
 ### Modul 10: Markt-, Quest- & Softlock-Fixes
 - Marktplatz Allelachema als nativer Raum an `$FC:0000` (20.299 Bytes).
 - Amulett des Karon beim Händler auf 500 Juwelen gesetzt (`$D6:C529`, `$D6:C547`).
-- Atlas-Händler unbegrenzt nachfüllbar (`$D6:ECEF`, `$D6:ECFE`).
+- Arnitamin-Händler (Arnold) im Hotel von Allelachema unbegrenzt nachfüllbar (`$D6:ECEF`, `$D6:ECFE`).
 - Treibsand-Skelettschnecke entfernt (`$D3:AD75`).
 - Kaskadengrotte: Speer-Bedingungszweig korrigiert (`$D7:940A`).
 - Verlies: Softlock am Fallgitter behoben (`$D5:9E15`).
@@ -76,9 +76,9 @@ Sämtliche 16 Module wurden direkt auf das Adress- und Skript-Layout der deutsch
 - Dropraten-Hook an `$D0:856C` (`$F5:1000`).
 - Beute-Hook an `$D0:8580` (`$F1:6000`), Zuweisungstabellen ab `$F1:6100` und Ausgabedialoge ab `$F1:6800` / `$F1:9000`.
 
-### Modul 13: Windbeutel-Minikarte standardmäßig aktiv
+### Modul 13: Flugzeug-Minikarte standardmäßig aktiv
 - Hook an `$C0:C9CC` leitet auf `$F7:EF40` um.
-- Beim Einsteigen in den Windbeutel wird die Minikarte (`$0B1D = 1`) automatisch aktiviert.
+- Beim Einsteigen in Gallensteins Flugzeug (Mode-7 Flugmaschine) wird die Minikarte (`$0B1D = 1`) automatisch aktiviert.
 
 ### Modul 14: Geteilte Alchemie-Erfahrung (Shared Alchemy Experience)
 - Hooks an `$D1:CC74` und `$D1:CCA4` verweisen auf `$F6:0000`.
@@ -117,10 +117,10 @@ Sämtliche 16 Module wurden direkt auf das Adress- und Skript-Layout der deutsch
 | **Aufgeladener Angriff (Bank $CF)** | `$CF:BFDB` | **`$CF:BFE0`** (`0x0FBFE0`) | Hook nach `$F6:0260` (ChargeDamageArithmetic) |
 | **Bewegung & Auto-Run (Bank $D0)** | `$90:82AA` | **`$D0:82B0`** & **`$D0:82B8`** | Jaguar-Ring-Bypass (`EA EA`) & Default-Dash-Invertierung (`F0 07`) |
 | **Beute- & Dropchancen (Bank $D0)** | `$D0:8567` / `$D0:857B` | **`$D0:856C`** & **`$D0:8580`** | Hooks nach `$F5:1000` & `$F1:6000` |
-| **Atlas & Kraftfeld Dauer (Bank $D1)** | `$D1:AF30` / `$D1:AF83` | **`$D1:AF37`** & **`$D1:AF8A`** | Atlas 60s (`10 0E`), Kraftfeld 30s (`08 07`) |
+| **Arnold & Kraftfeld Dauer (Bank $D1)** | `$D1:AF30` / `$D1:AF83` | **`$D1:AF37`** & **`$D1:AF8A`** | Arnold 60s (`10 0E`), Kraftfeld 30s (`08 07`) |
 | **Drain-Heilungs-Äquivalenz (Bank $D1)**| `$D1:9D04` | **`$D1:9D0C`** (`0x119D0C`) | Hook nach `$F5:1100` |
 | **Geteilte Alchemie (Bank $D1)** | `$D1:CC6B` / `$D1:CC9B` | **`$D1:CC74`** & **`$D1:CCA4`** | Hooks nach `$F6:0000` |
-| **Minikarte Flug (Bank $C0)** | `$C0:C9C2` | **`$C0:C9CC`** (`0x00C9CC`) | Hook nach `$F7:EF40` (Default-Minimap ON) |
+| **Minikarte Flugzeug (Bank $C0)** | `$C0:C9C2` | **`$C0:C9CC`** (`0x00C9CC`) | Hook nach `$F7:EF40` (Default-Minimap ON beim Flug) |
 | **Karten-Zeigertabelle (Bank $E0)** | `$E0:FDE5` | **`$E0:FE0D`**, **`$E0:FF3D`**, **`$E0:FFB1`** | Map 10 (Allelachema), Map 86 (Pyramide), Map 115 (Hundelabyrinth) |
 | **Erweiterter Code & Daten (Bank $F0-$FF)**| Bank `$F0`–`$FF` | **Bank `$F0`–`$FF`** | 4 MiB HiROM-Expansion (`0x300000`–`0x3FFFFF`) |
 
