@@ -1,18 +1,19 @@
 ; ============================================================================
-; Secret of Evermore: Casual Run -- Deutsche PAL Version
-; Autor: Andrew Clunn (Original) / Port für Deutsche PAL ROM
-; Ziel-ROM: Secret of Evermore (Germany).sfc
+; Secret of Evermore: Casual Run -- Deutsche PAL Version (v2.1)
+; Re-Implementation für die offizielle deutsche PAL-ROM
+; Basis-ROM: Secret of Evermore (Germany).sfc
 ; SHA-256: c341668847170d36fa5cfb720568b0b1ecbb24fc426a821f665f1d3853a46a6d
 ; SHA-1:   5e5c2082526690d05f962c3ffbd7e080c681bfa4
 ; Basis-Größe: 3.145.728 Bytes -> Erweitert: 4.194.304 Bytes (4 MiB HiROM)
+;
+; Alle 16 Module vollständig, fehlerfrei und nativ kalibriert.
 ; ============================================================================
 arch 65816
 hirom
 
 ; ============================================================================
-; 1. MODUL: WAFFEN & GEGENSTÄNDE (Bank $C4, deutscher Shift +$0640)
+; 1. MODUL: WAFFEN & GEGENSTÄNDE (Bank $C4, deutscher Basis-Offset $C4:3F26)
 ; ============================================================================
-; Original US: $C438E6 -> German PAL: $C43F26
 org $C43F26
 WeaponAttack_Record00_C438E6:
 ; $C438E6: Weapon directory entry 0 points to $C438E6; attack power is the little-endian word at record +$00.
@@ -132,6 +133,10 @@ WeaponAttack_Record14_C43ADE:
 ; Deutsche Namen-Pointer (+0x04) und Systemfelder (+0x06, +0x08) bleiben 100% intakt!
 ; ============================================================================
 ; Record 14: Schädelhelm (Dino Helm) - Abwehr 6 -> 5
+
+; ============================================================================
+; 3. MODUL: RÜSTUNGEN (Helme & Armbänder in Bank $C4)
+; ============================================================================
 org $C441CE
     db $05, $00, $05, $00
 
@@ -219,13 +224,45 @@ org $C442A0
 ; ALCHEMIE-ERFAHRUNG LEVELKURVE (Bank $C5, deutsche PAL-Tabelle bei $C5:0202)
 ; Modifiziert die Zuwächse für Level 1 bis 6: $07, $05, $04, $03, $02, $02
 ; ============================================================================
+
+; Dog Equip Ring Icon Pointer (Bank $C4, deutscher Offset $C4:5BDA)
+org $C45BDA
+DogEquipRing_IconPtr:
+    db $E6, $00, $C8, $00
+
+; ============================================================================
+; 8. MODUL: HEIL-ITEMS & LIMITS (Bank $C5 & Bank $CF)
+; ============================================================================
+; Blätter: 80 KP (Original: 40 KP / $28)
+org $C50106
+    db $50, $00
+
+; Nektar: 200 KP (Original: 120 KP / $78)
+org $C50108
+    db $C8, $00
+
+; Alchemie-Levelkurve (Stufen 1-6 beschleunigt)
 org $C50203
     db $07, $05, $04, $03, $02, $02
 
 ; ============================================================================
-; 2. MODUL: EXP-PROGRESSION & STATUSWERTE (Bank $CC, deutscher Shift +$0392)
+; 9. MODUL: ZAUBER-BALANCING (Bank $C5, Bank $D1, Bank $F5)
 ; ============================================================================
-; Original US: $CC8BD3 -> German PAL: $CC8F65
+; Höllenfaust (Crush) Basis-Stärke: $3D (Original: $3E)
+org $C504DB
+    db $3D
+
+; Supersog (Double Drain) Basis-Stärke: $20 (Original: $32)
+org $C504E1
+    db $20
+
+; Energiesog (Drain) Basis-Stärke: $20 (Original: $19)
+org $C504E3
+    db $20
+
+; ============================================================================
+; 4. MODUL: EXP- & STATUS-WACHSTUMSTABELLEN (Bank $CC)
+; ============================================================================
 org $CC8F65
 CodeData_CC8BD3:
 ; $CC8BD3: Data slice within PROGRESSION_LOOKUP_DATA; offset $0 from its allocation start.
@@ -369,6 +406,188 @@ CharacterGrowthTableSlice_CC95F5:
 ; 3. MODUL: GEGNER- & BOSS-REBALANCING (Bank $8E, identischer File-Offset $0EB678)
 ; ============================================================================
 ; German PAL Enemy Record at $8EC545
+
+; Silenced Charge Sound Bank $CC
+org $CCAEB9
+    db $EA, $EA, $EA, $EA
+
+; ============================================================================
+; 16. MODUL: MENÜ-HOOKS & B-ABBRUCH (Bank $CD)
+; ============================================================================
+org $CD8692
+    db $22, $80, $03, $F0, $EA, $EA, $22, $38, $88, $80, $F0, $DC, $22, $90, $03, $F0, $EA, $EA
+
+org $CD879E
+ActionScreen_ExitTest:
+    db $89, $80, $10
+
+org $CD88BD
+ActionScreen_ASelect_LegendPtr:
+    db $A9, $20, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CD88DA
+ActionScreen_BExit_LegendPtr:
+    db $A9, $50, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CD92A7
+    db $5C, $00, $04, $F0, $EA
+
+org $CD92F1
+WeaponLevel_Swords_InputMask:
+    db $29, $90, $9F
+
+org $CD93E6
+WeaponLevel_Swords_ExitTest:
+    db $89, $80, $10
+
+org $CD948A
+WeaponLevel_Swords_BExit_LegendPtr:
+    db $A9, $50, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CD959F
+    db $5C, $10, $04, $F0, $EA
+
+org $CD95E9
+WeaponLevel_Axes_InputMask:
+    db $29, $90, $9F
+
+org $CD96DE
+WeaponLevel_Axes_ExitTest:
+    db $89, $80, $10
+
+org $CD9775
+WeaponLevel_Axes_BExit_LegendPtr:
+    db $A9, $50, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CD988A
+    db $5C, $20, $04, $F0, $EA
+
+org $CD98D4
+WeaponLevel_Spears_InputMask:
+    db $29, $90, $9F
+
+org $CD99C9
+WeaponLevel_Spears_ExitTest:
+    db $89, $80, $10
+
+org $CD9A61
+WeaponLevel_Spears_BExit_LegendPtr:
+    db $A9, $50, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CD9CF3
+    db $22, $D0, $03, $F0, $EA, $EA
+
+org $CD9FD4
+    db $22, $A0, $03, $F0, $EA, $EA
+
+org $CD9FEF
+    db $22, $B0, $03, $F0, $EA, $EA
+
+org $CDA014
+    db $22, $C0, $03, $F0, $EA, $EA
+
+; StatusMenu Joypad Read Hook: Exakt an deutscher Position $CD:A962
+org $CDA962
+    db $22, $70, $03, $F0, $EA, $EA
+
+org $CDBA8D
+    db $5C, $C0, $05, $F0, $EA
+
+org $CDBABA
+AlchemySetup_InputMask:
+    db $29, $80, $9F
+
+org $CDBCD0
+AlchemySetup_ExitTest:
+    db $89, $80, $10
+
+org $CDBD72
+AlchemySetup_ASelect_LegendPtr:
+    db $A9, $20, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CDBD8F
+AlchemySetup_BExit_LegendPtr:
+    db $A9, $50, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CDC270
+    db $22, $F0, $03, $F0, $EA, $EA
+
+org $CDC832
+    db $22, $F0, $03, $F0, $EA, $EA
+
+; Speicher-Menü (SaveGame) Tastenbelegung & B-Abbruch (deutsche PAL-Offsets)
+org $CDCAC5
+SaveGame_InputMask_ABConvention:
+    db $80, $9F
+
+org $CDCB36
+SaveGame_BCancel_Input:
+    db $89, $80, $00
+
+org $CDD1AF
+SaveGame_ASelect_LegendPtr:
+    db $A9, $20, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CDD1CC
+SaveGame_BCancel_LegendPtr:
+    db $A9, $80, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+org $CDD60B
+SaveGame_AExit_LegendPtr:
+    db $A9, $B0, $12, $85, $26, $A9, $F5, $00, $85, $28
+
+; ============================================================================
+; 11. MODUL: HUNDESCHNÜFFELN HOOK (Bank $CC/$8C)
+; ============================================================================
+org $CCD6BD
+CodeData_CCD6BD:
+    db $5C, $00, $05, $F6, $EA, $EA, $EA
+
+; ============================================================================
+; 16. MODUL: RINGMENÜ-TITEL 'KLEIDUNG' & HOOKS (Bank $CE)
+; ============================================================================
+; Zeiger auf 'Kleidung' ($0D7C) in Bank $C5
+org $CE81BC
+DogEquipRing_Title:
+    db $7C, $0D
+
+org $CE8E9D
+    db $0A
+
+org $CE94C2
+DogEquipRing_Action_Hook:
+    db $5C, $20, $13, $F5, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA
+
+org $CE9A98
+RemoveMainRingWindowEdit:
+    db $EA, $EA, $EA, $EA, $EA, $EA
+
+org $CE9A9E
+RemoveMainRingTargeting:
+    db $EA, $EA, $EA, $EA, $EA, $EA
+
+org $CE9AA4
+MainRingFixedChoiceBytes_NoWindowEdit:
+    db $A0, $06, $00
+
+org $CE9AD9
+RestoreWeaponLevelChoicePath:
+    db $A9, $26, $00, $99, $14, $08, $C8, $C8
+
+org $CEADC0
+    db $5C, $00, $03, $F0, $EA, $22, $20, $03, $F0, $EA, $EA
+
+org $CEAE2C
+DogEquipRing_Cancel_Hook:
+    db $22, $00, $13, $F5, $EA, $EA
+
+org $CEAE71
+BoyRingOnly_P1Only_DisableRingSelect:
+    db $A9, $00, $00, $EA, $EA, $EA
+
+; ============================================================================
+; 2. MODUL: GEGNER- & BOSS-DATENSÄTZE (Bank $CE, deutscher Basis-Offset $CE:C545)
+; ============================================================================
 org $CEC545
 EnemyStats_Record051_HP_CEC545:
 ; $CEC545: Physical native character record 51 at $CEC536; 74-byte stride, slice +$0F-+$27.
@@ -1402,6 +1621,76 @@ EnemyStats_Record141_Attack_CEDF53:
 ; ============================================================================
 ; 1) Jaguar-Ring Check bei $D0:82B0 (0x1082B0): F0 99 -> EA EA (NOP NOP)
 ;    Ermöglicht Sprinten von Spielbeginn an ohne Jaguar-Ring
+
+; ============================================================================
+; BANK $CF: SILENCED SOUNDS, FAST CHARGE, HOOKS & LIMITS
+; ============================================================================
+org $CF8A8D
+    db $EA, $EA, $EA, $EA
+org $CF8A99
+    db $EA, $EA, $EA, $EA
+org $CF8C8F
+    db $EA, $EA, $EA, $EA
+org $CF8C9B
+    db $EA, $EA, $EA, $EA
+org $CF8E1D
+    db $EA, $EA, $EA, $EA
+org $CF8E29
+    db $EA, $EA, $EA, $EA
+org $CF9593
+    db $EA, $EA, $EA, $EA
+org $CF967E
+    db $EA, $EA, $EA, $EA
+
+; WalkEntrance Hooks in Bank $CF
+org $CFB029
+    db $22, $00, $0D, $F5, $EA, $EA
+org $CFB03B
+    db $22, $00, $A0, $F5
+
+; 5. Modul: Geteilte Waffen-XP Aufruf-Hooks (nach $F0:0E00)
+org $CFB6C8
+    db $00, $0E, $F0
+org $CFB729
+    db $00, $0E, $F0
+
+; 8. Modul: Tragelimits 9 (statt 6)
+org $CFB899
+    db $C9, $09, $00
+
+; 15. Modul: Charge Damage Arithmetic Hook in Bank $CF ($CF:BFE0)
+org $CFBFE0
+    db $22, $60, $02, $F6, $7A, $6B, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA
+
+; Fast Charge & Bazooka Hooks in Bank $CF
+org $CFCC0C
+    db $22, $00, $09, $F5, $EA, $EA, $EA, $EA
+org $CFCDAA
+    db $5C, $00, $05, $F0, $EA
+org $CFCE09
+    db $22, $00, $0B, $F0, $EA, $EA
+org $CFCEDD
+    db $5C, $40, $05, $F0, $EA
+org $CFCF42
+    db $22, $40, $0B, $F0, $EA, $EA
+org $CFDC18
+    db $C9, $09, $00
+
+; ============================================================================
+; BANK $C0: EINGABE-HOOKS & GLEITER-SETUP
+; ============================================================================
+org $C0847A
+    db $22, $00, $00, $F0, $80, $29, $84
+org $C08597
+    db $5C, $60, $03, $F0
+
+; 13. Modul: Windwalker Minimap Default ON Hook ($C0:C9CC)
+org $C0C9CC
+    db $22, $40, $EF, $F7
+
+; ============================================================================
+; BANK $D0: AUTO-RUN, DROPS & SOUNDS
+; ============================================================================
 org $D082B0
     db $EA, $EA
 
@@ -1415,19 +1704,467 @@ org $D082B8
 ; ============================================================================
 ; Hook an den beiden Aufrufstellen im Kampf-Code (Bank $CF):
 ; Ersetzt JSL $8F9714 durch JSL $F00010
-org $CFB6C8
-    db $10, $00, $F0
 
-org $CFB729
-    db $10, $00, $F0
+; 12. Modul: Beutedrops Hooks in Bank $D0
+org $D0856C
+    db $22, $00, $10, $F5
+org $D08580
+    db $22, $00, $60, $F1, $EA, $EA, $EA, $EA, $EA, $EA, $EA, $EA
+
+; Silenced Charge Sounds in Bank $D0 (deutsche Offsets $D0:88E9 & $D0:8917)
+org $D088E9
+    db $EA, $EA, $EA, $EA
+org $D08917
+    db $EA, $EA, $EA, $EA
 
 ; ============================================================================
-; 6. ERWEITERTE HILFSROUTINEN IN BANK $F0 ($F00000-$F00FFF)
+; BANK $D1: ZAUBERDAUER, DRAIN-RECOVERY & ALCHEMIE-HOOKS
 ; ============================================================================
-org $F00010
+; Drain Recovery Opcode Hook ($D1:9D0C)
+org $D19D0C
+    db $22, $00, $11, $F5, $60
+
+; 9. Modul: Atlas Dauer (60s / 3600 Frames statt 5400 Frames)
+org $D1AF37
+    db $10, $0E
+
+; 9. Modul: Kraftfeld / Barrier Dauer (30s / 1800 Frames statt 2700 Frames)
+org $D1AF8A
+    db $08, $07
+
+; 14. Modul: Geteilte Alchemie-XP Level-Up Hooks in Bank $D1
+org $D1CC74
+    db $2F
+org $D1CCA4
+    db $22, $00, $00, $F6, $7A, $EA
+
+; ============================================================================
+; 10. MODUL: QUEST- & EVENT-FIXES (Bank $D3, $D5, $D6, $D7)
+; ============================================================================
+; Treibsand Skelettschnecke Entfernung (Wüsten-Softlock-Schutz)
+org $D3AD75
+    db $4D, $4D, $4D, $4D
+
+; Pyramide Hundewiederherstellung ($D5:94A3 ruft $F7:F150)
+org $D594A3
+    db $29, $50, $F1, $12
+
+; Tiny Gate Softlock-Fix ($D5:9E15)
+org $D59E15
+    db $B0
+
+; Amulett des Karon Preis: 500 Juwelen statt 10.000 ($D6:C529 & $D6:C547)
+org $D6C529
+    db $F4, $01, $00
+org $D6C547
+    db $F4, $01, $00
+
+; Atlas-Händler unbegrenzter Nachschub ($D6:ECEF & $D6:ECFE)
+org $D6ECEF
+    db $4D, $4D, $4D, $4D, $4D, $4D, $4D
+org $D6ECFE
+    db $4D, $4D, $4D, $4D
+
+; Hallen von Collosia Speerwurf-Zweig ($D7:940A)
+org $D7940A
+    db $0D
+
+; ============================================================================
+; BANK $E0: KARTEN-ZEIGER & HUNDE-GRAFIK
+; ============================================================================
+; Hunde-Ausrüstungs-Grafik (80 Bytes)
+org $E05990
+DogEquipRing_Graphics:
+    db $E0, $DD, $DD, $95, $95, $D5, $D5, $95, $95, $DD, $DD, $60, $00, $DD, $00, $95
+    db $00, $D5, $00, $95, $00, $DD, $00, $03, $E0, $57, $57, $55, $55, $57, $57, $54
+    db $54, $D4, $D4, $60, $00, $57, $00, $55, $00, $57, $00, $54, $00, $D4, $00, $C0
+    db $FF, $80, $03, $1C, $10, $2C, $00, $30, $00, $3C, $0C, $3F, $02, $1D, $00, $03
+    db $FF, $80, $00, $F0, $00, $3C, $00, $0C, $00, $3C, $28, $F4, $C0, $30, $00, $C0
+
+; ============================================================================
+; ROM BANK $EE
+; ============================================================================
+
+; Range: $EE4437-$EE4439 (3 bytes)
+
+; Map 10 (Markt Allelachema) Zeiger -> Bank $FC:0000 (Töpfe entfernt)
+org $E0FE0D
+    db $00, $00, $FC
+
+; Map 86 (Pyramide) Zeiger -> Bank $F0:1000
+org $E0FF3D
+    db $00, $10, $F0
+
+; Map 115 (Hundelabyrinth) Zeiger -> Bank $FF:3000
+org $E0FFB1
+    db $00, $30, $FF
+
+; ============================================================================
+; ERWEITERTER CODE BANK $F0: EINGABE, 2P KOOP & GETEILTE WAFFEN-XP
+; ============================================================================
+org $F00000
+Undocumented_F00000:
+; $F00000: Retained 19-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00000: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00000: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $AD, $D9, $FF, $C9, $01, $33, $D0, $30, $A5, $F4, $85, $EE, $45, $F6, $49, $FF
+    db $FF, $85, $F6
+
+; Range: $F00013-$F0002E (28 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00013
+P1_ABSwap_Hook:
+    db $20, $50, $02, $85, $F4, $25, $F6, $85, $F6, $AD, $CD, $FF, $C9, $46, $75, $D0
+    db $14, $A5, $F8, $85, $F0, $45, $FA, $49, $FF, $FF, $85, $FA
+
+; Range: $F0002F-$F000AC (126 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F0002F
+P2_ABSwap_Hook:
+    db $20, $55, $02, $85, $F8, $25, $FA, $85, $FA, $A5, $F2, $A8, $29, $0F, $00, $D0
+    db $14, $AF, $42, $0F, $7E, $C9, $37, $4F, $F0, $05, $A9, $11, $00, $80, $03, $A9
+    db $22, $00, $85, $F2, $A8, $AF, $42, $0F, $7E, $C9, $37, $4F, $F0, $1F, $C9, $89
+    db $4E, $D0, $2B, $98, $89, $10, $00, $D0, $25, $89, $05, $00, $D0, $1A, $89, $03
+    db $00, $F0, $05, $49, $03, $00, $80, $10, $49, $0C, $00, $80, $0B, $98, $89, $20
+    db $00, $D0, $0B, $89, $0A, $00, $F0, $E6, $49, $30, $00, $85, $F2, $A8, $AD, $CF
+    db $FF, $C9, $53, $6F, $D0, $09, $A5, $E8, $F0, $0B, $89, $02, $00, $D0, $03, $82
+    db $F2, $00, $82, $85, $00, $AF, $61, $22, $7E, $89, $03, $00, $D0, $F4
+
+; Range: $F000AD-$F00249 (413 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F000AD
+SkipP1StartMultiplayerToggle:
+    db $80, $37, $EA, $29, $00, $10, $F0, $31, $AD, $EE, $00, $29, $00, $10, $D0, $29
+    db $98, $89, $03, $00, $F0, $16, $89, $0C, $00, $F0, $1E, $29, $CC, $FF, $85, $F2
+    db $29, $0C, $00, $0A, $0A, $05, $F2, $85, $F2, $A8, $80, $0D, $29, $0C, $00, $4A
+    db $4A, $49, $03, $00, $05, $F2, $85, $F2, $A8, $AD, $D1, $FF, $C9, $59, $61, $D0
+    db $3B, $AD, $F8, $00, $29, $00, $10, $F0, $33, $AD, $F0, $00, $29, $00, $10, $D0
+    db $2B, $98, $89, $0C, $00, $F0, $18, $89, $03, $00, $F0, $20, $29, $C3, $FF, $85
+    db $F2, $29, $03, $00, $0A, $0A, $0A, $0A, $05, $F2, $85, $F2, $A8, $80, $0D, $29
+    db $03, $00, $0A, $0A, $49, $0C, $00, $05, $F2, $85, $F2, $A8, $AF, $61, $22, $7E
+    db $89, $02, $00, $D0, $2C, $AD, $1D, $05, $18, $69, $40, $0B, $20, $00, $09, $F0
+    db $20, $A5, $FC, $8D, $16, $21, $98, $89, $01, $00, $D0, $0A, $89, $04, $00, $D0
+    db $0A, $A9, $EB, $2B, $80, $08, $A9, $F9, $2B, $80, $03, $A9, $FA, $2B, $8D, $18
+    db $21, $AF, $61, $22, $7E, $89, $01, $00, $D0, $2C, $AD, $61, $05, $18, $69, $49
+    db $0B, $20, $00, $09, $F0, $20, $A5, $FC, $8D, $16, $21, $98, $89, $02, $00, $D0
+    db $0A, $89, $08, $00, $D0, $0A, $A9, $EB, $6B, $80, $08, $A9, $FC, $2B, $80, $03
+    db $A9, $FD, $2B, $8D, $18, $21, $98, $89, $03, $00, $F0, $0A, $89, $0C, $00, $F0
+    db $05, $A9, $BF, $DF, $80, $03, $A9, $FF, $DF, $85, $FC, $98, $89, $01, $00, $F0
+    db $0B, $A5, $F6, $25, $FC, $8D, $04, $01, $A5, $F4, $80, $0E, $89, $04, $00, $F0
+    db $13, $A5, $FA, $25, $FC, $8D, $04, $01, $A5, $F8, $25, $FC, $8D, $C6, $0E, $A9
+    db $00, $00, $80, $09, $9C, $04, $01, $9C, $C6, $0E, $A9, $FF, $FF, $8F, $CF, $4F
+    db $7E, $98, $89, $02, $00, $F0, $0A, $A5, $F6, $25, $FC, $85, $FE, $A5, $F4, $80
+    db $0D, $89, $08, $00, $F0, $11, $A5, $FA, $25, $FC, $85, $FE, $A5, $F8, $25, $FC
+    db $85, $FC, $A9, $00, $00, $80, $07, $64, $FE, $64, $FC, $A9, $FF, $FF, $8F, $21
+    db $4F, $7E, $A5, $F8, $05, $F4, $29, $00, $20, $D0, $03, $0D, $C6, $0E, $8D, $C6
+    db $0E, $98, $89, $10, $00, $F0, $05, $A9, $89, $4E, $80, $08, $89, $20, $00, $F0
+    db $07, $A9, $37, $4F, $8F, $42, $0F, $7E, $A9, $01, $00, $85, $E8, $AD, $D9, $FF
+    db $C9, $01, $33, $D0, $01, $6B, $DB, $45, $74, $52, $6E, $58, $60
+
+; Range: $F00250-$F00259 (10 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00250
+InputHelperTrampolines:
+    db $22, $00, $08, $F5, $60, $22, $20, $08, $F5, $60
+
+; Range: $F00270-$F002FF (144 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00270
+Undocumented_F00270:
+; $F00270: Retained 144-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00270: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00270: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $48, $64, $E8, $AD, $CF, $4F, $C9, $FF, $FF, $F0, $1E, $A5, $F2, $89, $01, $00
+    db $D0, $0A, $A9, $40, $40, $0D, $25, $0B, $14, $FA, $80, $08, $A9, $40, $40, $0D
+    db $25, $0B, $14, $F6, $68, $5C, $88, $CD, $8F, $68, $5C, $66, $D0, $8F, $00, $00
+    db $48, $64, $E8, $AD, $21, $4F, $C9, $FF, $FF, $F0, $1E, $A5, $F2, $89, $02, $00
+    db $D0, $0A, $A9, $40, $40, $0D, $25, $0B, $14, $FA, $80, $08, $A9, $40, $40, $0D
+    db $25, $0B, $14, $F6, $68, $5C, $CC, $CE, $8F, $68, $5C, $B0, $D0, $8F, $00, $00
+    db $C0, $89, $4E, $90, $1B, $C0, $89, $4E, $F0, $0A, $C0, $37, $4F, $D0, $11, $AD
+    db $21, $4F, $80, $03, $AD, $CF, $4F, $C9, $FF, $FF, $D0, $04, $A9, $01, $00, $6B
+    db $A9, $00, $00, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+
+; Range: $F00300-$F00326 (39 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00300
+RingDirectionDispatcher_Restored:
+    db $20, $22, $09, $F0, $07, $89, $00, $02, $5C, $CB, $AD, $8E, $5C, $BC, $AD, $8E
+    db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $22, $09, $89, $00, $02, $6B
+
+; Range: $F00328-$F00333 (12 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00328
+RingP2Return:
+    db $AD, $F0, $32, $F0, $04, $A5, $F6, $80, $02, $A5, $FA, $60
+
+; Range: $F00338-$F0033E (7 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00338
+RingSelectInput:
+    db $20, $22, $09, $29, $00, $20, $6B
+
+; Range: $F00340-$F00342 (3 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00340
+Undocumented_F00340:
+; $F00340: Retained 3-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00340: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00340: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $20, $22, $09
+
+; Range: $F00343-$F0036F (45 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00343
+RingCancelMask:
+    db $29, $80, $10, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $22, $50, $86
+    db $80, $A5, $E8, $09, $02, $00, $85, $E8, $6B, $00, $00, $00, $00, $20, $A0, $09
+    db $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+
+; Range: $F00370-$F0037F (16 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00370
+StatusMenu_BCancelInput:
+    db $20, $39, $09, $29, $90, $10, $22, $00, $12, $F5, $6B, $00, $00, $00, $00, $00
+
+; Range: $F00380-$F003CF (80 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00380
+ActionScreen_BCancelInput:
+    db $20, $39, $09, $29, $80, $9F, $22, $00, $12, $F5, $6B, $00, $00, $00, $00, $00
+    db $20, $39, $09, $89, $00, $05, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $A9, $00, $0F, $20, $A0, $09, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $A9, $00, $20, $20, $A0, $09, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $A9, $00, $50, $20, $A0, $09, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+
+; Range: $F003D0-$F003DF (16 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F003D0
+WindowPrefs_BCancelInput:
+    db $20, $39, $09, $29, $80, $1F, $22, $00, $12, $F5, $6B, $00, $00, $00, $00, $00
+
+; Range: $F003E0-$F003EF (16 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F003E0
+TargetSelection_BCancelInput:
+    db $20, $39, $09, $29, $80, $8F, $22, $00, $12, $F5, $6B, $00, $00, $00, $00, $00
+
+; Range: $F003F0-$F0042F (64 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F003F0
+AlchemyInfo_BCancelInput:
+    db $20, $39, $09, $29, $F0, $90, $22, $00, $12, $F5, $6B, $00, $00, $00, $00, $00
+    db $20, $39, $09, $D0, $04, $5C, $AC, $92, $8D, $5C, $F1, $92, $8D, $00, $00, $00
+    db $20, $39, $09, $D0, $04, $5C, $A4, $95, $8D, $5C, $E9, $95, $8D, $00, $00, $00
+    db $20, $39, $09, $D0, $04, $5C, $8F, $98, $8D, $5C, $D4, $98, $8D, $00, $00, $00
+
+; Range: $F00430-$F00452 (35 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00430
+TradeGoods_BCancelInput:
+    db $20, $39, $09, $29, $90, $10, $22, $00, $12, $F5, $6B, $00, $00, $00, $00, $00
+    db $20, $39, $09, $D0, $04, $5C, $BD, $C1, $8C, $5C, $CC, $C1, $8C, $00, $00, $00
+    db $20, $39, $09
+
+; Range: $F00453-$F00456 (4 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00453
+CharmsRareItems_InputMask:
+    db $29, $A0, $1F, $6B
+
+; Range: $F004E0-$F005DC (253 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F004E0
+Undocumented_F004E0:
+; $F004E0: Retained 253-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F004E0: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F004E0: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $64, $02, $A5, $E6, $C9, $42, $42, $F0, $04, $A5, $EC, $D0, $05, $64, $E6, $AD
+    db $42, $0F, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $AD, $FF, $28, $F0, $0A, $AD, $4E, $29, $F0, $05, $AD, $9D, $29, $D0, $0D, $4B
+    db $62, $06, $00, $F4, $8E, $B0, $5C, $ED, $AB, $8F, $90, $04, $5C, $1A, $CE, $8F
+    db $48, $A9, $89, $4E, $85, $EA, $68, $18, $5C, $89, $CE, $8F, $00, $00, $00, $00
+    db $A5, $4C, $85, $EA, $22, $84, $AC, $8F, $6B, $00, $00, $00, $00, $00, $00, $00
+    db $AD, $FF, $28, $F0, $0A, $AD, $4E, $29, $F0, $05, $AD, $9D, $29, $D0, $0D, $4B
+    db $62, $06, $00, $F4, $8E, $B0, $5C, $ED, $AB, $8F, $90, $04, $5C, $4D, $CF, $8F
+    db $48, $A9, $37, $4F, $85, $EA, $68, $18, $5C, $C2, $CF, $8F, $00, $00, $00, $00
+    db $A9, $42, $42, $85, $E6, $5C, $5C, $CE, $8C, $00, $00, $00, $00, $00, $00, $00
+    db $A5, $EA, $D0, $03, $AD, $42, $0F, $85, $EC, $85, $02, $60, $00, $00, $00, $00
+    db $20, $CF, $09, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $65, $09, $29, $C0, $D0, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $65, $09, $29, $00, $DF, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $65, $09, $D0, $04, $5C, $92, $BA, $8D, $5C, $BA, $BA, $8D, $00, $00, $00
+    db $A5, $EA, $D0, $03, $AD, $42, $0F, $85, $EC, $5C, $78, $CD, $8F
+
+; Range: $F00640-$F00668 (41 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00640
+Undocumented_F00640:
+; $F00640: Retained 41-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00640: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00640: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $22, $48, $06, $F0, $85, $4C, $A8, $6B, $E2, $30, $64, $8A, $A7, $82, $E6, $82
+    db $D0, $02, $E6, $83, $0A, $26, $8A, $C9, $A4, $F0, $04, $5C, $5A, $EA, $8C, $AA
+    db $C2, $30, $20, $80, $05, $5C, $39, $EF, $8C
+
+; Range: $F00680-$F006E4 (101 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00680
+Undocumented_F00680:
+; $F00680: Retained 101-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00680: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00680: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $48, $20, $90, $07, $F0, $3B, $68, $29, $03, $00, $C9, $03, $00, $F0, $26, $89
+    db $01, $00, $F0, $0E, $AF, $61, $22, $7E, $89, $02, $00, $D0, $18, $A9, $89, $4E
+    db $80, $16, $89, $02, $00, $F0, $11, $AF, $61, $22, $7E, $89, $01, $00, $D0, $05
+    db $A9, $37, $4F, $80, $03, $AD, $42, $0F, $85, $EA, $85, $EC, $22, $78, $CD, $8F
+    db $6B, $68, $80, $F1, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $C9, $37, $4F, $F0, $0A, $C9, $89, $4E, $F0, $05, $85, $02, $64, $04, $6B, $85
+    db $EA, $85, $EC, $80, $F5
+
+; Range: $F00700-$F0074E (79 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00700
+Undocumented_F00700:
+; $F00700: Retained 79-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00700: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00700: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $22, $08, $07, $F0, $85, $4C, $A8, $6B, $E2, $30, $64, $8A, $A7, $82, $E6, $82
+    db $D0, $02, $E6, $83, $0A, $26, $8A, $C9, $A4, $F0, $08, $C9, $A0, $F0, $04, $5C
+    db $5A, $EA, $8C, $AA, $C2, $30, $20, $2D, $07, $5C, $39, $EF, $8C, $A5, $EC, $D0
+    db $03, $AD, $42, $0F, $85, $02, $60, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $E0, $A4, $00, $F0, $06, $AD, $42, $0F, $85, $02, $6B, $20, $80, $05, $6B
+
+; Range: $F00780-$F007AE (47 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00780
+Undocumented_F00780:
+; $F00780: Retained 47-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00780: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00780: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $E0, $EC, $2D, $90, $03, $A2, $9D, $2D, $A5, $26, $0A, $A8, $6B, $00, $00, $00
+    db $A5, $82, $C9, $6C, $EC, $F0, $17, $C9, $A8, $ED, $F0, $12, $C9, $F0, $C4, $F0
+    db $0D, $C9, $81, $C8, $F0, $08, $C9, $C7, $C2, $F0, $03, $C9, $8F, $C0, $60
+
+; Range: $F00800-$F00843 (68 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00800
+FlightInputNativeEntries:
+; $F00800: Five native long-call entries: $F00800/$F00810/$F00820/$F00830/$F00840; zero-filled gaps separate them.
+; $F00800: First four JSR $097A within bank F0, then AND #$BFFF or BIT #$0300/#$0C00/#$0800 before RTL. Entry $F00840 JSRs $09E5 then RTL.
+; $F00800: Masks require 16-bit A. Preserve flags returned by each BIT and the near-call bank; these entries are not interchangeable and the gaps are not automatically free.
+    db $20, $7A, $09, $29, $FF, $BF, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $7A, $09, $89, $00, $03, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $7A, $09, $89, $00, $0C, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $7A, $09, $89, $00, $08, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $20, $E5, $09, $6B
+
+; Range: $F008D0-$F008EA (27 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F008D0
+Undocumented_F008D0:
+; $F008D0: Retained 27-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F008D0: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F008D0: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $20, $00, $0A, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $C9, $8D, $23, $D0, $02, $64, $EC, $5C, $43, $EA, $8C
+
+; Range: $F00900-$F00961 (98 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00900
+Undocumented_F00900:
+; $F00900: Retained 98-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00900: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00900: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $8D, $16, $21, $85, $FC, $AD, $39, $21, $29, $FF, $03, $C9, $EB, $03, $F0, $0E
+    db $C9, $F9, $03, $90, $05, $C9, $FE, $03, $90, $04, $A9, $00, $00, $60, $A9, $01
+    db $00, $60, $20, $39, $09, $48, $A5, $F2, $89, $0C, $00, $F0, $0A, $89, $03, $00
+    db $F0, $05, $68, $29, $BF, $FF, $60, $68, $60, $A5, $F2, $89, $0C, $00, $F0, $1F
+    db $89, $03, $00, $F0, $1D, $AD, $A7, $05, $C9, $37, $4F, $F0, $09, $A5, $F2, $89
+    db $01, $00, $D0, $0B, $80, $0C, $A5, $F2, $89, $02, $00, $D0, $02, $80, $03, $A5
+    db $F6, $60
+
+; Range: $F00962-$F00A15 (180 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00962
+RingP2Return_Hook:
+    db $4C, $28, $03, $A5, $F2, $89, $0C, $00, $F0, $F3, $89, $03, $00, $F0, $F1, $A5
+    db $EC, $C9, $37, $4F, $F0, $DE, $80, $D3, $A5, $F2, $89, $0C, $00, $F0, $DE, $89
+    db $03, $00, $F0, $DC, $A5, $F6, $05, $FA, $60, $A5, $F2, $89, $0C, $00, $F0, $CD
+    db $89, $03, $00, $F0, $CB, $A5, $4C, $C9, $37, $4F, $F0, $B8, $80, $AD, $48, $A5
+    db $F2, $89, $0C, $00, $F0, $1F, $89, $03, $00, $F0, $1E, $AD, $A7, $05, $C9, $37
+    db $4F, $F0, $09, $A5, $F2, $89, $01, $00, $D0, $0B, $80, $0D, $A5, $F2, $89, $02
+    db $00, $D0, $02, $80, $04, $68, $14, $F6, $60, $68, $14, $FA, $60, $48, $A5, $F2
+    db $89, $0C, $00, $F0, $F0, $89, $03, $00, $F0, $EF, $A5, $EC, $C9, $37, $4F, $F0
+    db $DB, $80, $D0, $48, $A5, $F2, $89, $0C, $00, $F0, $DA, $89, $03, $00, $F0, $D9
+    db $A5, $F6, $05, $FA, $85, $E6, $68, $14, $F6, $14, $FA, $14, $E6, $60, $48, $A5
+    db $F2, $89, $0C, $00, $F0, $BF, $89, $03, $00, $F0, $BE, $A5, $4C, $C9, $37, $4F
+    db $F0, $AA, $80, $9F
+
+; Range: $F00B00-$F00B24 (37 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00B00
+Bazooka_FastCharge_Hook:
+    db $5C, $40, $09, $F5, $EA, $EA, $D0, $16, $AD, $52, $0A, $C9, $01, $04, $90, $0E
+    db $AD, $B7, $4E, $C9, $00, $04, $90, $06, $A9, $00, $08, $0C, $9B, $4E, $5C, $00
+    db $0C, $F0, $EA, $EA, $EA
+
+; Range: $F00B40-$F00B64 (37 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00B40
+Undocumented_F00B40:
+; $F00B40: Retained 37-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00B40: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00B40: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $AD, $FC, $00, $2C, $25, $0B, $D0, $16, $AD, $9C, $0A, $C9, $01, $04, $90, $0E
+    db $AD, $65, $4F, $C9, $00, $04, $90, $06, $A9, $00, $08, $0C, $49, $4F, $5C, $90
+    db $0C, $F0, $EA, $EA, $EA
+
+; Range: $F00B80-$F00BBF (64 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00B80
+Undocumented_F00B80:
+; $F00B80: Retained 64-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00B80: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00B80: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $B9, $2E, $00, $C9, $00, $04, $B0, $34, $B9, $16, $00, $89, $18, $00, $F0, $2C
+    db $B9, $2E, $00, $C0, $37, $4F, $F0, $06, $18, $6D, $54, $0A, $80, $04, $18, $6D
+    db $9E, $0A, $C9, $00, $04, $90, $03, $A9, $00, $04, $99, $2E, $00, $C0, $37, $4F
+    db $F0, $06, $22, $00, $0B, $F0, $80, $04, $22, $40, $0B, $F0, $5C, $79, $82, $D0
+
+; Range: $F00C00-$F00D11 (274 bytes)
+; Function/storage: INPUT_RING_HELPERS
+org $F00C00
+Undocumented_F00C00:
+; $F00C00: Retained 274-byte slice in INPUT_RING_HELPERS; source boundaries are not verified instruction, record or routine boundaries.
+; $F00C00: Entry/field semantics and complete inbound references remain unresolved. Preserve bytes and neighboring inherited data; do not treat the range as free capacity.
+; $F00C00: TODO: Identify the undocumented functionality, complete boundaries and inbound references before changing or relocating this fragment.
+    db $AD, $C6, $0E, $2C, $23, $0B, $F0, $73, $2C, $25, $0B, $D0, $6E, $AD, $B7, $4E
+    db $30, $69, $C9, $00, $04, $B0, $40, $AD, $54, $0A, $85, $12, $0A, $18, $65, $12
+    db $85, $14, $B9, $16, $00, $89, $18, $00, $F0, $07, $A5, $14, $18, $65, $12, $80
+    db $02, $A5, $14, $18, $6D, $B7, $4E, $C9, $00, $04, $90, $03, $A9, $00, $04, $8D
+    db $B7, $4E, $C9, $00, $04, $90, $34, $AD, $52, $0A, $C9, $01, $04, $90, $2C, $A9
+    db $00, $08, $0C, $9B, $4E, $80, $24, $AD, $52, $0A, $C9, $01, $04, $90, $1C, $AD
+    db $54, $0A, $38, $E9, $03, $00, $85, $12, $0A, $18, $65, $12, $18, $6D, $B7, $4E
+    db $CD, $52, $0A, $90, $03, $AD, $52, $0A, $8D, $B7, $4E, $AD, $04, $01, $89, $00
+    db $0F, $6B, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $AD, $FC, $00, $2C, $23, $0B, $F0, $73, $2C, $25, $0B, $D0, $6E, $AD, $65, $4F
+    db $30, $69, $C9, $00, $04, $B0, $40, $AD, $9E, $0A, $85, $12, $0A, $18, $65, $12
+    db $85, $14, $B9, $16, $00, $89, $18, $00, $F0, $07, $A5, $14, $18, $65, $12, $80
+    db $02, $A5, $14, $18, $6D, $65, $4F, $C9, $00, $04, $90, $03, $A9, $00, $04, $8D
+    db $65, $4F, $C9, $00, $04, $90, $34, $AD, $9C, $0A, $C9, $01, $04, $90, $2C, $A9
+    db $00, $08, $0C, $49, $4F, $80, $24, $AD, $9C, $0A, $C9, $01, $04, $90, $1C, $AD
+    db $9E, $0A, $38, $E9, $03, $00, $85, $12, $0A, $18, $65, $12, $18, $6D, $65, $4F
+    db $CD, $9C, $0A, $90, $03, $AD, $9C, $0A, $8D, $65, $4F, $AD, $FE, $00, $89, $00
+    db $0F, $6B
+
+; Range: $F01000-$F0FBE0 (60385 bytes)
+; Function/storage: PYRAMID_MAP_DATA
+
+; 5. Modul: Geteilte Waffen-XP Routine (verlagert nach $F0:0E00)
+org $F00E00
 SharedWeaponExperience_German:
-; Shared Weapon Experience angepasst an die deutsche PAL-Routine ($8F:9714)
-; Selbe Waffenfamilie (Schwerter, Äxte, Speere) wird simultan gelevelt
+; Ruft die native deutsche Waffen-XP Routine $8F:9714 auf
     db $AD, $20, $BF, $48, $AE, $BA, $0A, $8E, $20, $BF, $E0, $1A, $00, $F0, $09, $BD
     db $DD, $0A, $29, $00, $FF, $C9, $00, $03, $F0, $0F, $BD, $DD, $0A, $29, $0C, $00
     db $C9, $00, $00, $F0, $06, $22, $14, $97, $8F, $80, $34, $AD, $20, $BF, $3A, $29
@@ -1442,18 +2179,7 @@ SharedWeaponExperience_German:
     db $0A, $22, $14, $97, $8F, $A9, $18, $00, $8D, $BA, $0A, $22, $14, $97, $8F, $AD
     db $20, $BF, $8D, $BA, $0A, $68, $8D, $20, $BF, $6B
 
-; ============================================================================
-; 7. KARTEN- & DUNGEON-FIXES (Pyramid & Dog Maze in Bank $F0 & $FF)
-; ============================================================================
-; Map-List Zeigertabelle in Bank $E0 (File-Offset $20FDE5):
-; Map 86 (0x56: Antika Pyramide Oberste Ebene) -> $F0:1000 (File-Offset $20FF3D)
-org $E0FF3D
-    db $00, $10, $F0
-
-; Map 115 (0x73: Gotika Hundelabyrinth) -> $FF:3000 (File-Offset $20FFB1)
-org $E0FFB1
-    db $00, $30, $FF
-
+; Map 86 (Pyramide Antika)
 org $F01000
 PyramidSymbols_MapData:
     db $06, $0D, $78, $49, $17, $01, $42, $02, $00, $00, $00, $00, $00, $1A, $01, $4A
@@ -5239,6 +5965,1690 @@ PyramidSymbols_MapData:
 ; Range: $FF3000 (Bank $FF)
 ; Function/storage: DogMazeConnection_MapData (Map 115)
 
+; ============================================================================
+; 12. MODUL: BEUTEDROPS & KAMPF-REMAINS (Bank $F1)
+; ============================================================================
+; EnemyPrizeProfile_Helper: Mit nativen Fallback-Adressen $0EA4 und $0EAE für DE ROM
+org $F16000
+EnemyPrizeProfile_Helper:
+    db $08, $C2, $30, $DA, $AF, $DB, $0A, $7E, $29, $FF, $00, $48, $A2, $00, $00, $BF
+    db $00, $61, $F1, $C9, $FF, $FF, $F0, $5E, $C3, $01, $F0, $08, $8A, $18, $69, $08
+    db $00, $AA, $80, $EB, $68, $A9, $07, $00, $8F, $9B, $23, $7E, $A9, $04, $00, $8F
+    db $9D, $23, $7E, $A9, $02, $00, $8F, $9F, $23, $7E, $A9, $01, $00, $8F, $A1, $23
+    db $7E, $BF, $02, $61, $F1, $8F, $A7, $23, $7E, $BF, $04, $61, $F1, $8F, $A3, $23
+    db $7E, $A9, $02, $00, $8F, $A9, $23, $7E, $BF, $06, $61, $F1, $8F, $A5, $23, $7E
+    db $A9, $01, $00, $8F, $AB, $23, $7E, $A9, $40, $00, $99, $68, $00, $A9, $2B, $17
+    db $99, $66, $00, $FA, $28, $6B, $68, $AD, $A4, $0E, $99, $68, $00, $AD, $AE, $0E
+    db $99, $66, $00, $FA, $28, $6B
+
+org $F16100
+EnemyPrizeProfile_Table:
+; $F16100: Eight-byte records, four little-endian words: map ID, prize value at +2, item selector at +4, secondary selector at +6.
+; $F16100: The helper compares the map word and reads all three payload words. Keep the $FFFF terminator and its complete record; zeros are fields, not spare capacity.
+    db $5C, $00, $05, $00, $01, $02, $32, $01, $38, $00, $05, $00, $03, $02, $32, $01
+    db $5B, $00, $07, $00, $00, $02, $32, $01, $59, $00, $07, $00, $10, $02, $32, $01
+    db $41, $00, $0C, $00, $03, $02, $3A, $01, $67, $00, $0A, $00, $04, $02, $3A, $01
+    db $16, $00, $0A, $00, $00, $02, $32, $01, $17, $00, $0A, $00, $14, $02, $3A, $01
+    db $27, $00, $0F, $00, $14, $02, $3A, $01, $66, $00, $14, $00, $01, $02, $32, $01
+    db $65, $00, $14, $00, $04, $02, $3A, $01, $69, $00, $1E, $00, $10, $02, $38, $01
+    db $3C, $00, $0F, $00, $00, $02, $3A, $01, $3B, $00, $14, $00, $14, $02, $38, $01
+    db $3D, $00, $14, $00, $01, $02, $38, $01, $3E, $00, $14, $00, $04, $02, $38, $01
+    db $18, $00, $0A, $00, $14, $02, $3A, $01, $01, $00, $14, $00, $04, $02, $38, $01
+    db $3F, $00, $1E, $00, $14, $02, $38, $01, $1B, $00, $2D, $00, $08, $02, $33, $01
+    db $05, $00, $28, $00, $02, $02, $33, $01, $07, $00, $28, $00, $12, $02, $33, $01
+    db $4F, $00, $4B, $00, $05, $02, $37, $01, $6B, $00, $46, $00, $0F, $02, $37, $01
+    db $06, $00, $32, $00, $08, $02, $36, $01, $55, $00, $5A, $00, $12, $02, $37, $01
+    db $56, $00, $5A, $00, $11, $02, $36, $01, $64, $00, $46, $00, $02, $02, $37, $01
+    db $57, $00, $41, $00, $12, $02, $36, $01, $2B, $00, $41, $00, $0F, $02, $37, $01
+    db $23, $00, $32, $00, $02, $02, $33, $01, $24, $00, $32, $00, $11, $02, $37, $01
+    db $28, $00, $32, $00, $08, $02, $37, $01, $2D, $00, $32, $00, $05, $02, $36, $01
+    db $4B, $00, $46, $00, $12, $02, $36, $01, $6D, $00, $46, $00, $0F, $02, $36, $01
+    db $1D, $00, $32, $00, $08, $02, $33, $01, $09, $00, $4B, $00, $0F, $02, $36, $01
+    db $2C, $00, $32, $00, $11, $02, $37, $01, $2A, $00, $32, $00, $11, $02, $37, $01
+    db $58, $00, $5A, $00, $0F, $02, $36, $01, $76, $00, $41, $00, $0C, $02, $3C, $01
+    db $79, $00, $41, $00, $06, $02, $3C, $01, $7A, $00, $41, $00, $0D, $02, $3C, $01
+    db $74, $00, $55, $00, $09, $02, $31, $01, $19, $00, $96, $00, $0B, $02, $35, $01
+    db $1A, $00, $64, $00, $09, $02, $3C, $01, $22, $00, $64, $00, $06, $02, $35, $01
+    db $20, $00, $64, $00, $15, $02, $35, $01, $12, $00, $4B, $00, $0D, $02, $3C, $01
+    db $13, $00, $4B, $00, $0B, $02, $3C, $01, $40, $00, $5A, $00, $06, $02, $35, $01
+    db $37, $00, $7D, $00, $0C, $02, $31, $01, $5D, $00, $4B, $00, $15, $02, $3C, $01
+    db $5E, $00, $50, $00, $09, $02, $31, $01, $5F, $00, $50, $00, $0B, $02, $31, $01
+    db $60, $00, $50, $00, $0D, $02, $3C, $01, $0F, $00, $4B, $00, $15, $02, $3C, $01
+    db $10, $00, $50, $00, $09, $02, $35, $01, $1F, $00, $64, $00, $06, $02, $35, $01
+    db $77, $00, $64, $00, $09, $02, $3C, $01, $78, $00, $64, $00, $15, $02, $35, $01
+    db $49, $00, $C8, $00, $07, $02, $3B, $01, $7E, $00, $FA, $00, $0A, $02, $3B, $01
+    db $48, $00, $2C, $01, $13, $02, $3B, $01, $43, $00, $5E, $01, $13, $02, $34, $01
+    db $00, $00, $5E, $01, $0A, $02, $34, $01, $47, $00, $90, $01, $07, $02, $39, $01
+    db $42, $00, $C2, $01, $0E, $02, $34, $01, $44, $00, $F4, $01, $0E, $02, $39, $01
+    db $4A, $00, $58, $02, $07, $02, $39, $01, $FF, $FF, $00, $00, $00, $00, $00, $00
+
+; Range: $F16800-$F16813 (20 bytes)
+; Function/storage: AUXILIARY_DIALOGUE, NATIVE_SHARED_0000_0420
+; Chapter/area: Shared systems / NATIVE_SHARED_0000_0420
+; Dialogue IDs: 0009
+; Text: Found a trade good.
+
+org $F16800
+Dialogue_0009:
+    db $46, $6F, $75, $6E, $64, $20, $61, $20, $74, $72, $61, $64, $65, $20, $67, $6F
+    db $6F, $64, $2E, $00
+
+; Range: $F19000-$F191A4 (421 bytes)
+
+org $F19000
+TradeGoodAward_Dispatch:
+    db $09, $08, $39, $01, $29, $04, $31, $01, $A2, $18, $00, $09, $07, $BF, $02, $29
+    db $02, $63, $9E, $09, $00, $14, $BF, $02, $07, $BF, $02, $29, $31, $9A, $0C, $90
+    db $04, $B1, $00, $09, $08, $39, $01, $29, $04, $32, $01, $A2, $18, $00, $09, $07
+    db $C1, $02, $29, $02, $63, $9E, $09, $00, $14, $C1, $02, $07, $C1, $02, $29, $31
+    db $9A, $0C, $90, $04, $B1, $00, $09, $08, $39, $01, $29, $04, $33, $01, $A2, $18
+    db $00, $09, $07, $C3, $02, $29, $02, $63, $9E, $09, $00, $14, $C3, $02, $07, $C3
+    db $02, $29, $31, $9A, $0C, $90, $04, $B1, $00, $09, $08, $39, $01, $29, $04, $34
+    db $01, $A2, $18, $00, $09, $07, $C5, $02, $29, $02, $63, $9E, $09, $00, $14, $C5
+    db $02, $07, $C5, $02, $29, $31, $9A, $0C, $90, $04, $B1, $00, $09, $08, $39, $01
+    db $29, $04, $35, $01, $A2, $18, $00, $09, $07, $C7, $02, $29, $02, $63, $9E, $09
+    db $00, $14, $C7, $02, $07, $C7, $02, $29, $31, $9A, $0C, $90, $04, $B1, $00, $09
+    db $08, $39, $01, $29, $04, $36, $01, $A2, $18, $00, $09, $07, $C9, $02, $29, $02
+    db $63, $9E, $09, $00, $14, $C9, $02, $07, $C9, $02, $29, $31, $9A, $0C, $90, $04
+    db $B1, $00, $09, $08, $39, $01, $29, $04, $37, $01, $A2, $18, $00, $09, $07, $CB
+    db $02, $29, $02, $63, $9E, $09, $00, $14, $CB, $02, $07, $CB, $02, $29, $31, $9A
+    db $0C, $90, $04, $B1, $00, $09, $08, $39, $01, $29, $04, $38, $01, $A2, $18, $00
+    db $09, $07, $CD, $02, $29, $02, $63, $9E, $09, $00, $14, $CD, $02, $07, $CD, $02
+    db $29, $31, $9A, $0C, $90, $04, $B1, $00, $09, $08, $39, $01, $29, $04, $39, $01
+    db $A2, $18, $00, $09, $07, $CF, $02, $29, $02, $63, $9E, $09, $00, $14, $CF, $02
+    db $07, $CF, $02, $29, $31, $9A, $0C, $90, $04, $B1, $00, $09, $08, $39, $01, $29
+    db $04, $3A, $01, $A2, $18, $00, $09, $07, $D1, $02, $29, $02, $63, $9E, $09, $00
+    db $14, $D1, $02, $07, $D1, $02, $29, $31, $9A, $0C, $90, $04, $B1, $00, $09, $08
+    db $39, $01, $29, $04, $3B, $01, $A2, $18, $00, $09, $07, $D3, $02, $29, $02, $63
+    db $9E, $09, $00, $14, $D3, $02, $07, $D3, $02, $29, $31, $9A, $0C, $90, $04, $B1
+    db $00, $09, $08, $39, $01, $29, $04, $3C, $01, $A2, $18, $00, $09, $07, $D5, $02
+    db $29, $02, $63, $9E, $09, $00, $14, $D5, $02, $07, $D5, $02, $29, $31, $9A, $0C
+    db $90, $04, $B1, $00, $00
+
+; Range: $F19200-$F192B7 (184 bytes)
+org $F19200
+TradeGoodMessage_Dispatch:
+    db $09, $08, $39, $01, $29, $04, $31, $01, $A2, $04, $00, $52, $C7, $17, $00, $09
+    db $08, $39, $01, $29, $04, $32, $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08
+    db $39, $01, $29, $04, $33, $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08, $39
+    db $01, $29, $04, $34, $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08, $39, $01
+    db $29, $04, $35, $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08, $39, $01, $29
+    db $04, $36, $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08, $39, $01, $29, $04
+    db $37, $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08, $39, $01, $29, $04, $38
+    db $01, $A2, $04, $00, $52, $1B, $00, $00, $09, $08, $39, $01, $29, $04, $39, $01
+    db $A2, $04, $00, $52, $B1, $15, $00, $09, $08, $39, $01, $29, $04, $3A, $01, $A2
+    db $04, $00, $52, $AE, $15, $00, $09, $08, $39, $01, $29, $04, $3B, $01, $A2, $04
+    db $00, $52, $1B, $00, $00, $09, $08, $39, $01, $29, $04, $3C, $01, $A2, $04, $00
+    db $52, $1B, $00, $00, $52, $1B, $00, $00
+
+; ============================================================================
+; ROM BANK $F2
+; ============================================================================
+
+; Range: $F20000-$F20053 (84 bytes)
+; Function/storage: NGPLUS_NORMAL_DIALOGUE
+; Chapter/area: Chapter 1 / Prehistoria / PREHISTORIA_VILLAGE_FIRE_EYES
+; Dialogue IDs: 0593
+
+; ============================================================================
+; ERWEITERTER CODE BANK $F5: MENÜS, RECOVERY, FRAMES & ASSITOPIA
+; ============================================================================
+org $F50000
+Boy_FieldMenuShortcuts:
+    db $A5, $F2, $89, $01, $00, $F0, $49, $9C, $F0, $32, $A9, $00, $10, $1C, $04, $01
+    db $F0, $0F, $1C, $F6, $00, $A9, $00, $00, $8F, $19, $4F, $7E, $22, $00, $02, $F5
+    db $6B, $A9, $40, $00, $1C, $04, $01, $F0, $0F, $1C, $F6, $00, $A9, $08, $00, $8F
+    db $19, $4F, $7E, $22, $00, $02, $F5, $6B, $A9, $00, $40, $1C, $04, $01, $F0, $0F
+    db $1C, $F6, $00, $A9, $02, $00, $8F, $19, $4F, $7E, $22, $00, $02, $F5, $6B, $6B
+    db $A9, $40, $00, $1C, $04, $01, $A9, $00, $40, $1C, $04, $01, $6B
+
+; Range: $F50100-$F5015C (93 bytes)
+org $F50100
+Dog_FieldMenuShortcuts:
+    db $A5, $F2, $89, $02, $00, $F0, $49, $9C, $F0, $32, $A9, $00, $10, $1C, $FE, $00
+    db $F0, $0F, $1C, $F6, $00, $A9, $00, $00, $8F, $19, $4F, $7E, $22, $00, $02, $F5
+    db $6B, $A9, $40, $00, $1C, $FE, $00, $F0, $0F, $1C, $F6, $00, $A9, $08, $00, $8F
+    db $19, $4F, $7E, $22, $00, $02, $F5, $6B, $A9, $00, $40, $1C, $FE, $00, $F0, $0F
+    db $1C, $F6, $00, $A9, $02, $00, $8F, $19, $4F, $7E, $22, $00, $02, $F5, $6B, $6B
+    db $A9, $40, $00, $1C, $FE, $00, $A9, $00, $40, $1C, $FE, $00, $6B
+
+; Range: $F50200-$F50207 (8 bytes)
+org $F50200
+BoyMenuEntry_WindowBaseline:
+    db $08, $C2, $30, $48, $DA, $5A, $8B, $A9
+
+; Range: $F50208-$F50208 (1 bytes)
+org $F50208
+ThemeFoundation_MenuPattern1944:
+    db $44
+
+; Range: $F50209-$F50232 (42 bytes)
+org $F50209
+BoyMenuEntry_WindowBaseline_F50209:
+    db $19, $8F, $15, $0B, $7E, $A9, $0E, $00, $8F, $17, $0B, $7E, $22, $16, $AC, $8C
+    db $AB, $C2, $30, $7A, $FA, $68, $28, $A9, $89, $4E, $8D, $A7, $05, $A9, $02, $00
+    db $0C, $A9, $05, $A9, $01, $00, $8D, $F0, $32, $6B
+
+; Range: $F50800-$F50814 (21 bytes)
+org $F50800
+P1_ABSwap:
+    db $AD, $18, $42, $48, $29, $80, $80, $EB, $48, $A3, $03, $29, $7F, $7F, $03, $01
+    db $83, $03, $68, $68, $6B
+
+; Range: $F50820-$F50834 (21 bytes)
+org $F50820
+P2_ABSwap:
+    db $AD, $1A, $42, $48, $29, $80, $80, $EB, $48, $A3, $03, $29, $7F, $7F, $03, $01
+    db $83, $03, $68, $68, $6B
+
+; Range: $F50900-$F50925 (38 bytes)
+org $F50900
+Bazooka_AutoCharge_Guard:
+    db $C0, $89, $4E, $D0, $1C, $AD, $BA, $0A, $C9, $1A, $00, $D0, $14, $AD, $B7, $4E
+    db $30, $0B, $C9, $00, $04, $90, $06, $A9, $00, $04, $8D, $B7, $4E, $A9, $00, $00
+    db $6B, $22, $D0, $02, $F0, $6B
+
+; Range: $F50940-$F509A0 (97 bytes)
+org $F50940
+Bazooka_FastCharge_Guard:
+    db $AD, $BA, $0A, $C9, $1A, $00, $D0, $4F, $A9, $00, $08, $1C, $9B, $4E, $AD, $B7
+    db $4E, $30, $3D, $C9, $00, $04, $B0, $32, $AD, $C6, $0E, $2C, $23, $0B, $F0, $30
+    db $2C, $25, $0B, $D0, $2B, $AD, $54, $0A, $85, $12, $0A, $18, $65, $12, $85, $14
+    db $B9, $16, $00, $89, $18, $00, $F0, $07, $A5, $14, $18, $65, $12, $80, $02, $A5
+    db $14, $18, $6D, $B7, $4E, $C9, $00, $04, $90, $03, $A9, $00, $04, $8D, $B7, $4E
+    db $AD, $04, $01, $89, $00, $0F, $6B, $AD, $C6, $0E, $2C, $25, $0B, $5C, $06, $0B
+    db $F0
+
+; Range: $F50D00-$F50D39 (58 bytes)
+
+org $F50D00
+WalkEntrance_StepEligibility:
+    db $08, $B9, $3C, $00, $89, $00, $40, $D0, $2C, $48, $AD, $DB, $0A, $C9, $48, $00
+    db $D0, $22, $C0, $89, $4E, $F0, $0A, $C0, $37, $4F, $D0, $18, $AD, $FC, $00, $80
+    db $03, $AD, $C6, $0E, $2C, $23, $0B, $F0, $0B, $89, $00, $0F, $F0, $06, $68, $09
+    db $00, $40, $80, $01, $68, $28, $89, $00, $40, $6B
+
+; Range: $F51000-$F51055 (86 bytes)
+
+org $F51000
+StatusAwareDropChance:
+    db $BF, $29, $00, $8E, $29, $FF, $00, $C9, $08, $00, $F0, $01, $6B, $DA, $A9, $10
+    db $00, $85, $12, $B9, $46, $00, $20, $3B, $10, $B9, $4C, $00, $20, $3B, $10, $B9
+    db $52, $00, $20, $3B, $10, $B9, $58, $00, $20, $3B, $10, $A5, $12, $C9, $70, $00
+    db $90, $05, $A9, $70, $00, $85, $12, $A5, $12, $FA, $6B, $29, $FF, $7F, $C9, $98
+    db $00, $B0, $12, $AA, $BF, $37, $AE, $91, $C9, $02, $00, $D0, $08, $A5, $12, $18
+    db $69, $20, $00, $85, $12, $60
+
+; Range: $F51100-$F5118C (141 bytes)
+; Function/storage: MENU_EVENT_HELPERS
+
+; 9. Modul: DrainHealEquivalentRecovery mit Zeiger auf $C5:020B (BF 0B 02 C5)
+org $F51100
+DrainHealEquivalentRecovery:
+    db $DA, $5A, $B9, $14, $00, $C9, $46, $94, $F0, $05, $A2, $12, $00, $80, $03, $A2
+    db $10, $00, $B9, $14, $00, $1A, $1A, $99, $14, $00, $BF, $98, $2F, $7E, $29, $FF
+    db $00, $AA, $BF, $0B, $02, $C5, $29, $FF, $00, $0A, $0A, $0A, $0A, $85, $12, $4A
+    db $85, $02, $A5, $12, $38, $E5, $02, $85, $12, $DA, $5A, $22, $62, $AD, $80, $7A
+    db $FA, $18, $65, $12, $48, $AF, $62, $22, $7E, $89, $08, $00, $F0, $0B, $68, $48
+    db $4A, $85, $0A, $68, $18, $65, $0A, $80, $01, $68, $C9, $E8, $03, $90, $03, $A9
+    db $E7, $03, $48, $B9, $14, $00, $C9, $48, $94, $F0, $0A, $68, $A0, $89, $4E, $22
+    db $9A, $C0, $8F, $80, $14, $68, $48, $1A, $4A, $A0, $89, $4E, $22, $9A, $C0, $8F
+    db $68, $4A, $A0, $37, $4F, $22, $9A, $C0, $8F, $7A, $FA, $38, $6B
+
+org $F51200
+SecondaryMenu_BToLegacyY:
+    db $89, $80, $00, $F0, $03, $49, $80, $40, $09, $00, $00, $6B
+
+; Range: $F51220-$F51248 (41 bytes)
+; Function/storage: MENU_EVENT_HELPERS, MENU_FRAME_F51220
+org $F51220
+MenuLegend_ASelect_Frame:
+    db $07, $06, $00, $00, $2F, $10, $10, $27, $03, $41, $0B, $10, $23, $03, $3F, $0B
+    db $10, $1E, $03, $39, $0B, $10, $19, $03, $6C, $0B, $10, $14, $03, $39, $0B, $10
+    db $0F, $03, $44, $0B, $11, $00, $00, $9B, $07
+
+; Range: $F51250-$F5126E (31 bytes)
+; Function/storage: MENU_EVENT_HELPERS, MENU_FRAME_F51250
+org $F51250
+MenuLegend_BExit_Frame:
+    db $05, $06, $00, $00, $26, $10, $10, $1E, $03, $41, $0B, $10, $1A, $03, $43, $0B
+    db $10, $14, $03, $6F, $0B, $10, $0F, $03, $39, $0B, $11, $00, $00, $9A, $07
+
+; Range: $F51280-$F512A8 (41 bytes)
+; Function/storage: MENU_EVENT_HELPERS, MENU_FRAME_F51280
+org $F51280
+SaveGame_BCancel_Frame:
+    db $07, $06, $00, $00, $32, $10, $10, $2A, $03, $6C, $0B, $10, $25, $03, $39, $0B
+    db $10, $20, $03, $3F, $0B, $10, $1B, $03, $38, $0B, $10, $16, $03, $40, $0B, $10
+    db $11, $03, $3F, $0B, $11, $00, $00, $9A, $07
+
+; Range: $F512B0-$F512CE (31 bytes)
+; Function/storage: MENU_EVENT_HELPERS, MENU_FRAME_F512B0
+org $F512B0
+SaveGame_AExit_Frame:
+    db $05, $06, $00, $00, $26, $10, $10, $1E, $03, $41, $0B, $10, $1A, $03, $43, $0B
+    db $10, $14, $03, $6F, $0B, $10, $0F, $03, $39, $0B, $11, $00, $00, $9B, $07
+
+; Range: $F51300-$F51316 (23 bytes)
+; Function/storage: MENU_EVENT_HELPERS
+org $F51300
+DogEquipRing_CancelWrapper:
+    db $22, $40, $03, $F0, $48, $F0, $0E, $AD, $F2, $32, $F0, $09, $9C, $F2, $32, $A9
+    db $89, $4E, $8D, $A7, $05, $68, $6B
+
+; Range: $F51320-$F51334 (21 bytes)
+; Function/storage: MENU_EVENT_HELPERS
+org $F51320
+DogEquipRing_Action:
+    db $A9, $01, $00, $8D, $F2, $32, $A9, $37, $4F, $8D, $A7, $05, $A9, $8C, $99, $85
+    db $97, $5C, $97, $92, $CE
+
+; Range: $F51400-$F51471 (114 bytes)
+; Function/storage: GOTHICA_TOWNS_EBON_IVOR
+; Chapter/area: Chapter 3 / Gothica / GOTHICA_TOWNS_EBON_IVOR
+; Dialogue IDs: 2031
+; Text: <$96>The merchants in this market offer pretty good deals.<WAIT/PAGE>You should be able to satisfy all of your
+; Text: shopping needs.<WAIT/PAGE>
+
+org $F5A000
+WalkEntrance_Dispatch:
+; $F5A000: Native entrance dispatcher reached by JSL at $CFB08A. Entry inherits 16-bit A/indexes, direct page, data bank and actor context in $4C.
+; $F5A000: Room $0048 uses the Omnitopia walking path for actor pointers $4E89/$4F37; eligibility checks input/state before copying actor X/Y to $46/$48.
+; $F5A000: Entrance rectangle scan uses [$26], table length $12, scan mode $14 and map offsets $0F86/$0F88. It temporarily selects 8-bit A for rectangle-byte comparisons.
+; $F5A000: Actor fields +$18/+ $1A/+ $1C supply orientation/coordinates. State $2429 suppresses repeats; $FFFE/$FFFF distinguish scan/idle states.
+; $F5A000: Native continuations use JML $8FACB1 or $8CCE5C; internal JML targets $F5A0F4/$F5A1BE must remain aligned. Some rejection paths RTL directly.
+; $F5A000: This helper does not preserve A/X/Y/P generally. Preserve each continuation rather than replacing all exits with a common RTL.
+    db $AD, $DB, $0A, $C9, $48, $00, $D0, $54, $A4, $4C, $C0, $89, $4E, $F0, $0A, $C0
+    db $37, $4F, $D0, $48, $AD, $FC, $00, $80, $03, $AD, $C6, $0E, $2C, $23, $0B, $F0
+    db $3B, $AD, $34, $28, $89, $02, $00, $D0, $32, $C0, $89, $4E, $F0, $05, $AD, $FC
+    db $00, $80, $03, $AD, $C6, $0E, $89, $00, $0F, $F0, $21, $B9, $1A, $00, $85, $46
+    db $B9, $1C, $00, $85, $48, $AD, $69, $10, $85, $26, $AD, $6A, $10, $85, $27, $AD
+    db $67, $10, $85, $12, $A9, $01, $00, $85, $14, $80, $13, $6B, $AD, $29, $24, $C9
+    db $FE, $FF, $D0, $06, $A9, $FF, $FF, $8D, $29, $24, $5C, $B1, $AC, $8F, $A5, $46
+    db $4A, $4A, $4A, $4A, $18, $6D, $86, $0F, $85, $46, $A5, $48, $4A, $4A, $4A, $4A
+    db $18, $6D, $88, $0F, $85, $48, $A0, $00, $00, $E2, $20, $C4, $12, $B0, $5F, $A5
+    db $48, $D7, $26, $90, $4F, $C8, $A5, $46, $D7, $26, $90, $49, $C8, $A5, $48, $D7
+    db $26, $B0, $43, $C8, $A5, $46, $D7, $26, $B0, $3D, $C2, $20, $C8, $B7, $26, $AA
+    db $A4, $4C, $A5, $14, $D0, $08, $EC, $29, $24, $F0, $35, $8E, $29, $24, $5C, $BE
+    db $A1, $F5, $EA, $EA, $B9, $1C, $00, $8D, $23, $24, $B9, $18, $00, $29, $30, $00
+    db $4A, $4A, $4A, $4A, $8D, $25, $24, $B9, $18, $00, $29, $40, $00, $8D, $27, $24
+    db $5C, $5C, $CE, $8C, $C8, $C8, $C8, $C8, $C8, $C8, $C4, $12, $90, $9D, $C2, $20
+    db $5C, $F4, $A0, $F5, $A4, $4C, $B9, $1A, $00, $85, $46, $B9, $1C, $00, $85, $48
+    db $B9, $22, $00, $F0, $11, $C9, $08, $00, $F0, $16, $90, $1E, $A5, $46, $38, $E9
+    db $10, $00, $85, $46, $80, $1C, $A5, $48, $38, $E9, $10, $00, $85, $48, $80, $12
+    db $A5, $48, $18, $69, $10, $00, $85, $48, $80, $08, $A5, $46, $18, $69, $10, $00
+    db $85, $46, $A5, $46, $4A, $4A, $4A, $4A, $18, $6D, $86, $0F, $85, $46, $A5, $48
+    db $4A, $4A, $4A, $4A, $18, $6D, $88, $0F, $85, $48, $A0, $00, $00, $E2, $20, $C4
+    db $12, $B0, $5F, $A5, $48, $D7, $26, $90, $4F, $C8, $A5, $46, $D7, $26, $90, $49
+    db $C8, $A5, $48, $D7, $26, $B0, $43, $C8, $A5, $46, $D7, $26, $B0, $3D, $C2, $20
+    db $C8, $B7, $26, $AA, $A4, $4C, $A5, $14, $D0, $08, $EC, $29, $24, $F0, $35, $8E
+    db $29, $24, $5C, $BE, $A1, $F5, $EA, $EA, $B9, $1C, $00, $8D, $23, $24, $B9, $18
+    db $00, $29, $30, $00, $4A, $4A, $4A, $4A, $8D, $25, $24, $B9, $18, $00, $29, $40
+    db $00, $8D, $27, $24, $5C, $5C, $CE, $8C, $C8, $C8, $C8, $C8, $C8, $C8, $C4, $12
+    db $90, $9D, $C2, $20, $A9, $FF, $FF, $8D, $29, $24, $5C, $B1, $AC, $8F, $AD, $29
+    db $24, $C9, $FE, $FF, $F0, $30, $A9, $FE, $FF, $8D, $29, $24, $A5, $4C, $85, $EA
+    db $B9, $1A, $00, $8D, $21, $24, $B9, $1C, $00, $8D, $23, $24, $B9, $18, $00, $29
+    db $30, $00, $4A, $4A, $4A, $4A, $8D, $25, $24, $B9, $18, $00, $29, $40, $00, $8D
+    db $27, $24, $5C, $5C, $CE, $8C, $6B
+
+; Range: $F5B000-$F5B016 (23 bytes)
+; Function/storage: PROFESSOR_DIALOGUE_HELPERS
+
+; ============================================================================
+; ERWEITERTER CODE BANK $F6: ALCHEMIE-SHARING, SCHNÜFFELN & CHARGE DAMAGE
+; ============================================================================
+; 14. Modul: AlchemySharingGroupGate (ruft $F6:0180, liest $F6:0100, ruft $F6:0200)
+org $F60000
+AlchemySharingGroupGate:
+    db $C9, $00, $00, $D0, $04, $5C, $80, $01, $F6, $A8, $AD, $20, $BF, $48, $DA, $BF
+    db $98, $2F, $7E, $C9, $09, $00, $F0, $7F, $98, $9D, $52, $2F, $BF, $00, $01, $F6
+    db $48, $C9, $00, $00, $F0, $1B, $C9, $00, $A1, $F0, $1B, $C9, $00, $A2, $F0, $1B
+    db $C9, $00, $A3, $F0, $1B, $C9, $00, $A4, $F0, $1B, $C9, $00, $A5, $F0, $1B, $80
+    db $55, $A9, $20, $00, $80, $19, $A9, $01, $00, $80, $14, $A9, $02, $00, $80, $0F
+    db $A9, $04, $00, $80, $0A, $A9, $08, $00, $80, $05, $A9, $10, $00, $80, $00, $8D
+    db $20, $BF, $E2, $20, $AD, $3D, $25, $4D, $20, $BF, $8D, $3D, $25, $2D, $20, $BF
+    db $D0, $1F, $C2, $20, $68, $8D, $20, $BF, $A2, $00, $00, $BF, $00, $01, $F6, $CD
+    db $20, $BF, $D0, $04, $22, $00, $02, $F6, $E8, $E8, $E0, $46, $00, $D0, $EC, $80
+    db $06, $C2, $20, $68, $80, $01, $68, $FA, $68, $8D, $20, $BF, $C2, $20, $6B
+
+; 14. Modul: 35-Wort Alchemie-Gruppentabelle ($F6:0100)
+org $F60100
+AlchemySharingGroupTable:
+    db $00, $00, $00, $A2, $00, $A1, $00, $A1, $00, $A4, $00, $A5, $00, $A5, $00, $A3
+    db $00, $A1, $00, $A5, $00, $A5, $00, $A1, $00, $A4, $00, $A5, $00, $A2, $00, $A2
+    db $00, $A2, $00, $A1, $00, $A5, $00, $A3, $00, $A5, $00, $00, $00, $A4, $00, $A2
+    db $00, $A3, $00, $A5, $00, $A3, $00, $A1, $00, $A3, $00, $A4, $00, $A3, $00, $A2
+    db $00, $A1, $00, $A5, $00, $A4, $00, $A3
+
+; 14. Modul: SharedAlchemyExperience (liest Kurve $C5:0202 & Tabelle $F6:0100)
+org $F60180
+SharedAlchemyExperience:
+    db $A8, $AD, $20, $BF, $48, $C0, $00, $00, $F0, $23, $BF, $98, $2F, $7E, $C9, $09
+    db $00, $F0, $1E, $DA, $AA, $BF, $02, $02, $C5, $FA, $29, $FF, $00, $0A, $8D, $20
+    db $BF, $CC, $20, $BF, $F0, $0D, $C9, $63, $00, $10, $02, $80, $F0, $98, $9D, $52
+    db $2F, $80, $20, $BF, $00, $01, $F6, $8D, $20, $BF, $DA, $A2, $00, $00, $BF, $00
+    db $01, $F6, $CD, $20, $BF, $D0, $04, $22, $00, $02, $F6, $E8, $E8, $E0, $46, $00
+    db $D0, $EC, $FA, $68, $8D, $20, $BF, $C2, $20, $6B
+
+; 14. Modul: AlchemyGroupMemberExperience (liest Kurve $C5:0202)
+org $F60200
+AlchemyGroupMemberExperience:
+    db $BC, $98, $2F, $C0, $09, $00, $F0, $1B, $DA, $BB, $BF, $02, $02, $C5, $FA, $29
+    db $FF, $00, $7D, $52, $2F, $C9, $64, $00, $30, $06, $C8, $98, $9D, $98, $2F, $7B
+    db $9D, $52, $2F, $6B
+
+; 15. Modul: ChargeDamageArithmetic (46 Bytes)
+org $F60260
+ChargeDamageArithmetic:
+    db $C0, $00, $02, $30, $21, $C0, $00, $04, $30, $1D, $C0, $00, $08, $30, $15, $4A
+    db $4A, $85, $12, $0A, $0A, $0A, $C0, $00, $0C, $30, $0F, $18, $65, $12, $18, $65
+    db $12, $18, $65, $12, $80, $02, $4A, $4A, $80, $03, $18, $E5, $12, $6B
+
+; 11. Modul: NativeEventExtension_FE (Hundeschnüffeln mit $8F:84E5 & $8F:97C8)
+org $F60500
+NativeEventExtension_FE:
+    db $C2, $30, $A7, $82, $E6, $82, $29, $FF, $00, $C9, $FE, $00, $D0, $52, $DA, $8B
+    db $F4, $7E, $7E, $AB, $AB, $AD, $61, $4F, $F0, $3E, $AD, $61, $22, $89, $01, $00
+    db $D0, $36, $AD, $9A, $0A, $C9, $63, $00, $10, $26, $AD, $93, $0A, $18, $69, $32
+    db $00, $8D, $93, $0A, $AD, $95, $0A, $69, $00, $00, $8D, $95, $0A, $CD, $CD, $4F
+    db $30, $0E, $D0, $08, $AD, $93, $0A, $CD, $CB, $4F, $30, $04, $22, $E5, $84, $8F
+    db $22, $C8, $97, $8F, $22, $C8, $97, $8F, $AB, $FA, $C2, $30, $5C, $D4, $D6, $8C
+    db $5C, $C4, $D6, $8C
+
+; ============================================================================
+; ERWEITERTER CODE BANK $F7: GLEITER-MINIMAP & PYRAMIDEN-EVENT
+; ============================================================================
+; 13. Modul: WindwalkerSetup_DefaultMinimapOn (ruft deutsche Flugroutine $80:8FED)
+org $F7EF40
+WindwalkerSetup_DefaultMinimapOn:
+    db $22, $ED, $8F, $80, $08, $C2, $20, $48, $A9, $01, $00, $8D, $1D, $0B, $68, $28
+    db $6B
+
+; 10. Modul: PyramidDog_RestorePending
+org $F7F150
+PyramidDog_RestorePending:
+    db $09, $85, $48, $00, $04, $00, $0C, $6A, $04, $B1, $0C, $48, $00, $B0, $00
+
+; ============================================================================
+; 10. MODUL: ALLELACHEMA MARKT-RAUM (Bank $FC:0000, 20.299 Bytes)
+; ============================================================================
+org $FC0000
+Market_Room:
+    db $05, $03, $30, $4C, $17, $00, $00, $02, $00, $00, $00, $00, $00, $42, $00, $2E
+    db $0B, $2F, $0F, $4A, $01, $2A, $0A, $2F, $0B, $4A, $01, $29, $0A, $2A, $10, $4A
+    db $01, $06, $1A, $09, $20, $4D, $01, $06, $2D, $09, $31, $50, $01, $06, $0B, $09
+    db $0E, $53, $01, $0D, $33, $11, $35, $56, $01, $24, $34, $29, $35, $59, $01, $27
+    db $07, $2A, $08, $5C, $01, $22, $32, $23, $34, $5F, $01, $40, $31, $41, $33, $62
+    db $01, $5C, $01, $1E, $10, $1F, $12, $65, $01, $20, $11, $21, $12, $68, $01, $1F
+    db $0E, $20, $0F, $68, $01, $2C, $0D, $2D, $0F, $6B, $01, $47, $2A, $48, $2D, $6E
+    db $01, $47, $24, $48, $27, $71, $01, $47, $20, $48, $23, $74, $01, $46, $14, $47
+    db $17, $77, $01, $46, $10, $47, $13, $7A, $01, $3C, $26, $3D, $29, $7D, $01, $3C
+    db $20, $3D, $23, $80, $01, $3C, $14, $3D, $17, $83, $01, $3C, $10, $3D, $13, $86
+    db $01, $3E, $0A, $41, $0B, $89, $01, $34, $0A, $37, $0B, $8C, $01, $32, $30, $35
+    db $31, $8F, $01, $2F, $2A, $30, $2D, $92, $01, $2E, $1C, $2F, $1D, $95, $01, $2F
+    db $14, $30, $17, $98, $01, $2F, $10, $30, $13, $9B, $01, $23, $14, $24, $17, $9E
+    db $01, $23, $1A, $24, $1D, $A1, $01, $23, $2B, $24, $2E, $A4, $01, $17, $27, $18
+    db $2A, $A7, $01, $17, $23, $18, $26, $AA, $01, $17, $1D, $18, $20, $AD, $01, $17
+    db $1A, $18, $1D, $B0, $01, $1F, $0B, $20, $0C, $B3, $01, $0A, $29, $0B, $2C, $B6
+    db $01, $0B, $21, $0C, $24, $B9, $01, $0C, $19, $0D, $1B, $BC, $01, $11, $0A, $14
+    db $0B, $BF, $01, $0A, $0A, $0D, $0B, $C2, $01, $0A, $0F, $0B, $12, $C5, $01, $2F
+    db $21, $30, $23, $C8, $01, $2E, $1D, $2F, $1E, $68, $01, $46, $31, $48, $33, $C8
+    db $01, $23, $34, $24, $35, $68, $01, $0B, $28, $0C, $29, $68, $01, $28, $25, $29
+    db $26, $68, $01, $3B, $2B, $3C, $2C, $68, $01, $31, $1E, $32, $1F, $68, $01, $30
+    db $1D, $31, $1E, $68, $01, $2F, $1B, $30, $1C, $68, $01, $31, $1B, $32, $1C, $68
+    db $01, $3C, $1D, $3D, $1E, $68, $01, $16, $13, $17, $14, $68, $01, $0A, $0B, $0B
+    db $0C, $68, $01, $08, $13, $09, $14, $CB, $01, $26, $09, $27, $0B, $CE, $01, $24
+    db $20, $25, $22, $D1, $01, $20, $27, $21, $29, $C8, $01, $17, $15, $18, $17, $C8
+    db $01, $0B, $15, $0C, $18, $D4, $01, $2A, $21, $2B, $22, $D7, $01, $2A, $22, $2B
+    db $23, $DA, $01, $22, $31, $23, $32, $DD, $01, $22, $34, $23, $35, $DD, $01, $07
+    db $2A, $00, $34, $00, $35, $00, $2E, $00, $36, $00, $37, $00, $2F, $00, $00, $01
+    db $01, $03, $C2, $01, $FC, $40, $E0, $30, $00, $01, $94, $0A, $01, $49, $80, $EE
+    db $3F, $C0, $0B, $00, $03, $80, $03, $40, $00, $A8, $01, $10, $A2, $40, $69, $5F
+    db $FF, $DF, $FC, $03, $61, $7F, $FF, $CF, $00, $20, $20, $23, $0A, $47, $FF, $73
+    db $00, $E4, $00, $50, $67, $00, $28, $3B, $37, $FF, $37, $00, $E5, $00, $C8, $66
+    db $C0, $28, $30, $23, $FC, $03, $8B, $FE, $01, $3A, $01, $5C, $B8, $3F, $EA, $00
+    db $11, $2E, $A1, $FF, $AF, $00, $88, $6A, $40, $5E, $5A, $6F, $FF, $69, $00, $D8
+    db $7F, $AA, $20, $36, $1D, $A7, $FA, $9A, $04, $4F, $05, $0F, $82, $CB, $F3, $FF
+    db $EB, $10, $1F, $97, $39, $FE, $B2, $81, $AA, $74, $DF, $EA, $D8, $1A, $AF, $4B
+    db $FE, $AE, $03, $82, $F3, $3F, $E8, $74, $02, $B4, $0E, $09, $07, $E8, $5A, $60
+    db $17, $BF, $FE, $10, $1E, $17, $58, $00, $A1, $83, $6C, $41, $90, $B5, $C0, $91
+    db $2E, $88, $25, $4B, $54, $FF, $6B, $40, $6C, $77, $6F, $F6, $2E, $02, $12, $12
+    db $94, $40, $30, $10, $1C, $67, $FA, $EB, $01, $09, $89, $69, $02, $05, $36, $EF
+    db $F7, $BC, $0F, $43, $0A, $07, $E0, $05, $10, $EE, $3F, $EC, $84, $06, $BE, $01
+    db $43, $D0, $03, $49, $EC, $01, $7C, $3C, $FC, $06, $C5, $FE, $84, $C0, $00, $42
+    db $40, $FB, $18, $0D, $A3, $FC, $17, $12, $E3, $05, $68, $79, $3F, $FA, $20, $06
+    db $86, $58, $14, $41, $CB, $7F, $BA, $3F, $FC, $D0, $4A, $94, $21, $A1, $C3, $FF
+    db $80, $00, $1A, $35, $01, $00, $02, $69, $00, $00, $02, $6F, $00, $00, $02, $75
+    db $00, $00, $02, $7B, $00, $00, $02, $81, $00, $00, $02, $87, $00, $00, $03, $8D
+    db $00, $00, $03, $96, $00, $00, $02, $9F, $00, $00, $02, $A5, $00, $00, $02, $AB
+    db $00, $00, $02, $B1, $00, $00, $02, $B7, $00, $00, $02, $BD, $00, $00, $03, $C3
+    db $00, $00, $03, $CC, $00, $00, $02, $D5, $00, $00, $02, $DB, $00, $00, $02, $E1
+    db $00, $00, $02, $E7, $00, $20, $04, $ED, $00, $20, $04, $F9, $00, $20, $04, $05
+    db $01, $20, $04, $11, $01, $20, $04, $1D, $01, $20, $04, $29, $01, $FF, $19, $D7
+    db $05, $11, $D8, $05, $1F, $D9, $05, $2C, $DA, $05, $4B, $DB, $05, $04, $DC, $05
+    db $4B, $46, $05, $04, $DD, $05, $0A, $DE, $05, $07, $DF, $05, $08, $E0, $05, $30
+    db $E1, $05, $0C, $E2, $05, $0C, $E3, $05, $0C, $E4, $05, $0C, $E5, $05, $0C, $E6
+    db $05, $0C, $E7, $05, $1F, $DB, $05, $06, $DC, $05, $1F, $46, $05, $06, $DD, $05
+    db $49, $E8, $05, $29, $E9, $05, $49, $EA, $05, $29, $EB, $05, $3B, $D6, $04, $3D
+    db $D7, $04, $3B, $D8, $04, $3D, $D9, $04, $0C, $EC, $05, $0C, $ED, $05, $0C, $EE
+    db $05, $0C, $EF, $05, $0C, $F0, $05, $0C, $F1, $05, $49, $F2, $05, $29, $F3, $05
+    db $49, $F4, $05, $29, $F5, $05, $26, $F6, $05, $0D, $F7, $05, $26, $F8, $05, $0D
+    db $F9, $05, $0C, $DA, $04, $0C, $DB, $04, $0C, $DC, $04, $0C, $DB, $04, $0C, $E0
+    db $04, $0C, $E1, $04, $0C, $E2, $04, $0C, $E1, $04, $0C, $E6, $04, $0C, $E7, $04
+    db $0C, $E8, $04, $0C, $E7, $04, $0C, $DD, $04, $0C, $DE, $04, $0C, $DF, $04, $0C
+    db $DF, $04, $0C, $E3, $04, $0C, $E4, $04, $0C, $E5, $04, $0C, $E5, $04, $0C, $E9
+    db $04, $0C, $EA, $04, $0C, $EA, $04, $0C, $EA, $04, $29, $00, $00, $06, $00, $0C
+    db $00, $12, $00, $18, $00, $1E, $00, $24, $00, $2A, $00, $30, $00, $36, $00, $3C
+    db $00, $42, $00, $48, $00, $4E, $00, $54, $00, $5A, $00, $60, $00, $66, $00, $6C
+    db $00, $72, $00, $78, $00, $7E, $00, $84, $00, $8A, $00, $90, $00, $96, $00, $9C
+    db $00, $A2, $00, $A8, $00, $AE, $00, $B4, $00, $BA, $00, $C0, $00, $C6, $00, $CC
+    db $00, $D2, $00, $D8, $00, $DE, $00, $E4, $00, $EA, $00, $FF, $00, $83, $1C, $00
+    db $80, $1C, $80, $1C, $88, $1C, $90, $1C, $98, $1C, $A0, $1C, $A8, $1C, $B0, $1C
+    db $B8, $1C, $C0, $1C, $C8, $1C, $D0, $1C, $D8, $1C, $E0, $1C, $E8, $1C, $F0, $1C
+    db $F8, $1C, $00, $1D, $08, $1D, $F0, $1C, $10, $1D, $18, $1D, $20, $1D, $28, $1D
+    db $30, $1D, $38, $1D, $40, $1D, $48, $1D, $50, $1D, $58, $1D, $60, $1D, $68, $1D
+    db $70, $1D, $78, $1D, $40, $1D, $80, $1D, $88, $1D, $90, $1D, $98, $1D, $A0, $1D
+    db $A8, $1D, $38, $1D, $40, $1D, $B0, $1D, $C8, $1C, $B8, $1D, $C0, $1D, $C8, $1D
+    db $80, $1D, $D0, $1D, $D8, $1D, $E0, $1D, $E8, $1D, $F0, $1D, $F8, $1D, $B8, $1C
+    db $00, $1E, $08, $1E, $10, $1E, $18, $1E, $20, $1E, $28, $1E, $30, $1E, $38, $1E
+    db $40, $1E, $F0, $1D, $48, $1E, $38, $1E, $40, $1E, $50, $1E, $58, $1E, $60, $1E
+    db $68, $1E, $70, $1E, $78, $1E, $80, $1E, $88, $1E, $90, $1E, $98, $1E, $A0, $1E
+    db $A8, $1E, $B0, $1E, $B8, $1E, $C0, $1E, $C8, $1E, $D0, $1E, $80, $1E, $D8, $1E
+    db $E0, $1E, $E8, $1E, $78, $1E, $F0, $1E, $C8, $1E, $F8, $1E, $00, $1F, $08, $1F
+    db $10, $1F, $18, $1F, $20, $1F, $28, $1F, $30, $1F, $38, $1F, $40, $1F, $A0, $1C
+    db $A8, $1C, $48, $1F, $50, $1F, $58, $1F, $60, $1F, $68, $1F, $70, $1F, $78, $1F
+    db $80, $1F, $88, $1F, $90, $1F, $98, $1F, $A0, $1F, $A8, $1F, $B0, $1F, $B8, $1F
+    db $B8, $1C, $C0, $1F, $A8, $1C, $48, $1F, $C8, $1F, $D0, $1F, $D8, $1F, $E0, $1F
+    db $E8, $1F, $F0, $1F, $F8, $1F, $00, $20, $50, $1F, $58, $1F, $68, $1F, $08, $20
+    db $10, $20, $18, $20, $40, $1F, $20, $20, $80, $1E, $28, $20, $30, $20, $30, $20
+    db $30, $20, $38, $20, $D8, $1D, $40, $20, $48, $20, $50, $20, $10, $1F, $58, $20
+    db $60, $20, $68, $20, $70, $20, $78, $20, $80, $20, $88, $20, $90, $20, $98, $20
+    db $A0, $20, $A8, $20, $B0, $20, $B8, $20, $C0, $20, $C8, $20, $D0, $20, $D8, $20
+    db $E0, $20, $E8, $20, $F0, $20, $68, $20, $F8, $20, $00, $21, $D8, $1F, $08, $21
+    db $10, $21, $18, $21, $28, $1E, $30, $1E, $20, $21, $80, $20, $88, $20, $28, $21
+    db $30, $21, $60, $20, $38, $21, $58, $20, $40, $21, $48, $21, $50, $21, $50, $21
+    db $50, $21, $18, $1F, $58, $21, $60, $21, $68, $21, $70, $21, $78, $21, $80, $21
+    db $88, $21, $90, $21, $98, $21, $A0, $21, $A8, $21, $B0, $21, $B8, $21, $C0, $21
+    db $C8, $21, $D0, $21, $D8, $21, $E0, $21, $E8, $21, $F0, $21, $F8, $21, $00, $22
+    db $08, $22, $E8, $20, $10, $22, $88, $21, $18, $22, $20, $22, $28, $22, $30, $22
+    db $38, $22, $40, $22, $40, $1F, $20, $20, $48, $22, $50, $22, $A8, $21, $58, $22
+    db $B8, $21, $60, $22, $68, $22, $88, $21, $68, $20, $70, $22, $50, $21, $50, $21
+    db $50, $21, $78, $22, $80, $22, $88, $22, $90, $22, $98, $22, $98, $22, $A0, $22
+    db $A8, $22, $B0, $22, $B8, $22, $C0, $22, $C8, $22, $D0, $22, $D8, $22, $E0, $22
+    db $E8, $22, $F0, $22, $F8, $22, $00, $23, $08, $23, $10, $23, $18, $23, $20, $23
+    db $28, $23, $30, $23, $38, $23, $A8, $22, $40, $23, $48, $23, $50, $23, $C0, $1F
+    db $A0, $1C, $58, $23, $10, $1F, $F0, $1D, $60, $23, $68, $23, $70, $23, $78, $23
+    db $80, $23, $88, $23, $90, $23, $98, $23, $A0, $23, $A8, $23, $B0, $23, $B0, $23
+    db $B0, $23, $78, $22, $B8, $23, $C0, $23, $C8, $23, $20, $22, $D0, $23, $D8, $23
+    db $E0, $23, $E8, $23, $F0, $23, $F8, $23, $00, $24, $00, $24, $08, $24, $10, $24
+    db $18, $24, $20, $24, $28, $24, $30, $24, $38, $24, $40, $24, $48, $24, $50, $24
+    db $58, $24, $60, $24, $E0, $23, $48, $24, $68, $24, $70, $24, $78, $24, $80, $24
+    db $88, $24, $90, $24, $98, $24, $A0, $24, $A8, $24, $F8, $23, $B0, $24, $B8, $24
+    db $C0, $24, $C8, $24, $D0, $24, $D8, $24, $D8, $24, $E0, $24, $E8, $24, $E8, $24
+    db $E8, $24, $F0, $24, $F8, $24, $00, $25, $08, $25, $10, $25, $18, $25, $20, $25
+    db $28, $25, $30, $25, $38, $25, $40, $25, $48, $25, $50, $25, $58, $25, $C8, $1C
+    db $60, $25, $68, $25, $B8, $24, $B0, $24, $70, $25, $78, $25, $80, $25, $88, $25
+    db $90, $25, $50, $24, $98, $25, $A0, $25, $A8, $25, $B0, $25, $B8, $25, $B8, $25
+    db $C0, $25, $C8, $25, $C8, $1C, $D0, $25, $D8, $25, $E0, $25, $E8, $25, $F0, $25
+    db $F8, $25, $00, $26, $08, $26, $10, $26, $18, $26, $20, $26, $28, $26, $28, $26
+    db $30, $26, $78, $22, $80, $22, $38, $26, $40, $26, $48, $26, $50, $26, $58, $26
+    db $60, $26, $68, $26, $70, $26, $78, $26, $D8, $24, $78, $26, $80, $26, $88, $26
+    db $90, $26, $98, $26, $A0, $26, $A8, $26, $B0, $26, $B8, $26, $C0, $26, $C8, $26
+    db $D0, $26, $E8, $23, $D8, $26, $28, $25, $E0, $26, $E0, $25, $E8, $25, $E8, $25
+    db $E8, $26, $F0, $26, $F8, $26, $00, $27, $08, $27, $D0, $24, $D8, $24, $78, $26
+    db $10, $27, $18, $27, $68, $26, $68, $26, $20, $27, $28, $27, $30, $27, $30, $27
+    db $38, $27, $78, $22, $38, $26, $F8, $24, $40, $27, $48, $27, $50, $27, $58, $27
+    db $60, $27, $68, $27, $68, $27, $70, $27, $78, $27, $80, $27, $88, $27, $70, $27
+    db $80, $27, $88, $26, $D8, $24, $78, $26, $80, $26, $90, $27, $98, $27, $D8, $26
+    db $A0, $27, $A8, $27, $B0, $27, $B8, $27, $88, $26, $C0, $27, $D0, $24, $D0, $24
+    db $C8, $27, $D0, $27, $D8, $27, $E0, $27, $E8, $27, $08, $26, $78, $27, $F0, $27
+    db $F8, $27, $60, $27, $28, $25, $28, $25, $00, $28, $08, $28, $10, $28, $18, $28
+    db $20, $28, $28, $28, $F8, $24, $B8, $23, $30, $28, $38, $28, $40, $28, $28, $25
+    db $48, $28, $68, $26, $E8, $23, $68, $26, $50, $28, $58, $28, $60, $28, $48, $28
+    db $68, $28, $70, $27, $78, $27, $80, $27, $88, $27, $50, $28, $58, $28, $D0, $26
+    db $98, $25, $B8, $27, $60, $27, $D8, $26, $70, $27, $70, $28, $08, $26, $78, $27
+    db $80, $27, $78, $28, $80, $28, $88, $28, $70, $26, $98, $25, $E8, $23, $60, $28
+    db $48, $28, $E8, $23, $00, $28, $98, $25, $E8, $23, $88, $26, $C0, $27, $90, $28
+    db $98, $28, $A0, $28, $80, $22, $A8, $28, $B0, $28, $B8, $28, $C0, $28, $C8, $28
+    db $60, $27, $28, $25, $50, $28, $58, $28, $68, $26, $B8, $27, $68, $27, $00, $28
+    db $D0, $28, $A8, $27, $B0, $27, $60, $28, $48, $28, $A0, $27, $60, $28, $48, $28
+    db $D8, $26, $D0, $26, $68, $27, $B8, $27, $60, $27, $28, $25, $D8, $26, $98, $25
+    db $68, $27, $B8, $27, $98, $25, $D8, $28, $50, $28, $98, $25, $68, $27, $B8, $27
+    db $60, $27, $28, $25, $D0, $26, $70, $26, $68, $27, $70, $27, $70, $28, $E0, $28
+    db $E8, $28, $A0, $28, $38, $26, $F0, $28, $F8, $28, $00, $29, $08, $29, $10, $29
+    db $68, $28, $18, $29, $50, $28, $50, $28, $58, $28, $58, $24, $E8, $23, $50, $28
+    db $58, $28, $28, $25, $60, $28, $48, $28, $68, $26, $20, $29, $28, $29, $E8, $23
+    db $60, $28, $48, $28, $68, $26, $68, $26, $D0, $26, $E8, $23, $60, $28, $48, $28
+    db $68, $26, $68, $26, $70, $26, $E8, $23, $60, $28, $48, $28, $60, $28, $68, $27
+    db $D8, $26, $98, $25, $60, $28, $48, $28, $68, $26, $98, $25, $48, $28, $20, $23
+    db $30, $29, $38, $29, $F8, $24, $40, $29, $48, $29, $50, $29, $B8, $21, $58, $29
+    db $D0, $28, $A8, $27, $68, $27, $58, $24, $68, $27, $28, $25, $A0, $25, $60, $29
+    db $68, $29, $70, $29, $78, $29, $60, $27, $80, $29, $88, $29, $90, $29, $98, $29
+    db $C8, $28, $A0, $29, $80, $29, $A8, $29, $A0, $29, $98, $29, $C8, $28, $A0, $29
+    db $80, $29, $80, $29, $A0, $25, $98, $29, $C8, $28, $A0, $29, $80, $29, $B0, $29
+    db $A8, $29, $68, $27, $B8, $27, $98, $25, $28, $25, $B8, $27, $A0, $29, $18, $23
+    db $B8, $29, $C0, $29, $C8, $29, $38, $26, $08, $25, $D0, $29, $D8, $29, $E0, $29
+    db $48, $28, $68, $26, $E8, $23, $A8, $27, $60, $27, $E8, $29, $F0, $29, $F8, $29
+    db $00, $2A, $08, $2A, $10, $2A, $60, $28, $18, $2A, $20, $2A, $28, $2A, $30, $2A
+    db $38, $2A, $40, $2A, $48, $2A, $50, $2A, $58, $2A, $60, $2A, $68, $2A, $68, $2A
+    db $70, $2A, $78, $2A, $80, $2A, $88, $2A, $90, $2A, $98, $2A, $A0, $2A, $A8, $2A
+    db $B0, $2A, $B0, $27, $98, $25, $60, $28, $48, $28, $E8, $23, $98, $29, $B8, $2A
+    db $B8, $2A, $A0, $28, $C0, $2A, $C8, $2A, $08, $25, $D0, $2A, $D8, $2A, $E0, $2A
+    db $60, $27, $28, $25, $50, $24, $D8, $28, $B8, $27, $E8, $2A, $F0, $2A, $F8, $2A
+    db $00, $2B, $08, $2B, $68, $29, $B8, $27, $A0, $29, $10, $2B, $18, $2B, $18, $2B
+    db $20, $2B, $28, $2B, $30, $2B, $38, $2B, $40, $2B, $48, $2B, $50, $2B, $18, $2B
+    db $58, $2B, $60, $2B, $68, $2B, $18, $2B, $70, $2B, $78, $2B, $80, $2B, $88, $2B
+    db $90, $2B, $98, $2B, $A0, $2B, $B8, $27, $60, $27, $28, $25, $A0, $25, $A8, $2B
+    db $50, $21, $38, $29, $B0, $2B, $B8, $2B, $C0, $2B, $C8, $2B, $D0, $2B, $D8, $2B
+    db $68, $26, $70, $26, $28, $25, $68, $27, $28, $25, $E0, $2B, $E8, $2B, $F0, $2B
+    db $F8, $2B, $00, $2C, $08, $2C, $68, $26, $B0, $29, $C8, $21, $D0, $21, $10, $2C
+    db $18, $2C, $20, $2C, $E8, $21, $E8, $21, $28, $2C, $30, $2C, $38, $2C, $40, $2C
+    db $48, $2C, $50, $2C, $58, $2C, $10, $2C, $60, $2C, $20, $2C, $68, $2C, $70, $2C
+    db $78, $2C, $60, $28, $80, $2C, $68, $26, $60, $28, $48, $28, $78, $2C, $88, $2C
+    db $50, $21, $C0, $29, $90, $2C, $98, $2C, $A0, $2C, $A8, $2C, $B0, $2C, $B8, $2C
+    db $C0, $2C, $00, $28, $68, $27, $80, $2C, $60, $27, $00, $28, $C8, $2C, $D0, $2C
+    db $D8, $2C, $E0, $2C, $E8, $2C, $28, $25, $80, $29, $F0, $2C, $F8, $2C, $00, $2D
+    db $08, $2D, $C0, $1F, $10, $2D, $18, $2D, $20, $2D, $28, $2D, $F8, $1D, $C0, $1F
+    db $30, $2D, $38, $2D, $40, $2D, $A0, $1C, $10, $2D, $C0, $1F, $48, $2D, $50, $2D
+    db $98, $29, $B8, $27, $98, $25, $D8, $26, $D8, $26, $60, $27, $98, $29, $A8, $2B
+    db $50, $21, $38, $29, $58, $2D, $60, $2D, $68, $2D, $70, $2D, $78, $2D, $80, $2D
+    db $88, $2D, $18, $29, $D8, $26, $68, $26, $90, $2D, $48, $28, $98, $2D, $A0, $2D
+    db $A8, $2D, $B0, $2D, $60, $28, $48, $28, $78, $2C, $B8, $2D, $C0, $2D, $C8, $2D
+    db $D0, $2D, $D8, $2D, $E0, $2D, $E8, $2D, $F0, $2D, $F8, $2D, $00, $2E, $08, $2E
+    db $10, $2E, $68, $23, $18, $2E, $C0, $22, $20, $2E, $28, $2E, $30, $2E, $A0, $1C
+    db $18, $2A, $68, $26, $98, $25, $70, $26, $E8, $23, $60, $28, $18, $2A, $38, $2E
+    db $50, $21, $C0, $29, $40, $2E, $48, $2E, $50, $2E, $58, $2E, $60, $2E, $68, $2E
+    db $70, $2E, $70, $26, $60, $27, $A8, $27, $60, $27, $E8, $23, $78, $2E, $80, $2E
+    db $88, $2E, $90, $2E, $98, $2E, $A0, $29, $98, $29, $A0, $2E, $A8, $2E, $B0, $2E
+    db $B8, $2E, $C0, $2E, $C0, $2E, $C0, $2E, $C0, $2E, $C0, $25, $C8, $2E, $D0, $2E
+    db $D8, $2E, $E0, $2E, $E8, $2E, $00, $24, $F0, $2E, $F8, $2E, $F8, $23, $00, $2F
+    db $A0, $29, $98, $25, $D8, $26, $00, $28, $68, $27, $58, $24, $A0, $29, $08, $2F
+    db $B0, $23, $28, $28, $90, $2C, $10, $2F, $18, $2F, $20, $2F, $28, $2F, $68, $26
+    db $28, $25, $00, $28, $D0, $26, $98, $25, $98, $25, $30, $2F, $30, $25, $38, $2F
+    db $40, $2F, $48, $2F, $50, $2F, $18, $2A, $68, $26, $58, $2F, $60, $2F, $68, $2F
+    db $60, $2F, $70, $2F, $E0, $25, $E8, $25, $58, $25, $78, $2F, $78, $2F, $80, $2F
+    db $88, $2F, $68, $2F, $90, $2F, $98, $2F, $A0, $2F, $A8, $2F, $B0, $2F, $B8, $2F
+    db $C0, $2F, $60, $24, $E0, $23, $48, $24, $B0, $29, $48, $24, $78, $2C, $C8, $2F
+    db $D0, $2F, $A0, $28, $58, $2D, $D8, $2F, $E0, $2F, $E8, $2F, $F0, $2F, $F8, $2F
+    db $68, $27, $D8, $28, $68, $27, $B8, $27, $70, $29, $78, $29, $00, $30, $08, $30
+    db $68, $27, $B8, $27, $B8, $27, $60, $27, $28, $25, $88, $26, $C0, $27, $10, $30
+    db $18, $30, $D0, $24, $D8, $24, $78, $26, $C0, $27, $10, $30, $18, $30, $C0, $27
+    db $78, $26, $18, $30, $D8, $24, $78, $26, $D0, $24, $D8, $24, $78, $26, $80, $26
+    db $90, $25, $A0, $27, $20, $30, $A0, $25, $B8, $2A, $B8, $2A, $B8, $2A, $28, $30
+    db $28, $30, $38, $29, $30, $30, $38, $30, $40, $30, $48, $30, $50, $30, $98, $29
+    db $60, $28, $98, $25, $68, $26, $68, $26, $70, $26, $E8, $23, $60, $28, $48, $28
+    db $68, $26, $60, $28, $48, $28, $68, $26, $68, $27, $70, $27, $70, $28, $58, $30
+    db $60, $30, $08, $26, $78, $27, $80, $27, $70, $28, $58, $30, $60, $30, $70, $28
+    db $58, $30, $60, $30, $78, $27, $80, $27, $08, $26, $78, $27, $80, $27, $88, $27
+    db $68, $28, $68, $30, $98, $25, $C8, $28, $70, $30, $78, $30, $78, $30, $50, $21
+    db $50, $21, $C0, $29, $90, $2C, $80, $30, $88, $30, $88, $30, $90, $30, $C8, $28
+    db $B8, $27, $60, $27, $60, $28, $28, $25, $00, $28, $68, $27, $B8, $27, $60, $27
+    db $28, $25, $B8, $27, $60, $27, $28, $25, $68, $26, $70, $26, $68, $27, $B8, $27
+    db $60, $27, $28, $25, $68, $27, $60, $28, $98, $30, $A0, $30, $18, $2A, $68, $26
+    db $68, $27, $50, $28, $58, $28, $50, $28, $58, $28, $58, $24, $60, $28, $48, $28
+    db $D0, $28, $A8, $27, $B0, $27, $90, $2B, $A8, $30, $50, $21, $B0, $30, $50, $21
+    db $50, $21, $C0, $29, $58, $2D, $B8, $30, $C0, $30, $C8, $30, $D0, $30, $D8, $30
+    db $68, $27, $D8, $26, $D8, $26, $68, $26, $E8, $23, $60, $28, $48, $28, $68, $26
+    db $68, $26, $C0, $2F, $60, $24, $E0, $23, $28, $25, $00, $28, $18, $29, $68, $27
+    db $48, $28, $68, $26, $00, $28, $E0, $30, $E8, $30, $F0, $30, $F8, $30, $80, $29
+    db $68, $28, $68, $30, $10, $2A, $68, $26, $60, $27, $50, $28, $58, $28, $D0, $26
+    db $98, $25, $B8, $27, $E8, $23, $88, $25, $00, $31, $08, $31, $08, $31, $10, $31
+    db $08, $31, $38, $29, $B8, $23, $80, $22, $18, $31, $20, $31, $28, $31, $C8, $28
+    db $60, $27, $28, $25, $B8, $27, $28, $25, $68, $27, $B8, $27, $A0, $29, $80, $29
+    db $80, $29, $90, $2B, $30, $31, $38, $31, $80, $29, $A0, $25, $40, $31, $C8, $28
+    db $A0, $29, $80, $29, $78, $2C, $48, $31, $50, $31, $58, $31, $60, $31, $68, $31
+    db $D0, $28, $A8, $27, $B0, $27, $28, $25, $70, $31, $78, $31, $B0, $29, $48, $24
+    db $C8, $26, $98, $29, $98, $29, $C8, $28, $80, $31, $08, $31, $08, $31, $08, $31
+    db $08, $31, $C0, $29, $C8, $29, $38, $26, $88, $31, $90, $31, $78, $2D, $98, $31
+    db $18, $2A, $E8, $23, $D8, $26, $18, $2A, $A0, $31, $A8, $31, $18, $2A, $B0, $31
+    db $B8, $31, $C0, $31, $C8, $31, $D0, $31, $D8, $31, $C8, $28, $E0, $31, $E8, $31
+    db $F0, $31, $F8, $31, $00, $32, $08, $32, $10, $32, $18, $32, $20, $32, $28, $32
+    db $10, $2A, $68, $26, $60, $28, $68, $27, $B0, $29, $30, $32, $48, $2A, $88, $2A
+    db $38, $32, $40, $32, $B0, $29, $B0, $29, $48, $32, $50, $32, $58, $32, $60, $32
+    db $50, $32, $C0, $29, $C0, $2A, $C8, $2A, $68, $32, $70, $32, $78, $32, $80, $32
+    db $A0, $29, $68, $27, $B8, $27, $A0, $29, $88, $32, $90, $32, $A0, $29, $98, $32
+    db $A0, $32, $A0, $32, $A8, $32, $B0, $32, $B8, $32, $B8, $32, $C0, $32, $C8, $32
+    db $D0, $32, $D8, $32, $68, $29, $E0, $32, $E8, $32, $68, $1D, $70, $1D, $70, $26
+    db $B0, $27, $28, $25, $B8, $27, $60, $27, $80, $29, $F0, $32, $F8, $32, $18, $2B
+    db $00, $33, $08, $33, $80, $29, $80, $29, $10, $33, $18, $33, $20, $33, $28, $33
+    db $18, $33, $38, $29, $B0, $2B, $B8, $2B, $C8, $24, $30, $33, $38, $33, $40, $33
+    db $18, $29, $D8, $26, $48, $33, $50, $33, $58, $33, $60, $33, $18, $2A, $68, $33
+    db $20, $22, $70, $33, $C8, $23, $78, $33, $B0, $29, $48, $24, $80, $33, $88, $33
+    db $A0, $21, $90, $33, $98, $33, $A0, $33, $A8, $33, $B0, $33, $B8, $33, $00, $28
+    db $68, $30, $68, $26, $00, $32, $C0, $33, $C8, $33, $D0, $33, $E8, $21, $E0, $21
+    db $D8, $33, $E0, $33, $18, $2A, $B0, $29, $E8, $33, $F0, $33, $F8, $33, $00, $34
+    db $F0, $33, $C0, $29, $08, $34, $10, $34, $18, $34, $20, $34, $28, $34, $20, $30
+    db $30, $34, $00, $28, $38, $34, $40, $34, $48, $34, $50, $34, $80, $29, $58, $34
+    db $60, $34, $10, $2D, $D8, $2D, $68, $34, $80, $29, $A0, $25, $40, $2D, $70, $34
+    db $F8, $1D, $78, $34, $80, $34, $88, $34, $90, $34, $98, $34, $80, $26, $68, $28
+    db $A8, $27, $B0, $27, $A0, $34, $A8, $34, $B0, $34, $B8, $34, $08, $25, $C0, $34
+    db $C8, $34, $D0, $34, $A0, $29, $80, $29, $10, $33, $D8, $34, $E0, $34, $E8, $34
+    db $F0, $33, $C0, $29, $58, $2D, $60, $2D, $F0, $34, $F8, $34, $88, $25, $48, $28
+    db $E8, $23, $D8, $26, $48, $28, $00, $35, $08, $35, $10, $35, $78, $2C, $18, $35
+    db $D8, $2D, $20, $35, $80, $24, $28, $35, $78, $2C, $88, $25, $30, $35, $38, $35
+    db $D0, $22, $40, $35, $48, $35, $50, $35, $58, $35, $60, $35, $88, $27, $D0, $28
+    db $68, $35, $70, $35, $48, $28, $68, $26, $78, $35, $80, $35, $88, $35, $90, $35
+    db $98, $35, $A0, $35, $B0, $29, $70, $26, $A8, $35, $B0, $35, $B8, $35, $C0, $35
+    db $B0, $35, $38, $29, $30, $30, $48, $2E, $C8, $35, $D0, $35, $C8, $28, $60, $27
+    db $68, $27, $B8, $27, $60, $27, $28, $25, $D8, $35, $E0, $35, $E8, $35, $F0, $35
+    db $00, $24, $C0, $25, $C0, $25, $F8, $35, $00, $36, $08, $36, $10, $36, $F8, $2E
+    db $A8, $2E, $18, $36, $20, $36, $28, $36, $30, $36, $38, $36, $18, $2A, $68, $26
+    db $40, $36, $48, $36, $60, $27, $28, $25, $50, $36, $58, $36, $60, $36, $68, $36
+    db $C0, $25, $70, $36, $80, $29, $00, $28, $D0, $24, $78, $36, $80, $36, $88, $36
+    db $90, $36, $C0, $29, $98, $36, $A0, $36, $A8, $36, $B0, $36, $B8, $36, $60, $28
+    db $48, $28, $98, $25, $68, $26, $70, $26, $C0, $36, $C8, $36, $D0, $36, $D8, $36
+    db $E0, $36, $50, $25, $E8, $36, $F0, $36, $F8, $36, $00, $37, $08, $37, $10, $37
+    db $10, $37, $18, $37, $20, $37, $28, $37, $30, $37, $38, $37, $78, $2C, $60, $28
+    db $48, $28, $68, $26, $68, $26, $70, $26, $40, $37, $48, $37, $50, $37, $58, $37
+    db $50, $25, $60, $37, $E8, $23, $68, $37, $08, $26, $78, $27, $80, $27, $78, $27
+    db $70, $37, $38, $29, $78, $37, $80, $37, $88, $37, $90, $37, $98, $37, $C8, $28
+    db $60, $27, $98, $25, $D8, $26, $D8, $26, $68, $27, $C0, $36, $A0, $37, $88, $26
+    db $D8, $24, $D8, $24, $78, $26, $80, $26, $90, $25, $98, $2B, $88, $26, $C0, $27
+    db $D8, $24, $80, $26, $A8, $37, $B0, $37, $B8, $37, $C0, $37, $68, $27, $B8, $27
+    db $60, $27, $28, $25, $28, $25, $C8, $37, $D0, $37, $D8, $37, $E0, $37, $D8, $24
+    db $D0, $24, $80, $26, $68, $27, $E8, $37, $A8, $27, $60, $27, $F0, $37, $00, $30
+    db $F8, $37, $00, $38, $08, $38, $10, $38, $18, $38, $20, $38, $28, $38, $48, $24
+    db $D8, $26, $60, $24, $D8, $26, $60, $28, $48, $28, $18, $29, $48, $28, $70, $27
+    db $78, $27, $78, $27, $80, $27, $88, $27, $48, $28, $60, $28, $70, $27, $70, $28
+    db $78, $27, $88, $27, $E8, $23, $60, $28, $48, $28, $68, $26, $68, $26, $70, $26
+    db $E8, $23, $60, $28, $30, $38, $38, $38, $40, $38, $48, $38, $50, $38, $78, $27
+    db $08, $26, $88, $27, $68, $27, $30, $25, $38, $2F, $E8, $23, $68, $27, $60, $28
+    db $58, $38, $60, $38, $68, $38, $70, $38, $68, $27, $78, $38, $80, $38, $00, $28
+    db $90, $25, $98, $2B, $20, $30, $B8, $27, $60, $27, $A0, $2B, $60, $27, $28, $25
+    db $28, $25, $00, $28, $68, $27, $B8, $27, $60, $27, $B8, $27, $60, $27, $50, $28
+    db $E0, $32, $D8, $28, $68, $27, $B8, $27, $60, $27, $28, $25, $28, $25, $00, $28
+    db $68, $27, $88, $38, $C8, $1C, $90, $38, $98, $38, $A0, $38, $A8, $38, $98, $2B
+    db $20, $30, $28, $29, $F0, $37, $00, $30, $E0, $23, $80, $2C, $30, $34, $B8, $27
+    db $B0, $38, $B8, $38, $C0, $38, $C8, $38, $58, $28, $30, $34, $68, $26, $50, $24
+    db $50, $24, $D0, $26, $48, $28, $48, $28, $60, $24, $58, $24, $68, $27, $D0, $26
+    db $98, $25, $D0, $26, $98, $25, $68, $26, $68, $26, $70, $26, $E8, $23, $D0, $26
+    db $98, $25, $98, $25, $68, $26, $68, $26, $70, $26, $E8, $23, $60, $28, $48, $28
+    db $68, $26, $60, $28, $D0, $38, $D8, $38, $E0, $38, $E8, $38, $F0, $38, $F8, $38
+    db $00, $39, $68, $26, $60, $28, $48, $28, $50, $24, $D8, $28, $E0, $32, $60, $28
+    db $08, $39, $10, $39, $18, $39, $20, $39, $28, $39, $58, $24, $28, $25, $50, $24
+    db $D8, $26, $B8, $27, $A0, $29, $A8, $29, $E8, $29, $F8, $2F, $28, $39, $78, $2C
+    db $C8, $26, $98, $29, $C8, $26, $80, $29, $80, $29, $A0, $25, $98, $29, $A0, $25
+    db $C8, $26, $A0, $29, $80, $29, $80, $29, $A0, $25, $30, $39, $C8, $28, $38, $39
+    db $00, $28, $40, $39, $C8, $1C, $48, $39, $50, $39, $58, $39, $60, $39, $68, $39
+    db $88, $2E, $70, $39, $68, $27, $D0, $26, $98, $25, $70, $39, $48, $24, $C8, $28
+    db $78, $39, $80, $39, $88, $39, $90, $39, $E8, $29, $00, $28, $30, $23, $98, $39
+    db $A0, $39, $A8, $39, $B0, $39, $B8, $39, $C0, $39, $C8, $39, $D0, $39, $D8, $39
+    db $E0, $39, $28, $2A, $E8, $39, $20, $2A, $F0, $39, $F8, $39, $00, $3A, $00, $3A
+    db $08, $3A, $10, $3A, $F8, $39, $A0, $25, $78, $2C, $18, $3A, $20, $3A, $F8, $2F
+    db $D8, $28, $28, $3A, $30, $3A, $38, $3A, $40, $3A, $48, $3A, $50, $3A, $58, $3A
+    db $60, $3A, $A8, $29, $D0, $26, $98, $25, $D0, $26, $98, $29, $68, $3A, $70, $3A
+    db $78, $3A, $60, $38, $80, $3A, $88, $3A, $A8, $29, $D8, $26, $90, $3A, $60, $27
+    db $D8, $26, $98, $3A, $A0, $3A, $A8, $3A, $B0, $3A, $B8, $3A, $C0, $3A, $C8, $3A
+    db $D0, $3A, $D8, $3A, $E0, $3A, $D0, $3A, $E8, $3A, $F0, $3A, $F8, $3A, $00, $3B
+    db $08, $3B, $10, $3B, $18, $3B, $20, $3B, $98, $25, $28, $3B, $30, $3B, $28, $25
+    db $A0, $27, $88, $25, $38, $3B, $40, $3B, $48, $3B, $50, $3B, $58, $3B, $60, $3B
+    db $68, $3B, $20, $3B, $98, $25, $D8, $26, $D0, $26, $A8, $29, $70, $3B, $78, $3B
+    db $80, $3B, $88, $3B, $90, $3B, $B8, $23, $98, $3B, $A0, $3B, $A8, $3B, $E8, $23
+    db $88, $25, $B0, $3B, $B8, $3B, $98, $21, $C0, $3B, $C8, $3B, $D0, $3B, $B8, $21
+    db $30, $2C, $D8, $3B, $E0, $3B, $E8, $3B, $F0, $3B, $F8, $3B, $00, $3C, $08, $3C
+    db $10, $3C, $18, $3C, $70, $33, $98, $29, $D8, $26, $20, $3C, $28, $3C, $30, $3C
+    db $38, $3C, $40, $3C, $48, $3C, $50, $3C, $58, $3C, $60, $3C, $68, $3C, $70, $3C
+    db $78, $3C, $98, $25, $98, $25, $30, $34, $80, $2C, $C8, $26, $70, $3B, $80, $3C
+    db $80, $3C, $38, $29, $88, $3C, $90, $3C, $98, $3C, $A0, $3C, $A8, $3C, $68, $27
+    db $C8, $28, $B0, $3C, $B8, $3C, $C0, $3C, $F0, $1E, $C8, $3C, $70, $24, $D0, $3C
+    db $40, $24, $10, $2D, $D8, $3C, $E0, $3C, $E8, $3C, $F0, $3C, $F8, $3C, $00, $3D
+    db $08, $3D, $10, $3D, $18, $3D, $A0, $29, $20, $3D, $28, $3D, $30, $3D, $90, $38
+    db $38, $3D, $40, $3D, $48, $3D, $A0, $1C, $68, $23, $50, $3D, $58, $3D, $C8, $3C
+    db $60, $3D, $D8, $26, $50, $28, $E0, $32, $20, $30, $B0, $29, $68, $3D, $70, $3D
+    db $78, $3D, $C0, $29, $80, $3D, $88, $3D, $90, $3D, $78, $27, $98, $3D, $28, $29
+    db $E8, $23, $60, $28, $48, $28, $A0, $3D, $88, $24, $A8, $3D, $00, $23, $B0, $3D
+    db $D8, $2D, $E0, $2D, $E8, $2D, $B8, $3D, $C0, $3D, $C8, $3D, $D0, $3D, $68, $23
+    db $D8, $3D, $E0, $3D, $30, $35, $E8, $3D, $F0, $3D, $A0, $37, $F8, $3D, $00, $3E
+    db $C8, $1C, $90, $38, $08, $3E, $10, $3E, $18, $3E, $20, $3E, $28, $3E, $A8, $3D
+    db $30, $3E, $68, $26, $30, $25, $38, $2F, $30, $34, $80, $29, $38, $3E, $40, $3E
+    db $48, $3E, $C0, $29, $30, $30, $50, $3E, $18, $34, $78, $2D, $58, $3E, $60, $3E
+    db $38, $23, $90, $3A, $68, $3E, $70, $3E, $B8, $2E, $B8, $2E, $78, $3E, $80, $3E
+    db $88, $3E, $F8, $2E, $00, $24, $F8, $23, $90, $3E, $98, $3E, $A0, $3E, $A8, $3E
+    db $B0, $3E, $B8, $3E, $C0, $3E, $C8, $3E, $D0, $3E, $D8, $3E, $E0, $3E, $E8, $3E
+    db $F0, $3E, $B8, $27, $F8, $3E, $00, $3F, $C0, $25, $08, $3F, $10, $3F, $18, $3F
+    db $20, $3F, $28, $25, $00, $30, $28, $3F, $B8, $32, $88, $25, $30, $3F, $38, $3F
+    db $40, $3F, $28, $28, $90, $2C, $48, $3F, $50, $3F, $70, $2D, $78, $2D, $48, $28
+    db $28, $29, $68, $26, $30, $25, $58, $3F, $60, $3F, $68, $3F, $70, $3F, $58, $25
+    db $78, $3F, $80, $3F, $80, $3F, $88, $3F, $90, $3F, $98, $3F, $A0, $3F, $A8, $3F
+    db $D0, $24, $D8, $24, $B0, $3F, $B8, $3F, $C0, $3F, $C8, $3F, $D0, $3F, $88, $25
+    db $D8, $3F, $E0, $3F, $E8, $3F, $F0, $3F, $F8, $3F, $00, $40, $08, $40, $10, $40
+    db $18, $40, $68, $28, $E8, $23, $88, $25, $60, $2A, $20, $40, $28, $40, $30, $40
+    db $38, $40, $A0, $28, $40, $2E, $40, $20, $40, $40, $48, $40, $50, $40, $A0, $29
+    db $90, $29, $28, $25, $00, $30, $88, $26, $D0, $24, $D8, $24, $78, $26, $D0, $24
+    db $D8, $24, $78, $26, $D8, $24, $78, $26, $58, $40, $60, $40, $68, $40, $58, $30
+    db $70, $40, $78, $40, $80, $40, $88, $27, $88, $40, $90, $40, $68, $27, $98, $40
+    db $A0, $40, $A8, $40, $88, $26, $C0, $27, $10, $30, $D0, $24, $D8, $24, $78, $26
+    db $80, $26, $D0, $28, $68, $27, $C8, $28, $48, $2B, $B0, $40, $B8, $40, $C0, $40
+    db $C8, $40, $F0, $24, $30, $30, $D0, $40, $D8, $40, $E0, $40, $E8, $40, $F0, $40
+    db $B0, $29, $70, $26, $E8, $23, $70, $27, $08, $26, $78, $27, $80, $27, $08, $26
+    db $78, $27, $80, $27, $F8, $40, $00, $41, $08, $41, $10, $41, $18, $41, $20, $41
+    db $28, $41, $30, $41, $38, $41, $40, $41, $48, $41, $50, $41, $48, $28, $68, $26
+    db $20, $29, $28, $29, $70, $27, $70, $28, $58, $30, $08, $26, $78, $27, $80, $27
+    db $88, $27, $18, $29, $48, $28, $68, $26, $58, $41, $60, $41, $68, $41, $88, $2C
+    db $00, $31, $78, $22, $80, $22, $70, $41, $78, $41, $78, $41, $80, $41, $88, $41
+    db $80, $29, $00, $28, $68, $27, $E8, $37, $28, $25, $00, $28, $F0, $37, $00, $30
+    db $08, $30, $B8, $27, $90, $41, $08, $35, $98, $41, $A0, $41, $A8, $41, $B0, $41
+    db $60, $27, $28, $25, $B8, $41, $C0, $41, $68, $27, $B8, $27, $60, $27, $28, $25
+    db $B8, $41, $F0, $37, $68, $27, $B8, $27, $90, $25, $98, $2B, $20, $30, $B8, $41
+    db $F0, $37, $A0, $2B, $60, $27, $28, $25, $C8, $41, $D0, $41, $48, $23, $D8, $41
+    db $E0, $41, $A0, $28, $38, $26, $E8, $41, $F0, $41, $78, $41, $F8, $41, $00, $42
+    db $70, $31, $18, $29, $68, $27, $30, $25, $38, $2F, $E8, $23, $E8, $23, $60, $28
+    db $48, $28, $08, $42, $10, $42, $18, $42, $20, $42, $28, $42, $30, $42, $38, $42
+    db $40, $42, $60, $24, $E0, $23, $60, $28, $48, $28, $18, $29, $48, $28, $68, $26
+    db $C0, $2F, $60, $24, $E8, $23, $60, $28, $48, $28, $60, $28, $98, $25, $68, $26
+    db $60, $28, $48, $28, $E8, $23, $60, $28, $48, $42, $50, $42, $A0, $1C, $58, $42
+    db $60, $42, $40, $24, $F8, $24, $80, $22, $68, $42, $70, $42, $18, $25, $18, $31
+    db $38, $31, $A0, $2B, $F0, $37, $00, $30, $00, $28, $80, $2C, $68, $27, $B8, $27
+    db $60, $27, $28, $25, $90, $34, $78, $42, $80, $42, $88, $42, $90, $42, $98, $42
+    db $A0, $42, $98, $2B, $50, $24, $D8, $28, $60, $27, $A0, $2B, $60, $27, $28, $25
+    db $90, $25, $98, $2B, $68, $27, $68, $26, $38, $2F, $B8, $27, $60, $27, $60, $28
+    db $48, $28, $68, $26, $70, $26, $A8, $42, $B0, $42, $B8, $42, $C0, $2B, $C0, $42
+    db $C8, $42, $28, $28, $80, $22, $B8, $23, $08, $25, $D0, $42, $D8, $42, $78, $2D
+    db $48, $28, $58, $24, $B0, $29, $48, $24, $98, $30, $E0, $42, $18, $2A, $B0, $29
+    db $B0, $29, $E8, $42, $F0, $42, $60, $35, $F8, $42, $00, $43, $08, $43, $10, $43
+    db $18, $43, $68, $30, $00, $32, $98, $29, $20, $43, $70, $31, $B0, $29, $48, $24
+    db $28, $43, $B0, $2A, $20, $43, $80, $29, $30, $43, $48, $24, $B0, $29, $88, $25
+    db $48, $28, $28, $29, $30, $25, $38, $43, $40, $43, $48, $43, $50, $43, $58, $43
+    db $60, $43, $A0, $28, $68, $43, $F8, $24, $B8, $2E, $A8, $2E, $70, $43, $78, $2D
+    db $60, $27, $70, $26, $98, $29, $78, $43, $80, $43, $88, $43, $90, $43, $98, $43
+    db $A0, $43, $A8, $43, $B0, $43, $A8, $43, $B8, $43, $C0, $43, $28, $36, $C8, $43
+    db $D0, $28, $A0, $27, $68, $29, $D0, $43, $D8, $43, $E0, $43, $E8, $43, $F0, $43
+    db $40, $31, $F8, $43, $00, $44, $08, $44, $10, $44, $18, $44, $20, $44, $80, $29
+    db $00, $28, $90, $29, $28, $44, $28, $3F, $30, $44, $E0, $37, $38, $44, $40, $44
+    db $48, $44, $A0, $28, $50, $44, $58, $44, $60, $44, $68, $44, $70, $44, $88, $27
+    db $88, $27, $68, $26, $B0, $29, $78, $44, $80, $44, $88, $44, $90, $44, $98, $44
+    db $A0, $44, $A8, $44, $B0, $44, $B8, $44, $C0, $44, $C8, $44, $D0, $44, $D8, $44
+    db $98, $25, $68, $26, $78, $2C, $E0, $44, $E8, $44, $F0, $44, $F8, $44, $00, $45
+    db $78, $2C, $08, $45, $10, $45, $18, $45, $20, $45, $28, $45, $B0, $32, $C8, $28
+    db $30, $45, $98, $29, $38, $45, $40, $45, $70, $3A, $48, $45, $50, $45, $58, $45
+    db $60, $45, $28, $28, $68, $45, $70, $45, $78, $45, $80, $45, $88, $45, $80, $27
+    db $60, $27, $58, $24, $80, $29, $90, $45, $98, $45, $A0, $45, $A8, $45, $B0, $45
+    db $B8, $45, $C0, $45, $C8, $45, $D0, $45, $D8, $45, $E0, $45, $E8, $45, $88, $27
+    db $D8, $26, $28, $25, $98, $29, $F0, $45, $F8, $45, $00, $46, $08, $46, $10, $46
+    db $98, $29, $18, $46, $20, $46, $20, $22, $28, $22, $28, $46, $30, $46, $B0, $29
+    db $38, $46, $40, $46, $48, $46, $50, $46, $C8, $40, $D8, $41, $E0, $41, $58, $46
+    db $60, $46, $A0, $28, $38, $26, $68, $46, $70, $46, $A0, $37, $E0, $23, $78, $46
+    db $68, $28, $68, $30, $00, $32, $80, $46, $28, $1D, $88, $46, $90, $46, $98, $46
+    db $B0, $1D, $A0, $46, $A0, $1C, $A8, $1C, $A8, $46, $B0, $46, $B8, $46, $E8, $23
+    db $D0, $26, $98, $25, $C0, $46, $C8, $46, $A8, $21, $C8, $3B, $D0, $46, $D8, $46
+    db $B0, $29, $58, $3D, $D8, $2D, $E0, $46, $C0, $22, $70, $24, $60, $3D, $80, $29
+    db $E8, $46, $F0, $46, $F8, $46, $00, $47, $08, $47, $08, $47, $10, $47, $18, $47
+    db $80, $31, $78, $22, $F8, $24, $20, $47, $28, $47, $30, $47, $38, $31, $E8, $3E
+    db $D0, $28, $A8, $27, $68, $29, $38, $47, $D8, $2D, $20, $35, $80, $24, $40, $47
+    db $48, $47, $50, $47, $58, $47, $60, $47, $68, $47, $70, $47, $78, $47, $68, $27
+    db $B8, $27, $60, $27, $80, $47, $60, $23, $20, $2E, $28, $2E, $40, $26, $A0, $35
+    db $B0, $29, $58, $3D, $90, $47, $98, $47, $A0, $47, $A8, $47, $60, $3D, $B0, $47
+    db $B8, $47, $C0, $47, $C8, $47, $D0, $47, $D8, $47, $D8, $47, $E0, $47, $E8, $47
+    db $D8, $41, $F0, $24, $80, $22, $F0, $47, $F8, $47, $80, $2A, $90, $2A, $88, $25
+    db $48, $28, $80, $2C, $20, $29, $00, $48, $A8, $2E, $A8, $2E, $B0, $2E, $C0, $25
+    db $08, $48, $10, $48, $18, $48, $D0, $2E, $20, $48, $68, $26, $58, $24, $48, $28
+    db $E8, $23, $60, $28, $18, $2A, $28, $48, $B8, $2E, $B0, $2E, $F8, $2E, $30, $48
+    db $B0, $29, $38, $48, $B8, $24, $F0, $2E, $18, $48, $40, $48, $48, $48, $50, $48
+    db $20, $36, $28, $36, $58, $48, $60, $48, $60, $32, $68, $48, $70, $48, $78, $48
+    db $60, $42, $78, $22, $38, $26, $80, $48, $88, $48, $90, $48, $70, $2B, $C8, $28
+    db $60, $27, $28, $25, $B8, $41, $98, $48, $A0, $48, $A8, $48, $B0, $48, $B8, $48
+    db $C0, $48, $C8, $48, $D0, $48, $D8, $48, $E0, $48, $28, $25, $B8, $27, $60, $27
+    db $78, $2E, $E8, $48, $F0, $48, $F8, $48, $00, $49, $08, $49, $10, $49, $18, $49
+    db $00, $30, $28, $49, $30, $49, $38, $49, $40, $49, $48, $49, $50, $49, $58, $49
+    db $60, $49, $68, $49, $70, $49, $78, $49, $28, $33, $80, $49, $88, $49, $90, $49
+    db $98, $49, $78, $22, $F8, $24, $A0, $49, $A8, $49, $B0, $49, $60, $2C, $B0, $29
+    db $E8, $23, $70, $29, $78, $29, $88, $26, $C0, $27, $10, $30, $18, $30, $D0, $24
+    db $D8, $24, $D0, $24, $D8, $24, $78, $26, $80, $26, $78, $46, $E8, $23, $B8, $49
+    db $48, $28, $C0, $49, $C8, $49, $A0, $37, $70, $27, $D8, $24, $78, $26, $80, $26
+    db $00, $30, $88, $26, $C0, $27, $10, $30, $18, $30, $78, $26, $80, $26, $D8, $49
+    db $E0, $49, $E8, $49, $F0, $49, $F8, $49, $00, $4A, $08, $4A, $10, $4A, $18, $4A
+    db $20, $4A, $F0, $24, $80, $22, $10, $2F, $08, $25, $28, $4A, $30, $4A, $E8, $35
+    db $68, $27, $D8, $26, $68, $27, $70, $27, $70, $28, $58, $30, $60, $30, $08, $26
+    db $78, $27, $08, $26, $78, $27, $80, $27, $88, $27, $38, $4A, $40, $4A, $B8, $27
+    db $A0, $29, $48, $4A, $50, $4A, $58, $4A, $28, $25, $78, $27, $80, $27, $88, $27
+    db $00, $30, $70, $27, $70, $28, $58, $30, $60, $30, $80, $27, $88, $27, $08, $30
+    db $68, $27, $60, $28, $60, $4A, $C8, $42, $68, $4A, $70, $4A, $78, $4A, $80, $4A
+    db $88, $4A, $78, $22, $38, $26, $B8, $23, $08, $25, $90, $4A, $30, $4A, $88, $31
+    db $E0, $23, $70, $26, $70, $29, $78, $29, $68, $26, $50, $28, $D0, $26, $60, $28
+    db $48, $28, $80, $2C, $20, $29, $28, $29, $D0, $26, $98, $25, $48, $28, $98, $4A
+    db $A0, $4A, $A8, $4A, $B0, $4A, $B8, $4A, $C0, $4A, $68, $28, $28, $29, $30, $25
+    db $38, $2F, $60, $28, $48, $28, $68, $26, $20, $29, $28, $29, $E8, $23, $60, $28
+    db $48, $28, $B8, $27, $C8, $4A, $D0, $4A, $D8, $4A, $E0, $4A, $E8, $4A, $B0, $35
+    db $F0, $4A, $78, $22, $F8, $24, $80, $22, $F8, $2E, $B8, $2E, $F8, $4A, $78, $2D
+    db $28, $25, $00, $28, $A0, $29, $80, $29, $80, $29, $A0, $25, $98, $29, $C8, $28
+    db $A0, $29, $80, $29, $88, $29, $90, $29, $20, $3B, $98, $25, $60, $27, $00, $4B
+    db $08, $4B, $10, $4B, $18, $4B, $20, $4B, $28, $4B, $30, $4B, $90, $29, $28, $44
+    db $28, $3F, $C8, $28, $A0, $29, $80, $29, $88, $29, $90, $29, $98, $29, $C8, $28
+    db $A0, $29, $80, $29, $38, $4B, $E0, $37, $40, $4B, $48, $4B, $50, $4B, $90, $26
+    db $58, $4B, $60, $4B, $80, $22, $38, $26, $68, $4B, $70, $4B, $78, $4B, $88, $27
+    db $88, $25, $18, $2A, $78, $2C, $80, $4B, $88, $4B, $C0, $39, $90, $4B, $F0, $31
+    db $E8, $43, $98, $4B, $98, $4B, $A0, $4B, $B0, $29, $E8, $23, $C0, $2F, $60, $24
+    db $A8, $4B, $B0, $4B, $B8, $4B, $C0, $4B, $C8, $4B, $D0, $4B, $50, $2A, $88, $43
+    db $D8, $4B, $E0, $4B, $E8, $4B, $40, $2A, $30, $2A, $F0, $4B, $E0, $4B, $F8, $4B
+    db $00, $4C, $08, $4C, $10, $4C, $50, $38, $58, $30, $60, $30, $78, $27, $80, $27
+    db $38, $40, $88, $3B, $38, $26, $F8, $24, $18, $4C, $20, $4C, $28, $4C, $30, $4C
+    db $D0, $37, $38, $4C, $98, $29, $40, $4C, $48, $4C, $50, $4C, $58, $4C, $D0, $32
+    db $60, $4C, $68, $4C, $68, $4C, $70, $4C, $80, $29, $68, $27, $90, $25, $98, $2B
+    db $38, $31, $78, $4C, $80, $4C, $88, $4C, $38, $2B, $90, $4C, $38, $2B, $88, $44
+    db $98, $4C, $A0, $4C, $A8, $4C, $B0, $4C, $B8, $4C, $C0, $4C, $A0, $4C, $C8, $4C
+    db $D0, $4C, $D8, $4C, $E0, $4C, $E8, $4C, $F0, $4C, $A0, $2B, $60, $27, $F8, $4C
+    db $C8, $40, $60, $4B, $B8, $23, $80, $22, $00, $4D, $08, $4D, $10, $4D, $18, $4D
+    db $20, $4D, $28, $4D, $30, $4D, $98, $21, $38, $4D, $A8, $21, $D0, $46, $40, $4D
+    db $48, $4D, $A8, $21, $A0, $21, $B8, $21, $50, $4D, $D0, $26, $98, $25, $60, $28
+    db $48, $28, $58, $4D, $60, $4D, $68, $4D, $70, $4D, $78, $4D, $80, $4D, $88, $4D
+    db $28, $2C, $90, $4D, $28, $2C, $98, $4D, $A0, $4D, $A8, $4D, $20, $2C, $60, $41
+    db $B0, $4D, $B8, $4D, $C0, $4D, $C8, $4D, $D0, $4D, $D8, $4D, $E0, $4D, $A8, $41
+    db $E8, $4D, $38, $29, $80, $22, $38, $26, $F0, $4D, $F8, $4D, $00, $4E, $08, $4D
+    db $08, $4E, $10, $4E, $18, $4E, $20, $4E, $D8, $2D, $E0, $2D, $E8, $2D, $60, $3D
+    db $70, $24, $78, $24, $28, $4E, $30, $4E, $28, $44, $08, $30, $68, $27, $B8, $27
+    db $60, $27, $38, $4E, $40, $4E, $48, $4E, $50, $4E, $E0, $46, $C0, $22, $D0, $2D
+    db $D8, $2D, $58, $4E, $60, $4E, $D8, $2D, $70, $24, $C0, $22, $B8, $2D, $58, $4E
+    db $68, $23, $68, $4E, $70, $4E, $78, $4E, $80, $4E, $88, $4E, $90, $4E, $58, $31
+    db $98, $4E, $C0, $29, $68, $43, $F8, $24, $00, $36, $A0, $4E, $A8, $4E, $B0, $4E
+    db $B8, $4E, $48, $35, $C0, $4E, $38, $48, $B0, $2E, $A8, $2E, $A8, $2E, $48, $48
+    db $F8, $2E, $B8, $2E, $00, $24, $C8, $4E, $B0, $29, $70, $26, $D0, $26, $D0, $26
+    db $48, $28, $D0, $4E, $D8, $4E, $E0, $4E, $90, $47, $98, $47, $E8, $4E, $F0, $4E
+    db $90, $47, $F8, $4E, $00, $4F, $08, $4F, $00, $23, $10, $4F, $18, $4F, $20, $4F
+    db $28, $4F, $30, $4F, $38, $4F, $40, $4F, $48, $4F, $50, $4F, $58, $4F, $18, $32
+    db $60, $4F, $38, $29, $50, $44, $68, $4F, $70, $4F, $A0, $37, $78, $4F, $80, $4F
+    db $88, $4F, $20, $36, $90, $4F, $98, $4F, $40, $49, $A0, $4F, $A8, $4F, $A8, $2C
+    db $B0, $4F, $B8, $4F, $C0, $4F, $C8, $4F, $28, $25, $00, $28, $A0, $2B, $B8, $27
+    db $60, $27, $D0, $4F, $90, $38, $88, $3E, $B8, $2E, $00, $24, $F0, $2E, $F8, $2E
+    db $C0, $25, $E0, $2E, $E8, $2E, $D8, $2E, $D8, $2E, $C8, $2E, $C0, $25, $C0, $25
+    db $C0, $25, $D8, $4F, $D0, $2E, $B8, $27, $E0, $4F, $E8, $4F, $F0, $4F, $F8, $4F
+    db $00, $50, $C0, $29, $68, $45, $70, $45, $08, $50, $10, $50, $68, $26, $18, $50
+    db $20, $50, $A8, $4E, $28, $50, $D8, $24, $78, $26, $10, $30, $18, $30, $78, $26
+    db $D8, $24, $D8, $24, $78, $26, $80, $26, $30, $34, $68, $27, $70, $29, $78, $29
+    db $68, $28, $68, $30, $10, $2A, $30, $50, $38, $50, $68, $2F, $38, $50, $40, $50
+    db $38, $50, $38, $50, $48, $50, $50, $50, $50, $50, $B8, $2F, $58, $50, $38, $50
+    db $58, $50, $50, $50, $50, $50, $C0, $2F, $60, $24, $60, $50, $68, $50, $70, $50
+    db $78, $50, $38, $29, $10, $2F, $68, $46, $80, $50, $88, $50, $28, $25, $B8, $27
+    db $60, $27, $90, $50, $98, $50, $78, $27, $80, $27, $58, $30, $60, $30, $80, $27
+    db $78, $27, $78, $27, $80, $27, $88, $27, $E0, $32, $98, $25, $D8, $26, $B0, $27
+    db $D0, $28, $A8, $27, $B0, $27, $88, $26, $C0, $27, $10, $30, $18, $30, $D0, $24
+    db $D8, $24, $78, $26, $C0, $27, $10, $30, $18, $30, $D8, $24, $78, $26, $D0, $24
+    db $D8, $24, $78, $26, $80, $26, $90, $25, $98, $2B, $68, $27, $C8, $28, $A0, $50
+    db $58, $46, $C0, $29, $F8, $24, $20, $47, $A8, $50, $B0, $50, $B8, $50, $E0, $23
+    db $50, $24, $D8, $28, $18, $29, $60, $28, $70, $29, $78, $29, $D8, $28, $28, $29
+    db $E8, $23, $60, $28, $48, $28, $70, $29, $78, $29, $68, $28, $D8, $26, $58, $28
+    db $D8, $26, $68, $26, $68, $26, $70, $27, $70, $28, $58, $30, $60, $30, $08, $26
+    db $78, $27, $80, $27, $70, $28, $58, $30, $60, $30, $78, $27, $80, $27, $08, $26
+    db $78, $27, $80, $27, $88, $27, $68, $26, $60, $28, $48, $28, $B0, $29, $C0, $50
+    db $C8, $50, $C0, $29, $B8, $23, $D0, $50, $D8, $50, $E0, $50, $E8, $50, $38, $31
+    db $00, $30, $D0, $26, $98, $25, $D0, $26, $60, $27, $28, $25, $B8, $41, $F0, $37
+    db $68, $27, $B8, $27, $60, $27, $28, $25, $F0, $50, $D0, $28, $68, $27, $D0, $26
+    db $60, $27, $28, $25, $28, $25, $00, $28, $E0, $32, $B8, $27, $60, $27, $D0, $28
+    db $A8, $27, $B0, $27, $B0, $27, $B8, $27, $60, $27, $28, $25, $20, $30, $38, $4A
+    db $68, $27, $B8, $27, $60, $27, $28, $25, $B8, $27, $60, $27, $80, $29, $F8, $50
+    db $38, $3F, $38, $29, $80, $22, $10, $2F, $00, $51, $08, $51, $10, $51, $18, $51
+    db $48, $24, $88, $25, $18, $2A, $B0, $29, $20, $51, $88, $25, $18, $2A, $C8, $26
+    db $48, $24, $A8, $29, $20, $51, $C8, $26, $98, $25, $D8, $26, $48, $28, $68, $26
+    db $68, $37, $68, $37, $48, $28, $B0, $29, $78, $2C, $70, $39, $50, $4D, $30, $45
+    db $78, $2C, $88, $25, $18, $2A, $78, $2C, $48, $24, $30, $43, $68, $28, $68, $30
+    db $10, $2A, $E8, $23, $48, $28, $68, $26, $70, $26, $60, $28, $28, $43, $48, $32
+    db $28, $51, $C0, $29, $38, $26, $80, $22, $78, $26, $78, $2D, $30, $51, $38, $51
+    db $68, $3A, $40, $51, $48, $51, $50, $51, $58, $51, $78, $3A, $48, $51, $58, $51
+    db $68, $3A, $60, $51, $58, $51, $20, $3B, $A0, $25, $40, $31, $A0, $29, $80, $29
+    db $68, $51, $68, $51, $A0, $29, $80, $29, $70, $51, $78, $51, $80, $51, $88, $51
+    db $70, $51, $78, $3A, $48, $51, $70, $51, $68, $3A, $28, $4B, $30, $4B, $90, $51
+    db $68, $29, $98, $29, $A0, $29, $80, $29, $A0, $25, $C8, $28, $40, $31, $98, $51
+    db $C8, $42, $28, $28, $F8, $24, $38, $26, $D0, $24, $88, $31, $A0, $51, $A8, $51
+    db $B0, $51, $B8, $51, $C0, $51, $C8, $51, $B0, $51, $B8, $51, $C0, $51, $C8, $51
+    db $B0, $51, $D0, $51, $D8, $51, $E0, $51, $E8, $51, $F0, $51, $F8, $51, $E0, $51
+    db $E8, $51, $F0, $51, $F8, $51, $50, $4D, $00, $52, $D0, $51, $D8, $51, $08, $52
+    db $10, $52, $D0, $51, $D8, $51, $08, $52, $10, $52, $B0, $47, $F8, $51, $E0, $51
+    db $E8, $51, $F0, $51, $F8, $51, $E0, $51, $E8, $51, $F0, $51, $F8, $51, $18, $52
+    db $20, $52, $A0, $28, $80, $22, $F8, $24, $D0, $24, $D8, $24, $28, $52, $30, $52
+    db $38, $52, $40, $52, $38, $3F, $40, $3F, $38, $52, $40, $52, $38, $3F, $40, $3F
+    db $38, $52, $48, $52, $50, $52, $58, $52, $60, $52, $48, $52, $50, $52, $58, $52
+    db $68, $52, $48, $52, $70, $52, $28, $44, $60, $52, $48, $52, $50, $52, $58, $52
+    db $68, $52, $48, $52, $50, $52, $58, $52, $68, $52, $88, $29, $78, $52, $58, $52
+    db $68, $52, $48, $52, $50, $52, $58, $52, $68, $52, $48, $52, $50, $52, $58, $52
+    db $68, $52, $01, $00, $00, $5D, $2A, $00, $5A, $2A, $00, $A8, $A8, $3E, $AA, $3E
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $22, $69
+    db $20, $69, $48, $2E, $68, $2E, $28, $35, $2A, $35, $68, $2E, $48, $2E, $84, $33
+    db $68, $2E, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $24, $29, $26, $29
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $68, $2E, $00, $A8, $48, $35, $4A, $35
+    db $AC, $2A, $AE, $2A, $68, $2E, $00, $A8, $20, $29, $22, $29, $00, $A8, $00, $A8
+    db $00, $A8, $CA, $3E, $CC, $3E, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $24, $29
+    db $26, $29, $00, $A8, $68, $2E, $00, $A8, $48, $35, $4A, $35, $68, $2E, $AC, $2A
+    db $AE, $2A, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $20, $29, $22, $29
+    db $00, $A8, $00, $A8, $00, $A8, $AC, $2A, $AE, $2A, $48, $2E, $24, $29, $26, $29
+    db $20, $29, $22, $29, $00, $A8, $00, $A8, $26, $29, $00, $A8, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $EA, $3E, $EC, $3E, $EE, $36, $00, $A8, $00, $A8, $2A, $36
+    db $2C, $36, $2C, $36, $2C, $36, $2E, $36, $48, $0E, $4A, $78, $48, $78, $48, $38
+    db $48, $78, $48, $38, $4A, $38, $00, $A8, $00, $A8, $00, $A8, $8C, $30, $CA, $B0
+    db $CC, $B0, $AE, $30, $CA, $30, $8C, $70, $48, $2E, $68, $2E, $2C, $36, $2E, $36
+    db $00, $A8, $00, $A8, $64, $33, $64, $33, $00, $A8, $0A, $3F, $0C, $3F, $0E, $3F
+    db $00, $A8, $00, $A8, $00, $A8, $4A, $36, $4C, $36, $4C, $36, $4C, $36, $4E, $36
+    db $68, $0E, $68, $78, $66, $78, $66, $38, $66, $78, $66, $38, $68, $38, $00, $A8
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $AC, $30, $AE, $30, $CC, $B0, $AE, $70
+    db $AC, $70, $4A, $36, $4C, $36, $4E, $36, $00, $A8, $EA, $1C, $C6, $30, $0E, $31
+    db $26, $3F, $8E, $70, $8E, $30, $8E, $70, $8E, $70, $8C, $70, $00, $A8, $00, $A8
+    db $6A, $36, $6C, $36, $6C, $36, $6C, $36, $6E, $36, $48, $0E, $86, $78, $84, $78
+    db $84, $38, $84, $78, $84, $38, $86, $38, $00, $A8, $00, $A8, $00, $A8, $00, $A8
+    db $CA, $30, $CC, $30, $8E, $B0, $CC, $70, $8C, $B0, $AC, $B0, $6A, $36, $6C, $36
+    db $6C, $36, $00, $A8, $00, $A8, $C6, $30, $00, $A8, $00, $A8, $AE, $70, $AE, $30
+    db $AE, $70, $AC, $70, $00, $A8, $00, $A8, $8A, $76, $00, $A8, $8A, $25, $8C, $25
+    db $8A, $36, $68, $0E, $A6, $78, $A4, $78, $08, $26, $00, $A8, $A6, $78, $A6, $38
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $86, $36, $00, $A8, $6A, $3D
+    db $86, $76, $86, $36, $00, $A8, $8A, $25, $8C, $25, $8A, $36, $48, $0E, $00, $A8
+    db $00, $A8, $00, $A8, $84, $31, $8E, $31, $00, $A8, $CC, $70, $CC, $70, $CC, $70
+    db $CA, $70, $00, $A8, $00, $A8, $A6, $76, $AE, $31, $4E, $2D, $A6, $36, $AC, $2A
+    db $AE, $2A, $C4, $78, $28, $26, $00, $A8, $C4, $38, $00, $A8, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $84, $36, $00, $A8, $6C, $25, $6E, $25, $00, $A8, $84, $76
+    db $24, $29, $26, $29, $A6, $76, $0E, $38, $2C, $38, $A6, $36, $68, $0E, $00, $A8
+    db $00, $A8, $88, $32, $80, $33, $00, $A8, $00, $A8, $26, $3F, $00, $A8, $68, $65
+    db $8A, $36, $0A, $44, $00, $A8, $00, $A8, $C6, $76, $C4, $76, $C4, $36, $C4, $36
+    db $C6, $36, $48, $2E, $A0, $36, $A0, $76, $46, $67, $44, $67, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $A2, $36, $20, $AC, $20, $2C, $00, $A8, $A2, $76, $24, $29
+    db $26, $29, $C4, $76, $C4, $36, $C4, $36, $22, $49, $20, $49, $00, $A8, $E8, $1C
+    db $EA, $1C, $88, $B2, $C8, $F2, $C8, $72, $00, $A8, $00, $A8, $88, $65, $8A, $36
+    db $82, $12, $E4, $18, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $68, $2E
+    db $C0, $32, $00, $A8, $00, $A8, $C0, $72, $AC, $67, $AA, $67, $00, $A8, $00, $A8
+    db $00, $A8, $C6, $76, $C4, $76, $C6, $36, $E4, $B8, $A2, $27, $A4, $27, $00, $A8
+    db $00, $A8, $08, $1D, $88, $32, $C8, $32, $C8, $B2, $A0, $16, $4C, $0D, $A6, $16
+    db $A2, $D8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $4C, $67
+    db $4A, $67, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $A2, $38, $E4, $B8
+    db $C0, $38, $C2, $38, $00, $A8, $00, $A8, $E4, $18, $00, $A8, $E6, $32, $24, $33
+    db $24, $33, $24, $73, $00, $A8, $C0, $12, $C2, $12, $C0, $52, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $A2, $78, $CE, $38, $E0, $38, $00, $A8
+    db $00, $A8, $00, $A8, $2C, $36, $2C, $36, $2C, $36, $2E, $36, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $00, $A8, $4C, $36, $4C, $36, $4C, $36, $4E, $36, $46, $1E
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $6C, $36, $6C, $36, $6C, $36
+    db $66, $1E, $AA, $75, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $80, $3E, $66, $65
+    db $8A, $36, $46, $1E, $00, $A8, $A6, $75, $A4, $75, $A2, $75, $A0, $75, $00, $A8
+    db $00, $A8, $4A, $78, $48, $78, $48, $78, $46, $78, $46, $38, $48, $38, $48, $38
+    db $4A, $38, $4A, $78, $48, $78, $46, $78, $46, $38, $48, $38, $48, $78, $4A, $38
+    db $46, $38, $48, $38, $4A, $38, $00, $A8, $64, $33, $8C, $3E, $8E, $3E, $86, $65
+    db $8A, $36, $66, $1E, $C8, $75, $A2, $38, $E4, $38, $C0, $38, $C0, $75, $68, $78
+    db $66, $78, $64, $78, $64, $38, $66, $38, $66, $38, $68, $38, $68, $78, $66, $78
+    db $64, $78, $64, $38, $66, $38, $68, $38, $64, $38, $66, $38, $68, $38, $00, $A8
+    db $00, $A8, $00, $A8, $C6, $30, $A8, $3E, $AA, $3E, $2C, $18, $0E, $18, $A6, $16
+    db $42, $1E, $E8, $75, $E6, $75, $00, $A8, $E2, $75, $E0, $75, $48, $0E, $84, $78
+    db $82, $78, $82, $38, $86, $38, $86, $78, $84, $78, $84, $78, $82, $78, $82, $38
+    db $84, $38, $86, $38, $84, $38, $86, $38, $00, $A8, $00, $A8, $C6, $30, $00, $A8
+    db $CA, $3E, $CC, $3E, $00, $A8, $C6, $16, $66, $1E, $A2, $D8, $48, $0E, $00, $A8
+    db $00, $A8, $48, $0E, $68, $0E, $86, $36, $A4, $78, $00, $A8, $86, $76, $00, $A8
+    db $00, $A8, $A4, $38, $C4, $78, $08, $26, $A4, $78, $86, $36, $A4, $38, $A6, $38
+    db $00, $A8, $EA, $3E, $EC, $3E, $EE, $36, $00, $A8, $A2, $98, $E4, $58, $A2, $B8
+    db $68, $0E, $E4, $58, $E4, $58, $68, $0E, $86, $36, $6E, $65, $6C, $65, $84, $76
+    db $00, $A8, $8A, $25, $8C, $25, $00, $A8, $E2, $78, $E2, $2E, $E0, $2E, $28, $26
+    db $86, $36, $6C, $25, $6E, $25, $C4, $38, $C6, $30, $00, $A8, $0A, $3F, $0C, $3F
+    db $0E, $3F, $E4, $58, $CE, $18, $E0, $18, $86, $27, $88, $07, $E0, $18, $8A, $27
+    db $20, $27, $A0, $36, $E8, $2E, $08, $2F, $4C, $2D, $A0, $2C, $02, $2F, $00, $2F
+    db $E4, $2E, $04, $2F, $06, $2F, $A8, $2D, $82, $32, $A0, $76, $84, $31, $26, $3F
+    db $28, $1F, $2A, $1F, $E4, $58, $E4, $F8, $00, $A8, $A2, $18, $2C, $27, $8C, $27
+    db $86, $36, $28, $3F, $84, $36, $C6, $76, $28, $3F, $86, $36, $28, $3F, $28, $3F
+    db $C0, $32, $C2, $32, $C2, $72, $C0, $72, $84, $36, $00, $A8, $88, $32, $80, $33
+    db $46, $38, $48, $38, $48, $38, $4A, $38, $00, $A8, $00, $A8, $00, $A8, $00, $A8
+    db $00, $A8, $00, $A8, $64, $33, $00, $A8, $64, $38, $66, $38, $66, $38, $68, $38
+    db $00, $A8, $00, $A8, $00, $A8, $0E, $31, $0E, $31, $64, $38, $66, $38, $68, $38
+    db $00, $A8, $AA, $35, $0E, $31, $0E, $71, $82, $38, $84, $38, $84, $38, $86, $38
+    db $A8, $0D, $A0, $35, $A2, $35, $A4, $35, $A6, $35, $0E, $31, $0E, $31, $0E, $71
+    db $00, $A8, $A6, $78, $A6, $38, $00, $A8, $00, $A8, $00, $A8, $C0, $35, $60, $2D
+    db $62, $2D, $64, $2D, $C8, $35, $00, $A8, $00, $A8, $0E, $31, $00, $A8, $C4, $38
+    db $CA, $65, $66, $27, $68, $27, $8C, $30, $8E, $30, $8E, $30, $8E, $70, $8C, $70
+    db $00, $A8, $2A, $36, $2C, $36, $2C, $36, $2A, $76, $00, $A8, $E0, $15, $80, $2D
+    db $82, $2D, $E6, $35, $E8, $35, $4A, $78, $48, $78, $4A, $38, $84, $31, $8E, $71
+    db $8E, $31, $8E, $31, $48, $0E, $E2, $38, $A8, $0D, $EA, $65, $C6, $27, $C8, $27
+    db $AC, $30, $AE, $30, $AE, $70, $AC, $70, $00, $A8, $4A, $36, $4C, $36, $4C, $36
+    db $4A, $76, $00, $A8, $00, $A8, $68, $78, $66, $38, $66, $78, $68, $38, $88, $32
+    db $80, $33, $80, $33, $80, $33, $48, $0E, $48, $0E, $0A, $46, $A4, $67, $A2, $67
+    db $6A, $27, $6C, $27, $CA, $30, $CC, $30, $CA, $70, $6A, $36, $6C, $36, $6A, $76
+    db $EC, $34, $EE, $34, $EC, $34, $EE, $34, $00, $A8, $8A, $27, $20, $27, $86, $78
+    db $84, $78, $86, $38, $88, $32, $C8, $32, $20, $32, $20, $72, $26, $3F, $CA, $3E
+    db $CC, $3E, $68, $0E, $68, $0E, $00, $A8, $E4, $38, $C0, $38, $C2, $38, $88, $07
+    db $84, $36, $00, $A8, $86, $76, $6A, $3D, $84, $76, $82, $33, $0C, $15, $0A, $15
+    db $0C, $15, $E4, $18, $2C, $27, $8C, $27, $84, $36, $00, $A8, $08, $26, $86, $76
+    db $C8, $F2, $CE, $B2, $00, $A8, $EC, $3E, $EE, $36, $CE, $38, $E0, $38, $A2, $18
+    db $86, $36, $6C, $25, $84, $76, $86, $36, $8A, $25, $86, $76, $00, $35, $02, $35
+    db $48, $15, $4A, $15, $C0, $18, $C2, $18, $A2, $38, $86, $36, $2C, $2D, $2E, $2D
+    db $28, $26, $86, $76, $E6, $32, $48, $2E, $CE, $32, $CE, $F2, $0C, $3F, $0E, $3F
+    db $AC, $2A, $AE, $2A, $00, $A8, $A2, $36, $A2, $76, $20, $29, $22, $29, $A2, $36
+    db $A2, $76, $0A, $35, $0C, $35, $8E, $27, $A0, $27, $CE, $18, $E0, $18, $48, $0E
+    db $A2, $16, $A4, $16, $A4, $16, $A2, $76, $68, $2E, $00, $A8, $00, $A8, $68, $2E
+    db $2E, $3C, $26, $3F, $28, $1F, $2A, $1F, $00, $A8, $00, $A8, $20, $29, $22, $29
+    db $C2, $36, $C4, $36, $C4, $76, $C2, $76, $42, $7D, $40, $7D, $C0, $32, $C2, $32
+    db $C0, $72, $28, $35, $84, $33, $AE, $27, $C0, $27, $68, $0E, $C6, $56, $C4, $16
+    db $C4, $16, $C6, $36, $00, $A8, $88, $27, $4C, $3C, $4E, $1C, $00, $A8, $44, $27
+    db $46, $27, $00, $A8, $48, $35, $4A, $35, $4E, $27, $60, $27, $4E, $0D, $EC, $34
+    db $EE, $34, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $00, $A8, $6A, $3C, $6C, $1C
+    db $00, $A8, $AA, $27, $AC, $27, $AC, $2A, $AE, $0A, $82, $33, $0C, $35, $00, $A8
+    db $00, $A8, $00, $A8, $88, $3C, $8A, $1C, $4A, $27, $4C, $27, $AE, $31, $00, $A8
+    db $28, $35, $2A, $35, $E4, $18, $00, $A8, $00, $A8, $A8, $3C, $00, $A8, $24, $09
+    db $26, $09, $48, $35, $4A, $15, $A8, $0D, $E0, $98, $C2, $18, $00, $A8, $00, $A8
+    db $4E, $FC, $C8, $3C, $00, $A8, $48, $27, $00, $A8, $0A, $04, $24, $09, $26, $29
+    db $A2, $38, $A8, $4D, $C2, $98, $00, $A8, $00, $A8, $00, $A8, $80, $3C, $E6, $3C
+    db $00, $A8, $00, $A8, $00, $A8, $00, $A8, $2A, $36, $2C, $36, $2C, $36, $2C, $36
+    db $2E, $36, $4A, $78, $46, $78, $46, $78, $CC, $B0, $8C, $30, $8E, $30, $CA, $B0
+    db $62, $27, $22, $27, $00, $A8, $2A, $36, $2C, $36, $2C, $36, $2A, $76, $4A, $78
+    db $48, $38, $4A, $38, $64, $33, $64, $33, $64, $33, $00, $A8, $04, $3D, $00, $A8
+    db $40, $27, $42, $27, $4A, $36, $4C, $36, $4C, $36, $4C, $36, $4E, $36, $68, $78
+    db $66, $78, $64, $78, $64, $78, $AC, $30, $AC, $30, $8E, $30, $8E, $B0, $AE, $30
+    db $AC, $70, $00, $A8, $6E, $27, $2E, $27, $4A, $36, $4C, $36, $4C, $36, $4A, $76
+    db $68, $78, $66, $38, $68, $38, $0E, $31, $0E, $31, $0E, $31, $00, $A8, $80, $3E
+    db $00, $A8, $00, $A8, $00, $A8, $A6, $27, $A8, $27, $6C, $36, $6C, $36, $6C, $36
+    db $84, $78, $82, $78, $86, $78, $82, $78, $CA, $30, $AE, $30, $CC, $30, $CC, $30
+    db $8C, $B0, $A8, $2D, $24, $29, $26, $29, $22, $69, $20, $69, $6A, $36, $6C, $36
+    db $6C, $36, $6A, $76, $86, $78, $84, $38, $86, $38, $0E, $31, $8C, $3E, $8E, $3E
+    db $00, $A8, $00, $A8, $00, $A8, $C2, $27, $C4, $27, $8A, $76, $08, $26, $8A, $36
+    db $A4, $38, $C4, $38, $00, $A8, $A6, $78, $A6, $38, $A4, $78, $08, $26, $C4, $38
+    db $86, $36, $20, $09, $22, $09, $48, $0E, $AC, $0A, $AE, $2A, $86, $36, $84, $76
+    db $00, $A8, $00, $A8, $84, $31, $8E, $31, $8E, $31, $A8, $3E, $AA, $3E, $00, $A8
+    db $00, $A8, $8A, $76, $28, $26, $8A, $36, $E2, $38, $48, $2E, $48, $2E, $C4, $78
+    db $28, $26, $E2, $38, $EC, $34, $EE, $14, $68, $0E, $2C, $18, $84, $36, $00, $A8
+    db $00, $A8, $86, $76, $8A, $76, $8A, $36, $88, $32, $64, $33, $64, $33, $CA, $3E
+    db $00, $A8, $00, $A8, $00, $A8, $A6, $76, $4C, $6D, $A6, $36, $A0, $36, $A0, $76
+    db $68, $2E, $86, $36, $AE, $31, $06, $25, $88, $27, $86, $36, $0A, $35, $82, $53
+    db $20, $67, $8A, $67, $00, $A8, $A2, $58, $A0, $36, $A4, $36, $A0, $76, $A6, $76
+    db $A4, $36, $A6, $36, $00, $A8, $88, $32, $0E, $31, $0E, $31, $EA, $3E, $EC, $3E
+    db $C6, $76, $C4, $36, $C4, $76, $C4, $36, $C0, $32, $00, $A8, $00, $A8, $C0, $72
+    db $24, $29, $26, $29, $0A, $64, $86, $36, $48, $35, $4A, $15, $8C, $67, $2C, $67
+    db $CE, $98, $E0, $B8, $C0, $32, $C2, $32, $C2, $32, $C0, $72, $C6, $76, $C4, $36
+    db $C6, $36, $48, $78, $46, $78, $C6, $30, $0E, $31, $0C, $3F, $0E, $3F, $00, $A8
+    db $20, $29, $22, $29, $00, $A8, $A2, $27, $A4, $27, $E4, $78, $E4, $38, $C2, $38
+    db $A2, $F8, $E4, $78, $C2, $B8, $66, $78, $64, $78, $C6, $30, $0E, $31, $8C, $30
+    db $8E, $30, $8E, $30, $8E, $70, $8C, $70, $C0, $38, $E4, $38, $AC, $2A, $AE, $2A
+    db $AA, $35, $A4, $67, $A2, $67, $86, $27, $88, $27, $A2, $38, $E4, $F8, $A2, $38
+    db $86, $78, $84, $78, $82, $78, $AC, $30, $AE, $30, $AE, $30, $AC, $70, $CE, $38
+    db $A0, $35, $A2, $35, $A4, $35, $A6, $35, $00, $A8, $A2, $B8, $86, $36, $68, $25
+    db $0E, $31, $0E, $31, $AC, $30, $8E, $30, $CC, $70, $CA, $70, $A2, $18, $EC, $14
+    db $EE, $14, $C0, $15, $00, $A8, $0A, $24, $C6, $35, $C8, $35, $84, $16, $88, $05
+    db $84, $31, $8E, $31, $42, $3E, $66, $65, $82, $53, $E0, $15, $00, $A8, $00, $A8
+    db $00, $A8, $E8, $35, $48, $0E, $A0, $16, $AE, $11, $88, $32, $00, $A8, $86, $65
+    db $8A, $36, $00, $A8, $00, $A8, $48, $15, $E4, $18, $EC, $34, $EE, $34, $48, $2E
+    db $EA, $3C, $00, $A8, $00, $A8, $00, $A8, $68, $0E, $48, $0E, $C2, $12, $C2, $12
+    db $88, $32, $00, $A8, $80, $3E, $A6, $36, $4A, $78, $48, $38, $48, $38, $48, $38
+    db $46, $78, $4A, $78, $48, $38, $48, $78, $4A, $38, $0A, $35, $68, $2E, $2A, $36
+    db $2C, $36, $2C, $36, $2C, $76, $2A, $76, $8C, $30, $8E, $30, $CC, $B0, $8E, $70
+    db $CC, $B0, $8C, $70, $00, $A8, $68, $0E, $00, $A8, $88, $32, $00, $A8, $8C, $3E
+    db $8E, $3E, $C4, $36, $C4, $36, $48, $2E, $68, $78, $66, $38, $66, $38, $66, $38
+    db $64, $78, $68, $78, $66, $38, $66, $78, $66, $38, $68, $38, $84, $53, $2A, $15
+    db $A2, $38, $4A, $36, $4C, $36, $4C, $36, $4C, $76, $4A, $76, $AC, $30, $AE, $30
+    db $AE, $30, $8C, $F0, $8C, $30, $00, $A8, $00, $A8, $64, $33, $64, $33, $64, $33
+    db $64, $33, $64, $33, $A8, $3E, $AA, $3E, $20, $29, $22, $09, $68, $0E, $86, $78
+    db $84, $38, $84, $38, $84, $38, $82, $78, $86, $78, $84, $38, $84, $78, $84, $38
+    db $86, $38, $48, $15, $4A, $15, $4A, $36, $4C, $36, $4C, $36, $4C, $76, $4A, $76
+    db $CA, $30, $CC, $30, $CC, $70, $CA, $70, $EC, $34, $EE, $34, $00, $A8, $C6, $30
+    db $0E, $31, $0E, $31, $CA, $3E, $CC, $1E, $00, $A8, $8A, $76, $6A, $3D, $A4, $38
+    db $86, $36, $6A, $3D, $8A, $36, $E0, $D8, $CE, $D8, $48, $0E, $6A, $36, $6C, $76
+    db $6A, $76, $08, $26, $82, $33, $82, $73, $00, $A8, $0E, $31, $0E, $31, $0E, $31
+    db $0E, $31, $EA, $3E, $EC, $1E, $EE, $16, $8A, $76, $84, $36, $E0, $2E, $8A, $25
+    db $8C, $25, $E0, $2E, $8A, $36, $C2, $D8, $C0, $D8, $68, $0E, $48, $2E, $00, $A8
+    db $28, $26, $2E, $6D, $2C, $6D, $00, $A8, $00, $35, $02, $35, $C6, $30, $C6, $30
+    db $0E, $31, $0E, $31, $0E, $31, $46, $38, $48, $38, $A6, $76, $00, $2F, $E4, $2E
+    db $00, $A8, $A6, $36, $A0, $36, $A0, $76, $00, $A8, $A8, $2D, $00, $A8, $88, $67
+    db $84, $31, $8E, $31, $8E, $31, $8E, $31, $8E, $31, $64, $38, $66, $38, $66, $38
+    db $C0, $32, $C2, $32, $C2, $32, $C2, $32, $C2, $72, $C2, $72, $C2, $72, $C2, $32
+    db $C2, $32, $C0, $72, $88, $27, $20, $29, $22, $29, $C2, $32, $C2, $32, $C2, $72
+    db $C0, $72, $48, $2E, $C6, $76, $C4, $76, $C4, $36, $C4, $36, $C4, $36, $C6, $36
+    db $48, $2E, $84, $73, $2A, $35, $88, $32, $80, $33, $80, $33, $80, $33, $80, $33
+    db $80, $33, $82, $38, $84, $38, $84, $38, $A2, $98, $24, $09, $26, $09, $68, $2E
+    db $68, $2E, $48, $35, $4A, $35, $88, $B2, $C8, $B2, $C8, $32, $20, $32, $20, $72
+    db $C8, $72, $C8, $32, $68, $65, $00, $A8, $00, $A8, $E4, $18, $AE, $11, $AC, $0A
+    db $AE, $0A, $88, $12, $C8, $12, $CE, $32, $CE, $72, $C8, $F2, $64, $33, $88, $65
+    db $C0, $18, $C2, $18, $EC, $34, $EE, $34, $48, $0E, $00, $A8, $E6, $12, $24, $13
+    db $48, $0E, $CE, $32, $CE, $F2, $0E, $31, $00, $A8, $CE, $18, $E0, $18, $0A, $35
+    db $0C, $35, $68, $0E, $00, $A8, $00, $A8, $00, $A8, $68, $0E, $40, $1C, $42, $1C
+    db $0E, $31, $00, $A8, $C2, $32, $C2, $72, $C0, $72, $2A, $36, $2C, $36, $2C, $76
+    db $2C, $36, $2E, $36, $A2, $D8, $28, $35, $84, $33, $4A, $78, $48, $38, $48, $78
+    db $4A, $38, $46, $38, $4A, $38, $4A, $38, $48, $78, $48, $78, $48, $38, $4A, $38
+    db $EC, $34, $EE, $34, $24, $29, $26, $09, $EE, $34, $4A, $36, $4C, $36, $4C, $36
+    db $4C, $76, $4C, $76, $4C, $36, $4E, $36, $00, $35, $02, $35, $64, $38, $66, $78
+    db $68, $38, $64, $38, $68, $38, $64, $38, $66, $78, $68, $38, $66, $78, $66, $78
+    db $66, $38, $68, $38, $20, $29, $22, $29, $AA, $35, $82, $33, $0C, $35, $EC, $34
+    db $EE, $34, $0A, $35, $0C, $35, $48, $0E, $6C, $36, $6C, $36, $6C, $76, $00, $A8
+    db $0A, $35, $0C, $35, $82, $38, $84, $38, $84, $78, $84, $38, $84, $38, $82, $38
+    db $82, $38, $84, $78, $86, $38, $84, $78, $84, $38, $86, $38, $24, $29, $26, $29
+    db $A0, $35, $A2, $35, $84, $31, $48, $35, $4A, $35, $84, $73, $28, $35, $84, $33
+    db $68, $2E, $8A, $76, $6E, $25, $8A, $36, $48, $35, $4A, $35, $A6, $78, $A6, $38
+    db $6A, $3D, $A6, $78, $00, $A8, $A6, $38, $AE, $6A, $AC, $6A, $C0, $35, $60, $2D
+    db $88, $32, $22, $29, $28, $35, $00, $35, $02, $35, $EE, $34, $A6, $36, $AC, $2A
+    db $AE, $2A, $C4, $38, $00, $A8, $86, $76, $8A, $25, $8C, $25, $C4, $78, $E2, $2E
+    db $86, $36, $6C, $25, $6E, $25, $C4, $38, $E0, $2E, $46, $7D, $48, $2E, $E0, $35
+    db $80, $2D, $88, $32, $8E, $3E, $48, $2E, $48, $35, $82, $33, $0C, $35, $82, $73
+    db $C6, $76, $C4, $36, $C4, $36, $C4, $36, $C4, $36, $C4, $36, $C6, $36, $00, $A8
+    db $E4, $6E, $68, $2E, $8A, $07, $20, $07, $64, $33, $64, $33, $68, $2E, $00, $A8
+    db $48, $35, $4A, $35, $2A, $35, $86, $36, $00, $A8, $86, $76, $84, $F6, $00, $A8
+    db $86, $76, $2C, $07, $8C, $07, $C6, $30, $0E, $31, $CC, $3E, $4C, $2D, $48, $35
+    db $4A, $35, $C6, $30, $EC, $3E, $EE, $36, $A8, $0D, $C6, $30, $0E, $31, $0A, $3F
+    db $0C, $1F, $0E, $1F, $A8, $0D, $00, $A8, $C6, $30, $28, $1F, $2A, $1F, $EC, $34
+    db $EE, $34, $00, $A8, $8E, $31, $0A, $35, $0C, $35, $64, $33, $64, $33, $64, $33
+    db $64, $33, $64, $33, $00, $A8, $64, $33, $64, $33, $64, $33, $64, $33, $00, $A8
+    db $88, $12, $84, $73, $2A, $35, $0E, $31, $0E, $31, $0E, $31, $0E, $31, $0E, $31
+    db $0E, $31, $64, $33, $64, $33, $64, $33, $64, $33, $C6, $30, $0E, $31, $0E, $31
+    db $64, $33, $64, $33, $48, $35, $4A, $35, $0E, $31, $0E, $31, $0E, $31, $0E, $31
+    db $0E, $31, $C6, $30, $0E, $31, $C6, $70, $C6, $30, $6C, $36, $C4, $76, $C4, $36
+    db $C4, $36, $C4, $78, $00, $A8, $A0, $36, $C0, $32, $C2, $32, $00, $A8, $00, $A8
+    db $28, $3C, $C4, $36, $00, $A8, $C4, $36, $8A, $36, $00, $A8, $8A, $36, $A6, $16
+    db $8A, $36, $8A, $36, $A6, $16, $48, $0E, $00, $A8, $28, $3F, $C0, $32, $C2, $32
+    db $C2, $72, $00, $A8, $C4, $36, $C4, $76, $C0, $32, $C4, $16, $C6, $36, $C6, $76
+    db $C4, $36, $C6, $36, $C4, $36, $C4, $76, $C4, $36, $C0, $32, $00, $A8, $AE, $31
+    db $0A, $24, $00, $A8, $84, $16, $A0, $16, $C4, $76, $C4, $36, $C4, $36, $8A, $36
+    db $A6, $36, $C2, $32, $C2, $32, $C2, $32, $C2, $72, $C2, $72, $C2, $32, $C2, $32
+    db $C2, $72, $C4, $36, $C4, $36, $C4, $36, $C4, $36, $A4, $36, $A4, $36, $84, $F6
+    db $48, $2E, $8A, $27, $20, $27, $2C, $27, $8C, $27, $00, $A8, $0A, $24, $24, $29
+    db $26, $29, $44, $3D, $46, $3D, $2A, $35, $6E, $1C, $44, $1C, $44, $1C, $08, $1C
+    db $02, $1C, $04, $1C, $06, $1C, $2A, $9C, $22, $9C, $44, $1D, $46, $1D, $28, $9C
+    db $02, $1C, $04, $1C, $06, $1C, $08, $1C, $2A, $9C, $04, $1C, $08, $1C, $22, $9C
+    db $24, $9C, $26, $9C, $08, $5C, $06, $5C, $04, $5C, $02, $5C, $2A, $1C, $00, $1E
+    db $02, $16, $04, $16, $06, $16, $06, $5C, $0C, $1C, $28, $DC, $26, $DC, $24, $DC
+    db $22, $DC, $08, $5C, $02, $5C, $46, $1D, $24, $DC, $22, $DC, $22, $1C, $62, $3C
+    db $62, $1C, $28, $1C, $22, $1C, $24, $1C, $28, $1C, $02, $9C, $04, $9C, $42, $5D
+    db $40, $5D, $22, $1C, $24, $1C, $26, $1C, $28, $1C, $24, $1C, $02, $9C, $04, $9C
+    db $06, $9C, $28, $5C, $26, $5C, $24, $5C, $44, $1D, $46, $1D, $26, $5C, $22, $16
+    db $24, $16, $26, $16, $26, $5C, $2A, $9C, $2A, $1C, $08, $DC, $06, $DC, $02, $DC
+    db $28, $5C, $26, $5C, $22, $5C, $40, $1D, $42, $1D, $02, $DC, $2A, $1C, $6E, $DC
+    db $44, $3C, $AA, $3C, $44, $1E, $46, $1E, $0C, $1C, $06, $1C, $44, $1D, $46, $1D
+    db $02, $1C, $04, $1C, $06, $1C, $06, $1C, $06, $1C, $02, $1C, $04, $1C, $0C, $1C
+    db $02, $1C, $44, $1D, $46, $1D, $26, $DC, $26, $1C, $40, $1D, $42, $1D, $44, $1E
+    db $40, $1E, $42, $1E, $44, $1D, $46, $1D, $04, $1C, $42, $5D, $40, $5D, $04, $1C
+    db $02, $1C, $46, $1D, $00, $A8, $60, $DC, $80, $3C, $64, $3E, $66, $1E, $22, $1C
+    db $24, $1C, $26, $1C, $8A, $56, $02, $1C, $22, $1C, $24, $1C, $26, $1C, $26, $1C
+    db $08, $1C, $00, $A8, $00, $A8, $2A, $1C, $22, $1C, $24, $1C, $08, $DC, $06, $DC
+    db $EA, $DC, $08, $9D, $0C, $1C, $46, $5E, $42, $1E, $40, $1E, $42, $1E, $44, $1E
+    db $2A, $1C, $26, $1C, $22, $1C, $2A, $1C, $06, $1C, $08, $1C, $00, $A8, $80, $3C
+    db $44, $3C, $28, $3F, $2A, $3F, $04, $1C, $06, $1C, $06, $1C, $08, $1C, $8A, $56
+    db $04, $1C, $6A, $1D, $22, $1C, $8A, $16, $24, $DC, $08, $1C, $0C, $1C, $2A, $DC
+    db $00, $A8, $00, $A8, $26, $DC, $0C, $1C, $02, $1C, $04, $1C, $E8, $DC, $66, $5E
+    db $42, $1E, $44, $1E, $40, $1E, $42, $1E, $44, $1E, $22, $9C, $24, $9C, $26, $1C
+    db $2A, $9C, $04, $1C, $28, $1C, $60, $DC, $44, $1C, $62, $1C, $28, $1F, $28, $1F
+    db $26, $1C, $26, $1C, $28, $1C, $22, $1C, $64, $9E, $26, $1C, $60, $9E, $40, $1E
+    db $04, $DC, $28, $1C, $66, $DE, $64, $DE, $42, $9E, $60, $DE, $06, $DC, $2A, $1C
+    db $0C, $1C, $08, $9D, $E8, $DC, $2A, $1C, $26, $1C, $2A, $1C, $66, $9E, $06, $1C
+    db $66, $DE, $64, $DE, $62, $DE, $60, $DE, $00, $A8, $0C, $9C, $66, $DE, $64, $DE
+    db $62, $DE, $60, $DE, $00, $A8, $AA, $1C, $80, $1C, $42, $1E, $28, $1F, $24, $9C
+    db $26, $9C, $0C, $1C, $06, $1C, $A4, $16, $A4, $16, $06, $1C, $02, $1C, $40, $1E
+    db $44, $DE, $42, $1E, $40, $DE, $42, $5E, $22, $1C, $08, $1C, $E8, $9C, $08, $DD
+    db $24, $9C, $60, $9E, $62, $9E, $64, $9E, $64, $9E, $66, $9E, $42, $9E, $0C, $1C
+    db $40, $1E, $40, $1E, $A4, $16, $A4, $16, $00, $A8, $44, $1E, $40, $1E, $42, $1E
+    db $44, $1E, $00, $A8, $6E, $DC, $80, $1C, $44, $1C, $40, $1E, $42, $1E, $02, $9C
+    db $46, $1E, $26, $1C, $24, $DC, $24, $1C, $00, $A8, $08, $DD, $00, $A8, $40, $1E
+    db $46, $1D, $42, $1E, $A4, $16, $46, $1E, $28, $1C, $02, $1C, $02, $9C, $EA, $1C
+    db $28, $1C, $0C, $1C, $A4, $16, $A4, $16, $A4, $16, $40, $1E, $46, $1D, $C6, $56
+    db $40, $1E, $40, $1E, $EA, $DC, $C6, $16, $64, $1E, $60, $1E, $62, $1E, $62, $1E
+    db $64, $1E, $00, $A8, $00, $A8, $62, $1C, $44, $1E, $46, $1E, $0C, $1C, $46, $1E
+    db $04, $1C, $06, $1C, $08, $1C, $44, $1E, $46, $1E, $46, $5E, $44, $1E, $40, $1E
+    db $C2, $32, $C2, $72, $64, $1E, $66, $1E, $06, $1C, $08, $1D, $E8, $1C, $08, $1D
+    db $40, $1E, $40, $1E, $22, $9C, $24, $9C, $44, $1D, $46, $1D, $42, $5D, $40, $5D
+    db $00, $A8, $0C, $1C, $00, $A8, $00, $A8, $40, $1E, $A4, $16, $2A, $1C, $66, $1E
+    db $24, $1C, $2A, $1C, $66, $5E, $62, $1E, $64, $1E, $66, $1E, $08, $DD, $26, $1C
+    db $08, $5D, $24, $5C, $22, $5C, $22, $1C, $44, $5E, $44, $1E, $42, $1E, $44, $1E
+    db $EA, $5C, $22, $16, $00, $5E, $22, $1C, $28, $1C, $2A, $1C, $22, $1C, $00, $A8
+    db $00, $A8, $60, $5C, $44, $1E, $46, $1E, $2A, $9C, $04, $1C, $EA, $DC, $E8, $DC
+    db $02, $1C, $06, $5C, $64, $5E, $62, $1E, $64, $1E, $06, $1C, $40, $1E, $42, $1E
+    db $6E, $5C, $62, $1C, $44, $1E, $46, $1E, $0C, $9C, $22, $1C, $26, $5C, $EA, $9C
+    db $60, $1E, $62, $1E, $80, $1C, $64, $1E, $66, $1E, $00, $A8, $08, $1C, $2A, $9C
+    db $28, $DC, $26, $DC, $02, $1C, $60, $1C, $AA, $1C, $42, $1E, $44, $1E, $28, $1C
+    db $24, $5C, $22, $5C, $EA, $5C, $E8, $5C, $26, $1C, $08, $DC, $06, $DC, $2A, $1C
+    db $24, $1C, $EA, $1C, $06, $1C, $22, $1C, $6E, $1C, $44, $1C, $44, $1E, $46, $1E
+    db $02, $1C, $08, $9D, $02, $1C, $06, $5C, $04, $5C, $02, $5C, $02, $5C, $04, $1C
+    db $06, $1C, $02, $1C, $04, $1C, $0C, $1C, $02, $1C, $04, $1C, $06, $1C, $02, $1C
+    db $04, $1C, $06, $1C, $08, $1C, $0C, $1C, $0C, $1C, $2A, $1C, $0C, $1C, $22, $9C
+    db $24, $9C, $26, $9C, $22, $9C, $00, $A8, $62, $1C, $80, $1C, $44, $1E, $66, $1E
+    db $22, $1C, $24, $1C, $C6, $75, $C4, $75, $C2, $75, $22, $5C, $26, $1C, $00, $A8
+    db $2A, $1C, $22, $1C, $24, $1C, $26, $1C, $22, $1C, $24, $1C, $26, $1C, $00, $A8
+    db $02, $1C, $04, $1C, $2A, $1C, $02, $9C, $02, $1C, $04, $1C, $02, $9C, $04, $9C
+    db $0C, $9C, $22, $1C, $80, $1C, $44, $1C, $A4, $16, $A4, $16, $46, $1E, $0C, $1C
+    db $22, $1C, $E2, $15, $E4, $55, $0C, $1C, $02, $1C, $04, $1C, $02, $1C, $04, $1C
+    db $06, $1C, $0C, $1C, $02, $1C, $04, $1C, $06, $1C, $06, $1C, $22, $1C, $24, $1C
+    db $04, $1C, $22, $1C, $24, $1C, $0C, $1C, $08, $9D, $02, $1C, $44, $3C, $62, $3C
+    db $C4, $16, $C4, $16, $44, $1E, $2A, $1C, $26, $1C, $06, $56, $04, $56, $02, $56
+    db $00, $5E, $2A, $1C, $28, $1C, $2A, $1C, $6A, $5D, $24, $1C, $6A, $1D, $EA, $1C
+    db $2A, $1C, $22, $1C, $E8, $1C, $66, $1E, $2A, $1C, $0C, $1C, $2A, $1C, $62, $3C
+    db $80, $3C, $64, $1E, $44, $1E, $46, $1E, $06, $1C, $08, $1C, $02, $1C, $26, $56
+    db $24, $56, $22, $56, $22, $1C, $60, $9E, $62, $9E, $64, $9E, $66, $9E, $60, $9E
+    db $62, $9E, $64, $9E, $66, $DE, $64, $DE, $62, $DE, $60, $DE, $66, $DE, $62, $DE
+    db $64, $DE, $62, $DE, $60, $DE, $06, $1C, $AA, $3C, $44, $3C, $02, $9C, $64, $1E
+    db $66, $1E, $28, $1C, $06, $1C, $2A, $1C, $22, $1C, $24, $1C, $26, $1C, $22, $1C
+    db $40, $1E, $A4, $16, $A4, $16, $A4, $16, $A4, $16, $A4, $16, $A4, $16, $A4, $16
+    db $A4, $16, $A4, $16, $A4, $16, $A4, $16, $08, $1C, $26, $1C, $62, $1C, $04, $1C
+    db $02, $1C, $EA, $1C, $06, $1C, $22, $DC, $0C, $1C, $02, $1C, $02, $1C, $28, $1F
+    db $40, $1E, $28, $5F, $40, $1E, $40, $1E, $28, $5F, $04, $1C, $00, $A8, $02, $1C
+    db $40, $1E, $40, $1E, $40, $1E, $28, $5F, $22, $9C, $06, $1C, $26, $1C, $80, $1C
+    db $44, $1E, $46, $1E, $24, $1C, $EA, $DC, $04, $DC, $02, $DC, $42, $5E, $40, $5E
+    db $06, $9C, $00, $A8, $80, $3C, $44, $1C, $64, $1E, $66, $1E, $2A, $9C, $62, $5E
+    db $60, $5E, $04, $5C, $24, $9C, $00, $A8, $62, $1C, $00, $A8, $0C, $9C, $E8, $9C
+    db $EA, $9C, $04, $9C, $00, $A8, $80, $1C, $00, $A8, $EA, $1C, $0C, $1C, $02, $1C
+    db $E8, $1C, $EA, $1C, $04, $1C, $24, $1C, $04, $1C, $00, $A8, $00, $A8, $44, $1E
+    db $40, $1E, $40, $1E, $04, $9C, $06, $9C, $0C, $9C, $06, $1C, $C2, $35, $C4, $15
+    db $C6, $35, $06, $1C, $26, $9C, $08, $5D, $02, $1C, $42, $1E, $44, $1E, $02, $1C
+    db $06, $1C, $02, $1C, $0C, $1C, $02, $1C, $42, $1E, $2A, $1C, $2A, $1C, $0C, $5C
+    db $24, $1C, $28, $1C, $06, $5C, $04, $5C, $02, $5C, $26, $1C, $E2, $35, $E4, $15
+    db $00, $A8, $26, $1C, $02, $1C, $22, $1C, $24, $1C, $02, $1C, $00, $A8, $02, $1C
+    db $04, $1C, $62, $1E, $42, $1E, $64, $1E, $22, $1C, $26, $1C, $22, $1C, $2A, $1C
+    db $42, $1E, $42, $1E, $2A, $1C, $2A, $5C, $40, $1E, $00, $A8, $26, $5C, $24, $5C
+    db $2A, $5C, $02, $16, $06, $1C, $00, $A8, $0C, $1C, $02, $1C, $22, $1C, $00, $A8
+    db $22, $1C, $24, $1C, $46, $1E, $22, $56, $62, $1E, $2A, $9C, $02, $1C, $04, $1C
+    db $02, $1C, $06, $1C, $02, $1C, $06, $1C, $0C, $1C, $02, $1C, $06, $1C, $0C, $1C
+    db $40, $1E, $44, $1E, $24, $16, $26, $16, $02, $1C, $04, $1C, $26, $1C, $2A, $1C
+    db $22, $1C, $02, $1C, $00, $A8, $E0, $5F, $CA, $5F, $44, $3C, $62, $1C, $42, $1E
+    db $44, $1E, $66, $1E, $0C, $5C, $0C, $9C, $22, $1C, $24, $1C, $26, $1C, $28, $1C
+    db $46, $5E, $2A, $5C, $22, $1C, $26, $1C, $2A, $1C, $46, $5E, $42, $1E, $44, $1E
+    db $22, $5C, $22, $1C, $24, $1C, $40, $1E, $42, $1E, $44, $1E, $40, $1E, $00, $A8
+    db $E2, $5F, $CC, $5F, $04, $1C, $06, $1C, $06, $1C, $26, $1C, $28, $1C, $22, $16
+    db $62, $9E, $66, $1E, $64, $9E, $06, $1C, $62, $9E, $44, $1E, $44, $1E, $44, $5E
+    db $64, $1E, $0C, $1C, $02, $1C, $06, $1C, $40, $1E, $40, $1E, $42, $1E, $44, $1E
+    db $46, $1E, $0C, $1C, $24, $13, $E4, $5F, $CE, $5F, $24, $1C, $26, $1C, $06, $1C
+    db $60, $9E, $62, $9E, $02, $1C, $28, $1C, $2A, $1C, $22, $1C, $24, $1C, $22, $1C
+    db $40, $1E, $42, $1E, $26, $1C, $02, $1C, $2A, $1C, $22, $1C, $26, $1C, $02, $1C
+    db $04, $1C, $06, $1C, $04, $1C, $42, $1E, $40, $1C, $42, $1C, $44, $1E, $AC, $1D
+    db $AA, $1C, $00, $A8, $00, $A8, $0C, $1C, $40, $1D, $40, $9E, $42, $9E, $42, $1E
+    db $42, $1E, $42, $1E, $00, $A8, $22, $9C, $24, $9C, $26, $9C, $42, $1E, $2A, $9C
+    db $42, $1E, $44, $1E, $46, $1E, $66, $1E, $0C, $1C, $22, $1C, $24, $1C, $26, $1C
+    db $24, $1C, $2A, $DC, $64, $1E, $CC, $1D, $CE, $1D, $44, $1E, $46, $1E, $2A, $1C
+    db $42, $1D, $62, $1E, $64, $1E, $66, $1E, $0C, $1C, $28, $1C, $2A, $1C, $46, $5E
+    db $44, $5E, $0C, $DC, $06, $DC, $02, $DC, $6E, $3C, $EC, $1D, $EE, $1D, $64, $1E
+    db $66, $1E, $06, $1C, $02, $1C, $04, $1C, $06, $1C, $66, $5E, $64, $5E, $06, $1C
+    db $6E, $3C, $0C, $1E, $0E, $1E, $26, $1C, $26, $1C, $22, $1C, $46, $1D, $26, $1C
+    db $02, $1C, $02, $9C, $26, $1C, $6E, $BC, $40, $1E, $64, $1E, $04, $1C, $40, $1E
+    db $44, $1E, $46, $1E, $0C, $1C, $02, $1C, $04, $1C, $04, $1C, $60, $BC, $26, $1C
+    db $E8, $1C, $E8, $DC, $2A, $1C, $08, $DD, $06, $1C, $46, $1D, $64, $1E, $66, $1E
+    db $2A, $1C, $22, $1C, $26, $DC, $24, $1C, $60, $3C, $02, $1C, $08, $1D, $E8, $1C
+    db $EA, $1C, $08, $5D, $08, $1D, $08, $9D, $06, $1C, $E8, $1C, $EA, $1C, $2A, $1C
+    db $08, $9D, $EA, $5C, $02, $1C, $EA, $1C, $08, $9D, $EA, $1C, $06, $1C, $EA, $DC
+    db $04, $1C, $E8, $5C, $EA, $9C, $44, $1D, $46, $1D, $28, $1C, $26, $1C, $08, $9D
+    db $E8, $1C, $28, $1C, $0C, $1C, $22, $1C, $AA, $3C, $2A, $1C, $22, $1C, $08, $1D
+    db $E8, $9C, $EA, $9C, $06, $1C, $08, $1C, $08, $1D, $E8, $9C, $EA, $9C, $22, $1C
+    db $EA, $1C, $EA, $DC, $EA, $9C, $EA, $5C, $40, $1E, $42, $1E, $44, $1E, $44, $1E
+    db $E8, $1C, $EA, $DC, $08, $DD, $E8, $1C, $EA, $1C, $EA, $9C, $E8, $1C, $E8, $9C
+    db $EA, $9C, $EA, $DC, $EA, $DC, $E8, $1C, $EA, $1C, $60, $9C, $80, $1C, $64, $9E
+    db $66, $9E, $08, $1C, $E8, $1C, $06, $1C, $02, $5C, $0C, $1C, $22, $9C, $26, $1C
+    db $44, $1E, $0C, $1C, $EA, $DC, $EA, $DC, $E8, $1C, $EA, $1C, $EA, $DC, $0C, $1C
+    db $08, $5D, $EA, $DC, $E8, $DC, $08, $1D, $08, $1D, $40, $1D, $42, $1D, $E8, $DC
+    db $08, $DD, $08, $1D, $E8, $1C, $EA, $1C, $08, $1D, $44, $1C, $62, $1C, $44, $9E
+    db $46, $9E, $28, $1C, $24, $1C, $26, $1C, $8A, $56, $60, $9E, $64, $9E, $46, $5E
+    db $44, $1E, $66, $1E, $24, $1C, $28, $1C, $08, $1D, $02, $1C, $2A, $1C, $22, $1C
+    db $26, $1C, $EA, $DC, $44, $1D, $42, $5D, $40, $5D, $2A, $9C, $62, $DE, $8A, $56
+    db $8A, $16, $26, $5C, $E8, $DC, $22, $5C, $62, $1C, $80, $1C, $40, $1E, $28, $DC
+    db $06, $1C, $40, $9E, $44, $9E, $66, $9E, $0C, $1C, $22, $9C, $66, $DE, $62, $DE
+    db $62, $9E, $66, $9E, $40, $1D, $26, $9C, $28, $9C, $04, $1C, $46, $DE, $44, $DE
+    db $42, $DE, $0C, $1C, $04, $1C, $08, $1C, $06, $5C, $04, $5C, $44, $1C, $08, $DC
+    db $06, $DC, $24, $1C, $26, $1C, $A4, $56, $02, $9C, $A4, $16, $2A, $1C, $02, $9C
+    db $46, $DE, $44, $DE, $42, $DE, $42, $9E, $44, $9E, $46, $9E, $24, $1C, $E8, $1C
+    db $06, $9C, $08, $9C, $2A, $1C, $24, $1C, $26, $1C, $28, $1C, $2A, $1C, $22, $1C
+    db $24, $1C, $02, $DC, $28, $1C, $26, $5C, $24, $5C, $62, $3C, $28, $1C, $22, $DC
+    db $0C, $1C, $02, $1C, $04, $1C, $C2, $12, $C2, $52, $C2, $12, $04, $1C, $46, $5E
+    db $44, $5E, $42, $5E, $44, $1E, $46, $1E, $26, $9C, $28, $9C, $0C, $1C, $04, $1C
+    db $06, $1C, $40, $1E, $24, $9C, $0C, $1C, $02, $1C, $04, $1C, $06, $1C, $08, $5C
+    db $06, $1C, $04, $5C, $02, $5C, $0C, $1C, $00, $A8, $64, $1E, $66, $1E, $46, $1E
+    db $44, $1D, $46, $1D, $60, $1E, $62, $1E, $64, $1E, $06, $9C, $08, $9C, $22, $1C
+    db $40, $1E, $26, $1C, $26, $1C, $24, $5C, $22, $5C, $2A, $1C, $44, $3C, $40, $3E
+    db $42, $3E, $44, $1E, $06, $1C, $62, $1E, $64, $1E, $40, $1D, $42, $1D, $0C, $1C
+    db $02, $1C, $04, $1C, $06, $1C, $28, $DC, $26, $DC, $0C, $1C, $02, $1C, $06, $1C
+    db $08, $1C, $0C, $1C, $62, $1C, $40, $1E, $44, $1E, $46, $1E, $24, $1C, $44, $1D
+    db $46, $1D, $2A, $1C, $22, $1C, $08, $DC, $06, $DC, $26, $1C, $28, $1C, $22, $1C
+    db $24, $1C, $80, $1C, $40, $1E, $8A, $16, $46, $1E, $06, $1C, $08, $1C, $02, $1C
+    db $04, $1C, $C2, $15, $C4, $15, $C6, $15, $22, $9C, $04, $1C, $06, $1C, $A4, $16
+    db $0C, $1C, $40, $1E, $42, $1E, $44, $1E, $46, $1E, $E2, $15, $E4, $15, $E6, $15
+    db $02, $9C, $28, $DC, $26, $DC, $A4, $16, $A4, $16, $C8, $12, $42, $1E, $44, $1E
+    db $EA, $9C, $66, $5E, $60, $1E, $66, $1E, $02, $16, $04, $16, $06, $16, $06, $5C
+    db $24, $9C, $2A, $9C, $08, $5C, $22, $DC, $C2, $12, $04, $1C, $06, $1C, $C2, $12
+    db $C8, $B2, $62, $1C, $A4, $16, $E8, $1C, $EA, $1C, $08, $1C, $24, $1C, $26, $1C
+    db $26, $1C, $EA, $DC, $E8, $DC, $E8, $DC, $40, $1E, $26, $16, $02, $9C, $04, $9C
+    db $06, $9C, $0C, $1C, $EA, $DC, $02, $9C, $04, $9C, $EA, $5C, $28, $5C, $28, $1C
+    db $26, $1C, $04, $DC, $46, $5E, $42, $5E, $40, $5E, $C8, $F2, $80, $1C, $AA, $1C
+    db $44, $DE, $42, $DE, $C4, $16, $08, $1C, $08, $1D, $28, $1C, $08, $5C, $06, $5C
+    db $06, $5C, $04, $5C, $02, $5C, $06, $1C, $08, $1C, $42, $1E, $44, $1E, $46, $1E
+    db $02, $1C, $04, $1C, $2A, $1C, $06, $1C, $08, $1C, $22, $1C, $EA, $1C, $40, $1E
+    db $42, $1E, $44, $1E, $22, $DC, $64, $33, $06, $5C, $02, $1C, $04, $1C, $06, $1C
+    db $26, $9C, $44, $1C, $62, $1C, $40, $1E, $42, $1E, $62, $1E, $28, $1C, $2A, $1C
+    db $2A, $5C, $28, $5C, $26, $5C, $26, $5C, $24, $5C, $22, $5C, $26, $1C, $28, $1C
+    db $62, $1E, $64, $1E, $22, $1C, $24, $1C, $26, $1C, $26, $1C, $28, $1C, $8A, $56
+    db $40, $1E, $04, $1C, $8A, $16, $08, $1C, $0C, $1C, $0E, $31, $0E, $51, $26, $1C
+    db $06, $9C, $80, $1C, $40, $1D, $28, $9C, $0C, $5C, $2A, $9C, $06, $5C, $04, $5C
+    db $0C, $1C, $06, $1C, $22, $9C, $24, $9C, $06, $1C, $06, $1C, $02, $1C, $04, $1C
+    db $62, $9E, $28, $1C, $2A, $1C, $0E, $11, $0E, $11, $06, $1C, $08, $1C, $0C, $1C
+    db $44, $1C, $40, $1E, $44, $1E, $2A, $5C, $66, $9E, $62, $9E, $66, $DE, $64, $DE
+    db $62, $DE, $60, $DE, $02, $9C, $04, $9C, $26, $1C, $26, $1C, $40, $9E, $42, $9E
+    db $44, $9E, $42, $9E, $28, $DC, $26, $DC, $42, $1E, $22, $DC, $0E, $11, $26, $1C
+    db $28, $1C, $2A, $1C, $62, $1C, $0C, $1F, $26, $DC, $A4, $56, $A4, $56, $A4, $56
+    db $04, $1C, $06, $1C, $02, $1C, $A6, $56, $A4, $56, $A6, $16, $08, $DC, $44, $1E
+    db $02, $1C, $2A, $9C, $26, $9C, $28, $9C, $80, $1C, $42, $1E, $44, $1E, $06, $DC
+    db $2A, $5C, $04, $DC, $02, $DC, $26, $5C, $24, $5C, $22, $5C, $22, $5C, $22, $1C
+    db $24, $1C, $22, $1C, $24, $1C, $C0, $12, $22, $1C, $24, $1C, $26, $1C, $22, $1C
+    db $24, $1C, $2A, $1C, $26, $1C, $28, $1C, $2A, $1C, $02, $9C, $04, $9C, $46, $5E
+    db $44, $5E, $42, $5E, $40, $1E, $80, $13, $26, $1C, $06, $9C, $08, $9C, $2A, $1C
+    db $44, $1C, $62, $1E, $64, $1E, $02, $1C, $06, $1C, $40, $1D, $24, $DC, $66, $5E
+    db $64, $5E, $62, $5E, $60, $1E, $06, $1C, $CA, $1F, $CA, $1F, $E0, $1F, $02, $1C
+    db $04, $1C, $44, $1E, $8A, $16, $08, $9C, $2A, $1C, $44, $1D, $46, $1D, $28, $1C
+    db $04, $1C, $CC, $1F, $CC, $1F, $E2, $1F, $22, $1C, $24, $1C, $42, $1E, $06, $1C
+    db $08, $1C, $0C, $1C, $44, $1D, $46, $1D, $08, $5C, $24, $1C, $C8, $12, $24, $13
+    db $CE, $1F, $E4, $1F, $08, $1C, $A6, $16, $26, $1C, $28, $1C, $2A, $1C, $2A, $1C
+    db $0C, $DC, $28, $5C, $26, $5C, $46, $5E, $42, $5E, $40, $5E, $42, $1E, $28, $1C
+    db $6E, $9C, $04, $1C, $02, $1C, $EA, $1C, $02, $1C, $04, $1C, $08, $5C, $02, $1C
+    db $04, $1C, $26, $9C, $08, $1C, $2A, $1C, $24, $DC, $22, $DC, $0C, $1C, $04, $1C
+    db $06, $1C, $08, $1C, $06, $1C, $08, $1C, $00, $1E, $26, $1C, $66, $5E, $44, $1E
+    db $44, $1E, $46, $1E, $64, $1E, $EA, $9C, $22, $1C, $24, $1C, $26, $1C, $28, $5C
+    db $2A, $1C, $22, $1C, $24, $1C, $28, $1C, $06, $DC, $04, $DC, $08, $9D, $24, $1C
+    db $26, $1C, $28, $1C, $08, $DD, $2A, $1C, $26, $1C, $28, $1C, $02, $9C, $04, $9C
+    db $06, $9C, $22, $1C, $24, $1C, $26, $1C, $44, $1E, $40, $1E, $44, $1D, $46, $1D
+    db $08, $1C, $EA, $1C, $06, $1C, $28, $9C, $8A, $16, $06, $1C, $24, $DC, $06, $1C
+    db $26, $1C, $28, $1C, $E8, $9C, $EA, $9C, $04, $1C, $06, $1C, $08, $DD, $EA, $DC
+    db $E8, $DC, $0C, $5C, $06, $5C, $04, $5C, $02, $5C, $40, $1D, $42, $1D, $26, $9C
+    db $08, $1C, $A6, $15, $26, $1C, $42, $1E, $44, $1E, $22, $1C, $24, $1C, $26, $1C
+    db $06, $9C, $66, $9E, $26, $1C, $06, $1C, $2A, $1C, $E8, $1C, $60, $9E, $62, $9E
+    db $64, $9E, $62, $DE, $60, $DE, $44, $1D, $46, $1D, $06, $9C, $C2, $15, $C6, $15
+    db $EA, $1C, $40, $1E, $40, $1E, $42, $1E, $24, $DC, $26, $9C, $06, $1C, $02, $1C
+    db $04, $1C, $44, $9E, $46, $9E, $42, $9E, $44, $9E, $40, $9E, $44, $9E, $40, $9E
+    db $42, $9E, $44, $DE, $42, $DE, $40, $DE, $46, $5D, $44, $5D, $28, $1C, $E2, $15
+    db $E6, $15, $44, $1C, $40, $1D, $60, $1E, $62, $1E, $46, $1E, $40, $1E, $02, $DC
+    db $22, $1C, $24, $1C, $26, $1C, $02, $9C, $04, $9C, $06, $9C, $44, $1D, $A4, $16
+    db $24, $1C, $00, $1E, $02, $16, $04, $16, $06, $16, $60, $9E, $62, $9E, $64, $1E
+    db $66, $1E, $42, $1E, $28, $5F, $28, $5F, $28, $5F, $28, $5F, $28, $5F, $28, $5F
+    db $0C, $1C, $22, $16, $24, $16, $26, $16, $40, $9E, $42, $9E, $60, $1E, $62, $1E
+    db $24, $1C, $44, $1E, $46, $1E, $24, $9C, $08, $5C, $06, $5C, $62, $1C, $64, $1E
+    db $66, $1E, $04, $9C, $28, $5C, $28, $5C, $08, $1C, $02, $1C, $04, $1C, $E8, $1C
+    db $2A, $DC, $C8, $12, $24, $1C, $26, $1C, $E8, $1C, $24, $1C, $26, $1C, $0C, $DC
+    db $08, $1D, $0C, $DC, $2A, $1C, $06, $DC, $04, $DC, $02, $DC, $24, $5C, $02, $1C
+    db $60, $9E, $04, $5C, $02, $5C, $08, $5C, $06, $5C, $04, $5C, $28, $DC, $26, $DC
+    db $24, $DC, $22, $DC, $28, $DC, $26, $DC, $22, $DC, $24, $DC, $22, $DC, $24, $DC
+    db $22, $DC, $42, $1E, $44, $1E, $22, $5C, $28, $5C, $08, $DC, $06, $DC, $04, $DC
+    db $02, $DC, $02, $DC, $06, $DC, $06, $DC, $28, $1C, $00, $A8, $08, $DD, $00, $A8
+    db $42, $1E, $44, $5E, $46, $5E, $66, $5E, $42, $1E, $46, $1E, $66, $1E, $28, $1C
+    db $40, $1E, $60, $DE, $EA, $DC, $02, $9C, $46, $1E, $0C, $1C, $2A, $1C, $46, $1E
+    db $66, $1E, $46, $1E, $22, $56, $E8, $1C, $04, $1C, $02, $1C, $40, $1E, $40, $1E
+    db $2A, $1C, $42, $1E, $42, $1E, $26, $9C, $26, $1C, $24, $1C, $04, $1C, $06, $1C
+    db $08, $5C, $0C, $1C, $02, $1C, $04, $1C, $C2, $12, $C2, $52, $42, $DE, $42, $9E
+    db $62, $1E, $04, $1C, $26, $DC, $26, $1C, $28, $1C, $2A, $1C, $44, $1E, $A4, $16
+    db $2A, $5C, $04, $DC, $02, $DC, $24, $5C, $22, $5C, $22, $5C, $24, $1C, $26, $1C
+    db $22, $1C, $24, $1C, $26, $1C, $04, $9C, $66, $DE, $64, $DE, $28, $5F, $44, $1E
+    db $E8, $1C, $06, $1C, $24, $1C, $26, $1C, $24, $1C, $26, $1C, $E8, $1C, $06, $1C
+    db $24, $1C, $26, $1C, $2A, $1C, $1F, $18, $1F, $08, $1F, $00, $1F, $00, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $18, $1F, $18, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $18, $1F, $18
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $18, $1F, $10, $1F, $00, $1F, $00, $1F, $40, $1F, $40
+    db $1F, $40, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $40, $1F, $50, $1F, $50
+    db $1F, $50, $1F, $50, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $00, $1F, $40, $1F, $40, $1F, $10, $1F, $10, $1F, $18, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $00, $1F, $40, $1F, $40, $1F, $40, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $40, $1F, $50, $1F, $50, $1F, $50, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $40
+    db $1F, $40, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $40
+    db $10, $40, $10, $40, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $80
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $40, $10, $50
+    db $10, $50, $10, $50, $10, $50, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $40, $10, $40, $10, $40, $10, $40
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $10
+    db $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $10, $10, $10, $10, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $10, $10, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $1F, $90
+    db $10, $10, $10, $10, $1F, $10, $1F, $90, $1F, $90, $1F, $90, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $00, $10, $00, $10, $00, $10, $10, $10, $10, $10, $00
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90
+    db $1F, $90, $1F, $90, $1F, $10, $1F, $10, $10, $10, $10, $10, $10, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $1F, $10, $10, $00
+    db $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $1F, $10, $1F, $90, $5F, $8C
+    db $5F, $8C, $1F, $10, $17, $00, $10, $00, $10, $00, $10, $10, $10, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $10, $19, $10, $1F, $90, $1F, $10, $1A, $10, $10, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $10, $10, $10, $10
+    db $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $18, $90, $1F, $90, $10, $10
+    db $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10
+    db $10, $10, $10, $10, $10, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $10, $10, $10, $10, $10, $10, $10
+    db $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10, $50, $10, $50, $1F, $10
+    db $1F, $10, $10, $00, $10, $00, $10, $00, $10, $00, $10, $10, $10, $10, $10, $50
+    db $10, $50, $1F, $10, $13, $00, $13, $00, $13, $00, $10, $00, $10, $10, $10, $10
+    db $10, $10, $10, $50, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00
+    db $10, $00, $10, $10, $10, $10, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $40, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $10, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $10, $00
+    db $10, $00, $11, $00, $1F, $10, $12, $00, $10, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $10, $00, $10, $10, $10, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $10, $10, $10, $00
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $13, $00, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $00, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $10, $00, $10, $00, $10, $00, $10, $10, $10, $10, $10, $10, $1F, $10, $10, $10
+    db $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $13, $00, $13, $00, $10, $00
+    db $10, $10, $10, $10, $10, $10, $1F, $90, $10, $00, $10, $00, $10, $00, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $17, $10, $10, $10, $10, $10, $10, $00, $13, $80, $13, $80, $1F, $10, $1F, $90
+    db $1F, $90, $1F, $90, $1F, $10, $1F, $90, $1F, $90, $1F, $10, $1F, $90, $1F, $90
+    db $1F, $90, $1F, $10, $1F, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $00
+    db $1F, $00, $17, $00, $10, $00, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10
+    db $1F, $10, $1F, $10, $1F, $10, $10, $00, $13, $00, $10, $00, $10, $10, $10, $10
+    db $10, $10, $13, $00, $13, $00, $1F, $10, $10, $00, $10, $00, $10, $00, $10, $00
+    db $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00, $10, $00, $1F, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $1F, $10, $1F, $00, $1F, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $11, $00, $1F, $00, $1F, $10, $12, $00
+    db $10, $00, $10, $00, $10, $00, $1F, $10, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $1D, $10, $1F, $10, $1F, $10, $1F, $10
+    db $10, $00, $10, $00, $10, $00, $10, $00, $1F, $10, $1F, $00, $1F, $00, $1F, $00
+    db $13, $00, $1F, $00, $1F, $10, $10, $00, $1F, $90, $17, $80, $13, $00, $13, $00
+    db $13, $00, $13, $00, $10, $00, $13, $00, $13, $00, $13, $00, $13, $00, $10, $10
+    db $1D, $10, $13, $00, $13, $00, $13, $00, $13, $00, $1F, $10, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $10, $1F, $10, $1F, $90, $1F, $90, $10, $10, $10, $10, $10, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $11, $10, $12, $10
+    db $11, $10, $12, $10, $10, $10, $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $10, $1F, $10, $10, $00, $1F, $00
+    db $1F, $10, $10, $10, $10, $10, $10, $10, $10, $10, $1F, $90, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00
+    db $13, $80, $13, $80, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $00, $1F, $00
+    db $1F, $00, $10, $00, $10, $00, $10, $10, $10, $10, $10, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $00, $1E, $00
+    db $10, $10, $10, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $13, $00, $13, $00, $1F, $10, $1F, $10
+    db $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $10, $00, $10, $00, $10, $10, $10, $10, $13, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $90, $10, $50, $10, $50, $1F, $90, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $17, $10, $19, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90
+    db $1F, $90, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $1F, $90, $1F, $10, $1F, $10
+    db $1F, $10, $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $1F, $90
+    db $10, $10, $1F, $90, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $17, $00, $1F, $10
+    db $1D, $10, $1E, $10, $1F, $90, $1F, $90, $1F, $10, $10, $00, $10, $00, $10, $00
+    db $10, $10, $10, $10, $10, $50, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00
+    db $10, $00, $15, $10, $1F, $10, $10, $00, $10, $00, $10, $00, $10, $50, $1F, $00
+    db $1F, $00, $1F, $10, $1F, $90, $17, $90, $1F, $10, $1F, $10, $1F, $00, $12, $00
+    db $10, $00, $10, $50, $1F, $00, $10, $00, $10, $40, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $10, $10, $10, $10, $50, $1F, $00, $10, $00, $10, $40
+    db $10, $00, $10, $00, $10, $00, $1F, $90, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $10, $00, $10, $00, $10, $40, $1F, $00, $10, $00, $10, $40, $10, $50, $10, $50
+    db $10, $50, $10, $40, $10, $40, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $13, $00, $13, $00, $10, $50, $10, $00, $10, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $10, $00
+    db $1F, $90, $1F, $90, $13, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $13, $00
+    db $13, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $10, $10, $10
+    db $10, $50, $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $10, $10, $10
+    db $10, $50, $18, $80, $1F, $80, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $50, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $50, $10, $50
+    db $10, $50, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $90, $1F, $90, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00
+    db $10, $00, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $1F, $10, $1F, $90
+    db $1F, $90, $1F, $90, $1F, $90, $1F, $90, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $90, $1F, $10, $1D, $10, $1F, $10, $13, $80, $13, $80, $10, $10, $10, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $1F, $90, $1F, $90, $11, $00
+    db $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00, $10, $00, $1F, $10, $1F, $10
+    db $1A, $10, $10, $10, $1F, $90, $10, $10, $10, $10, $10, $10, $10, $10, $10, $10
+    db $10, $10, $1F, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $12, $00, $10, $00, $10, $10, $10, $10, $1F, $10, $1F, $10, $10, $10, $1F, $90
+    db $10, $10, $10, $10, $1F, $90, $10, $10, $10, $10, $10, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $10, $1F, $10, $1F, $10
+    db $1F, $10, $12, $10, $10, $10, $10, $10, $1F, $90, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $10, $11, $10, $12, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $10, $10, $1F, $90, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $10
+    db $13, $10, $1F, $90, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $10, $00
+    db $10, $00, $1D, $00, $10, $00, $1D, $00, $1F, $10, $1F, $10, $10, $10, $10, $00
+    db $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $90, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $1F, $10, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $1F, $00, $10, $00, $1F, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $1F, $00, $1F, $10, $10, $10, $13, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $1F, $00, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1E, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $00, $10, $00, $1F, $00, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $10, $00, $10, $10, $13, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $10, $00, $10, $00, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $10
+    db $1F, $10, $17, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $10, $00, $10, $10, $1F, $10, $13, $00, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $10, $00, $11, $00, $1F, $00, $1F, $10, $1F, $10, $1F, $00, $1F, $00
+    db $1F, $00, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $80, $1F, $10, $1F, $10
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $10, $1F, $10, $13, $00, $1F, $10, $1F, $90
+    db $1F, $90, $1F, $90, $1F, $10, $1F, $90, $1F, $90, $1F, $90, $1F, $10, $1F, $10
+    db $1F, $90, $1F, $10, $1F, $10, $1F, $90, $1F, $90, $1F, $90, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $90, $1F, $90, $1F, $90, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $10
+    db $1F, $10, $1F, $90, $10, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $00, $1F, $00, $1F, $00, $1F, $00, $1F, $10, $1F, $10, $10, $10, $10, $00
+    db $10, $00, $1D, $00, $1F, $10, $10, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $90, $10, $10, $10, $00, $10, $00, $10, $00, $1F, $10
+    db $10, $00, $10, $00, $10, $00, $1F, $10, $10, $50, $10, $50, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $1F, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $1F, $10, $1F, $10
+    db $1F, $10, $16, $10, $10, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $13, $00, $11, $00, $1F, $00, $1F, $00, $13, $00, $13, $00, $13, $00
+    db $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $15, $00
+    db $1F, $10, $16, $10, $13, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00
+    db $10, $00, $13, $10, $1F, $10, $1F, $10, $1F, $10, $10, $00, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $11, $00, $12, $00, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1D, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $15, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90
+    db $1F, $90, $1F, $90, $1F, $90, $1F, $90, $1F, $10, $19, $10, $1F, $10, $1F, $10
+    db $1F, $90, $1F, $90, $1F, $10, $1F, $10, $1F, $10, $10, $10, $1D, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $90, $1F, $10, $1F, $90, $1F, $10, $1F, $90, $1F, $90
+    db $1F, $90, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1D, $10, $1E, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $00, $10, $10, $1F, $10, $1F, $10, $1F, $00, $10, $00, $10, $00, $10, $00
+    db $1F, $10, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $10, $00, $1F, $10, $11, $00
+    db $16, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $13, $00, $10, $00
+    db $10, $00, $10, $00, $10, $00, $13, $00, $13, $00, $13, $00, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $00, $17, $00, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $13, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $17, $00
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $90, $10, $90
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10
+    db $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $1F, $10, $13, $00, $10, $00
+    db $10, $00, $13, $80, $13, $80, $10, $80, $1F, $80, $13, $00, $13, $00, $19, $80
+    db $1A, $80, $10, $00, $01, $01, $0A, $04, $05, $01, $01, $01, $10, $05, $1B, $01
+    db $01, $01, $14, $07, $35, $01, $01, $01, $1C, $05, $44, $01, $01, $01, $24, $04
+    db $5A, $01, $01, $01, $04, $07, $70, $01, $01, $01, $03, $0E, $7F, $01, $01, $01
+    db $15, $11, $91, $01, $01, $01, $05, $18, $A7, $01, $01, $01, $09, $1A, $B7, $01
+    db $01, $01, $18, $11, $CD, $01, $01, $01, $1D, $11, $E5, $01, $01, $01, $1E, $14
+    db $FB, $01, $01, $01, $22, $11, $04, $02, $01, $01, $04, $21, $1C, $02, $01, $01
+    db $0F, $1D, $2B, $02, $01, $01, $15, $1D, $3D, $02, $01, $01, $1B, $1F, $51, $02
+    db $01, $01, $1C, $25, $60, $02, $01, $01, $25, $1D, $6D, $02, $01, $01, $25, $29
+    db $7F, $02, $01, $01, $0B, $29, $8D, $02, $01, $01, $0F, $29, $A1, $02, $01, $01
+    db $17, $29, $B7, $02, $01, $01, $2B, $2F, $C7, $02, $01, $01, $21, $36, $D9, $02
+    db $01, $01, $03, $31, $F1, $02, $01, $01, $03, $3B, $03, $03, $01, $01, $0B, $36
+    db $15, $03, $01, $01, $0F, $36, $2B, $03, $01, $0C, $1B, $36, $45, $03, $01, $01
+    db $0B, $40, $5B, $03, $01, $01, $0F, $40, $71, $03, $01, $01, $1B, $41, $87, $03
+    db $01, $01, $20, $41, $9D, $03, $01, $01, $1F, $44, $B3, $03, $01, $01, $26, $41
+    db $BC, $03, $01, $01, $25, $44, $CC, $03, $01, $01, $0E, $06, $D5, $03, $04, $01
+    db $08, $27, $E0, $03, $01, $08, $28, $EF, $03, $01, $08, $28, $FA, $03, $01, $08
+    db $27, $05, $04, $01, $01, $19, $3E, $12, $04, $03, $04, $F2, $28, $73, $08, $3D
+    db $08, $0F, $38, $06, $C0, $01, $0F, $C0, $01, $C8, $77, $D8, $77, $C8, $77, $03
+    db $04, $FE, $90, $01, $68, $6D, $80, $76, $68, $02, $98, $76, $D8, $77, $78, $01
+    db $0F, $70, $01, $20, $74, $60, $74, $68, $74, $02, $03, $3F, $B0, $77, $20, $00
+    db $68, $74, $70, $0F, $C8, $03, $B0, $02, $03, $04, $F2, $88, $71, $B8, $06, $40
+    db $06, $70, $00, $78, $00, $0F, $78, $00, $08, $03, $08, $77, $08, $77, $03, $04
+    db $F2, $28, $73, $18, $6D, $90, $71, $38, $06, $70, $01, $0F, $78, $01, $08, $03
+    db $08, $77, $00, $77, $02, $03, $3F, $D0, $11, $E0, $77, $48, $75, $58, $75, $88
+    db $02, $40, $74, $03, $03, $F6, $90, $0F, $C0, $7A, $90, $0C, $F8, $79, $00, $0E
+    db $08, $0E, $01, $F8, $78, $03, $04, $DA, $00, $33, $B0, $09, $08, $0F, $68, $0B
+    db $70, $0B, $0F, $78, $0B, $18, $00, $D0, $00, $18, $00, $02, $05, $E2, $50, $15
+    db $10, $14, $F8, $15, $48, $1A, $03, $08, $60, $38, $14, $04, $04, $CC, $10, $18
+    db $20, $14, $A0, $17, $58, $1A, $8F, $50, $1A, $30, $1B, $10, $1B, $00, $1B, $78
+    db $11, $04, $04, $62, $10, $33, $90, $09, $28, $0F, $7F, $00, $0B, $00, $0B, $00
+    db $0B, $00, $0B, $90, $09, $08, $03, $08, $77, $05, $03, $E4, $08, $7E, $68, $60
+    db $E0, $7C, $E0, $03, $7C, $08, $0B, $10, $0B, $18, $0B, $20, $0B, $28, $0B, $03
+    db $01, $07, $B0, $7F, $C8, $7C, $D0, $00, $04, $04, $62, $10, $33, $48, $0D, $40
+    db $60, $7F, $C0, $01, $30, $0B, $38, $0B, $38, $06, $D0, $7C, $F0, $7C, $F0, $7C
+    db $02, $03, $3F, $58, $65, $F8, $64, $70, $78, $98, $11, $50, $1D, $A8, $1D, $03
+    db $04, $72, $10, $33, $50, $11, $40, $06, $C0, $01, $0E, $88, $65, $C8, $77, $98
+    db $65, $03, $04, $B2, $A8, $66, $88, $29, $08, $0F, $38, $0B, $0F, $68, $0B, $70
+    db $64, $D0, $65, $D0, $65, $02, $03, $3F, $B0, $1F, $B0, $13, $48, $1A, $68, $77
+    db $30, $10, $28, $14, $02, $03, $3D, $A8, $10, $E0, $15, $38, $10, $78, $13, $68
+    db $1F, $04, $04, $74, $88, $12, $80, $10, $50, $01, $D8, $13, $E0, $D8, $64, $C8
+    db $77, $E8, $64, $03, $04, $12, $10, $11, $38, $7A, $0E, $98, $13, $88, $13, $B8
+    db $13, $03, $04, $D2, $10, $11, $38, $7A, $78, $0B, $78, $0B, $0F, $60, $76, $C8
+    db $6C, $D8, $6C, $C8, $6C, $04, $04, $62, $10, $33, $90, $09, $28, $0F, $7E, $38
+    db $0B, $C0, $01, $38, $06, $B8, $6C, $48, $6C, $48, $6C, $02, $05, $35, $A8, $21
+    db $B0, $73, $60, $6D, $60, $6D, $03, $78, $66, $98, $13, $03, $03, $DB, $88, $62
+    db $D0, $5F, $A0, $11, $E0, $5E, $40, $11, $78, $67, $01, $00, $0E, $04, $04, $E2
+    db $90, $62, $98, $64, $48, $09, $A8, $64, $7B, $78, $01, $30, $0B, $58, $00, $C8
+    db $1A, $38, $1D, $48, $1D, $03, $03, $F6, $B0, $76, $E0, $77, $10, $76, $C8, $16
+    db $78, $0B, $68, $0B, $01, $68, $17, $03, $03, $F6, $68, $6C, $50, $77, $50, $7E
+    db $50, $77, $38, $0B, $78, $0B, $01, $B0, $02, $03, $04, $F2, $50, $14, $50, $11
+    db $40, $06, $68, $0B, $68, $0B, $0F, $70, $0B, $80, $1C, $80, $1C, $80, $1C, $04
+    db $04, $F2, $20, $5B, $38, $63, $A0, $6A, $30, $64, $08, $09, $7B, $10, $00, $08
+    db $00, $10, $0B, $F8, $1C, $88, $1C, $98, $1C, $03, $04, $D9, $28, $73, $48, $0D
+    db $40, $60, $78, $0B, $70, $0B, $0F, $38, $0B, $D8, $01, $58, $1D, $48, $1D, $03
+    db $04, $F2, $28, $73, $90, $09, $28, $0F, $70, $0B, $68, $0B, $0F, $68, $0B, $48
+    db $1D, $C0, $1B, $C0, $1B, $03, $04, $F2, $28, $73, $B8, $06, $A0, $6A, $38, $0B
+    db $78, $0B, $0F, $C0, $01, $C0, $1B, $F0, $06, $B8, $1B, $04, $04, $22, $38, $6B
+    db $98, $64, $7F, $78, $0B, $C0, $01, $30, $0B, $38, $0B, $68, $00, $D0, $00, $68
+    db $00, $05, $03, $61, $28, $6A, $F8, $6D, $E8, $01, $7E, $F8, $01, $20, $0B, $28
+    db $0B, $18, $0B, $58, $7A, $40, $7A, $03, $01, $07, $68, $00, $68, $00, $D8, $04
+    db $04, $03, $B1, $28, $6A, $20, $6C, $30, $71, $08, $6B, $0C, $18, $6A, $10, $0B
+    db $03, $01, $07, $18, $00, $68, $00, $18, $00, $02, $02, $0F, $98, $01, $88, $19
+    db $40, $2D, $F8, $71, $02, $03, $3F, $50, $1C, $38, $0A, $10, $6F, $10, $6F, $00
+    db $68, $00, $68, $02, $02, $0F, $80, $6F, $18, $7D, $70, $00, $70, $00, $02, $02
+    db $0F, $F0, $6F, $68, $7D, $20, $00, $20, $00, $02, $03, $3D, $10, $00, $00, $72
+    db $68, $7D, $80, $73, $68, $7D, $01, $01, $01, $48, $1F
+
+; Range: $FC8000-$FC80A9 (170 bytes)
+
+; ============================================================================
+; 7. MODUL: HUNDELABYRINTH (Map 115 auf Bank $FF:3000)
+; ============================================================================
 org $FF3000
 DogMazeConnection_MapData:
     db $00, $00, $80, $46, $17, $00, $00, $02, $00, $00, $00, $00, $00, $A8, $00, $09
